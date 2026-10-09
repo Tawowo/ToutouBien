@@ -13,9 +13,9 @@ const { eyebrow, title, lede, fil = true } = Astro.props;
 <section class="page-intro">
   {fil && <Fil variant="traversee" class="page-intro__fil" immediate />}
   <div class="page page-intro__inner">
-    <p class="eyebrow enter" style="--i: 0">{eyebrow}</p>
-    <h1 class="enter" style="--i: 1" set:html={title} />
-    {lede && <p class="lede enter" style="--i: 2">{lede}</p>}
+    <p class="eyebrow enter" data-i="0">{eyebrow}</p>
+    <h1 class="enter" data-i="1" set:html={title} />
+    {lede && <p class="lede enter" data-i="2">{lede}</p>}
     <slot />
   </div>
 </section>

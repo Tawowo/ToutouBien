@@ -37,12 +37,12 @@ const hasArticles = (await visibleArticles()).length > 0;
     <Fil variant="traversee" class="talk__fil" immediate />
     <div class="page talk__grid">
       <header class="talk__intro">
-        <p class="eyebrow enter" style="--i: 0">Premier contact</p>
-        <h1 class="enter" style="--i: 1">Parlons de <em>votre chien</em></h1>
-        <p class="lede enter" style="--i: 2">
+        <p class="eyebrow enter" data-i="0">Premier contact</p>
+        <h1 class="enter" data-i="1">Parlons de <em>votre chien</em></h1>
+        <p class="lede enter" data-i="2">
           Quelques questions courtes pour préparer un premier échange. Il n’y a pas de bonne ou de mauvaise réponse, et la plupart sont facultatives.
         </p>
-        <ul class="talk__reassure enter" style="--i: 3" role="list">
+        <ul class="talk__reassure enter" data-i="3" role="list">
           <li><Icon name="check" /> Environ deux minutes</li>
           <li><Icon name="check" /> Aucun diagnostic&nbsp;: un point de départ pour en parler</li>
           <li><Icon name="check" /> Vous vérifiez tout avant l’envoi</li>
@@ -64,7 +64,7 @@ const hasArticles = (await visibleArticles()).length > 0;
           )
         }
 
-        <nav class="progress" aria-label="Étapes du parcours" data-progress hidden>
+        <nav class="progress" aria-label="Étapes du parcours" data-progress>
           <p class="progress__count" data-progress-count>Étape 1 sur {STEPS.length}</p>
           <div class="progress__bar" aria-hidden="true"><span data-progress-bar></span></div>
           <ol class="progress__steps" role="list">
@@ -159,7 +159,7 @@ const hasArticles = (await visibleArticles()).length > 0;
             <button type="button" class="btn btn--ghost" data-prev hidden>
               <Icon name="arrow-left" class="btn__arrow" /> Précédent
             </button>
-            <button type="button" class="btn" data-next hidden>
+            <button type="button" class="btn" data-next>
               Continuer <Icon name="arrow" class="btn__arrow" />
             </button>
             <button type="submit" class="btn" data-submit hidden={!configured}>
@@ -302,6 +302,18 @@ const hasArticles = (await visibleArticles()).length > 0;
 
   .step__title:focus-visible {
     outline: 3px solid var(--focus);
+  }
+
+  /* Avec JavaScript, l'état « par étapes » est appliqué dès le premier rendu
+     (classe .js posée dans le <head>) pour éviter tout décalage de mise en page. */
+  :global(.js) .wizard:not(.is-enhanced) .step:not([data-step='chien']),
+  :global(.js) .wizard:not(.is-enhanced) [data-submit] {
+    display: none;
+  }
+
+  :global(.no-js) .progress,
+  :global(.no-js) [data-next] {
+    display: none;
   }
 
   /* Sans JavaScript, toutes les étapes s'affichent à la suite. */

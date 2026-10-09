@@ -5,6 +5,8 @@ import SiteFooter from '~/components/SiteFooter.astro';
 import { site } from '~/config/site';
 import { organizationLd, websiteLd } from '~/lib/seo';
 import { draftsVisible } from '~/lib/fields';
+import frauncesUrl from '@fontsource-variable/fraunces/files/fraunces-latin-soft-normal.woff2?url';
+import instrumentUrl from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
@@ -36,6 +38,8 @@ const structured = [organizationLd(base), websiteLd(base), ...jsonLd];
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>document.documentElement.classList.replace('no-js', 'js');</script>
+    <link rel="preload" href={frauncesUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={instrumentUrl} as="font" type="font/woff2" crossorigin />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />

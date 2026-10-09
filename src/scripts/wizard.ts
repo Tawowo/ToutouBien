@@ -40,7 +40,6 @@ export function initWizard(root: ParentNode = document): void {
 
   form.noValidate = true;
   wizard.classList.add('is-enhanced');
-  progress.hidden = false;
   form.querySelector<HTMLElement>('[data-step="resume"]')!.hidden = false;
 
   // Préremplissage depuis l'accueil : ?sujet=marche-en-laisse

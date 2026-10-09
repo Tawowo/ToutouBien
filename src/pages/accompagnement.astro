@@ -24,7 +24,7 @@ const steps = [
   },
   {
     title: 'La rencontre',
-    text: `${purpose?.value ?? 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}${places && !places.draft ? ` Elle peut se dérouler ${joinFr(places.value)}.` : ''}`,
+    text: `${purpose?.value ?? 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}${places && !places.draft ? ` Elle peut se dérouler ${joinFr(places.value, 'ou')}.` : ''}`,
   },
   {
     title: 'Comprendre la situation',
@@ -93,7 +93,7 @@ const commitments = [
             <p class="eyebrow reveal">Là où vit votre chien</p>
             <h2 id="places-title" class="reveal">Chez vous <em>ou dehors</em></h2>
             <p class="lede reveal">
-              Selon la situation, la rencontre peut se dérouler {joinFr(places.value)}. Parce qu’un chien se comprend mieux là où les choses se passent.
+              Selon la situation, la rencontre peut se dérouler {joinFr(places.value, 'ou')}. Parce qu’un chien se comprend mieux là où les choses se passent.
             </p>
             {places.draft && <Draft label="Lieux à confirmer"><span /></Draft>}
           </div>
@@ -156,7 +156,7 @@ const commitments = [
       <ul class="commitments__list" role="list">
         {
           commitments.map((c, i) => (
-            <li class="reveal" style={`--i: ${i}`}>
+            <li class="reveal" data-i={i}>
               <h3>{c.title}</h3>
               <p>{c.text}</p>
             </li>

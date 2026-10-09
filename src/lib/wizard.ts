@@ -132,10 +132,10 @@ const label = (choices: Choice[], value: string | undefined): string | undefined
 const phrase = (choices: Choice[], value: string | undefined): string | undefined => choices.find((c) => c.value === value)?.phrase;
 
 /** Joint une liste en français : « a, b et c ». */
-export function joinFr(items: string[]): string {
+export function joinFr(items: string[], conjunction: 'et' | 'ou' = 'et'): string {
   const list = items.filter(Boolean);
   if (list.length <= 1) return list.join('');
-  return `${list.slice(0, -1).join(', ')} et ${list[list.length - 1]}`;
+  return `${list.slice(0, -1).join(', ')} ${conjunction} ${list[list.length - 1]}`;
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;

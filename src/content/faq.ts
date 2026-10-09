@@ -35,7 +35,7 @@ export function buildFaq(): FaqItem[] {
   });
 
   if (purpose) {
-    const where = places ? ` Il peut se dérouler ${joinFr(places.value)}.` : '';
+    const where = places ? ` Il peut se dérouler ${joinFr(places.value, 'ou')}.` : '';
     const how = duration ? ` Comptez environ ${duration.value}.` : '';
     items.push({
       id: 'premier-rendez-vous',

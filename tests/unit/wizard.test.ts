@@ -9,6 +9,7 @@ describe('joinFr', () => {
     expect(joinFr(['a'])).toBe('a');
     expect(joinFr(['a', 'b'])).toBe('a et b');
     expect(joinFr(['a', 'b', 'c'])).toBe('a, b et c');
+    expect(joinFr(['chez vous', 'dehors'], 'ou')).toBe('chez vous ou dehors');
   });
 });
 

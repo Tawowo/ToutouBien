@@ -35,17 +35,17 @@ const articles = (await visibleArticles()).slice(0, 3);
         <Fil variant="descente" class="hero__fil" immediate />
       </div>
       <div class="hero__content">
-        <p class="eyebrow enter" style="--i: 0">Éducation canine · accompagnement des familles</p>
+        <p class="eyebrow enter" data-i="0">Éducation canine · accompagnement des familles</p>
         <h1 id="hero-title" class="hero__title">
-          <span class="enter" style="--i: 1">Comprendre</span>
-          <span class="enter" style="--i: 2">son chien,</span>
-          <span class="enter hero__title-em" style="--i: 3"><em>se sentir bien</em></span>
-          <span class="enter" style="--i: 4">ensemble.</span>
+          <span class="enter" data-i="1">Comprendre</span>
+          <span class="enter" data-i="2">son chien,</span>
+          <span class="enter hero__title-em" data-i="3"><em>se sentir bien</em></span>
+          <span class="enter" data-i="4">ensemble.</span>
         </h1>
-        <p class="lede hero__lede enter" style="--i: 5">
+        <p class="lede hero__lede enter" data-i="5">
           ToutouBien accompagne les propriétaires et leur chien pour que le quotidien redevienne plus simple, à la maison comme en balade.
         </p>
-        <div class="hero__actions enter" style="--i: 6">
+        <div class="hero__actions enter" data-i="6">
           <a class="btn btn--lagon" href="/parlons-de-votre-chien/">
             Parlons de votre chien
             <Icon name="arrow" class="btn__arrow" />
@@ -135,7 +135,7 @@ const articles = (await visibleArticles()).slice(0, 3);
           <div>
             <h3>On se rencontre{places && !places.draft ? ` ${places.value[0]} ou dehors` : ''}</h3>
             <p>{purpose ? purpose.value : 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}</p>
-            {places && !places.draft && <p class="step__note">La rencontre peut se dérouler {joinFr(places.value)}.</p>}
+            {places && !places.draft && <p class="step__note">La rencontre peut se dérouler {joinFr(places.value, 'ou')}.</p>}
           </div>
         </li>
         <li class="step reveal">

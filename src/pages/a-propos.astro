@@ -31,15 +31,15 @@ const publicName = name && !name.draft ? name.value : undefined;
   <section class="about-intro">
     <div class="page about-intro__grid">
       <div class="about-intro__text">
-        <p class="eyebrow enter" style="--i: 0">À propos</p>
-        <h1 class="enter" style="--i: 1">Qui vous <em>accompagne</em></h1>
-        {publicName && <p class="about-intro__name enter" style="--i: 2">{publicName}{role && !role.draft ? `, ${role.value.toLowerCase()}` : ''}</p>}
+        <p class="eyebrow enter" data-i="0">À propos</p>
+        <h1 class="enter" data-i="1">Qui vous <em>accompagne</em></h1>
+        {publicName && <p class="about-intro__name enter" data-i="2">{publicName}{role && !role.draft ? `, ${role.value.toLowerCase()}` : ''}</p>}
         {name?.draft && <Draft label="Nom et titre à confirmer"><p class="about-intro__name">{name.value}{role ? `, ${role.value.toLowerCase()}` : ''}</p></Draft>}
         {
           intro && !intro.draft ? (
-            <p class="lede enter" style="--i: 3">{intro.value}</p>
+            <p class="lede enter" data-i="3">{intro.value}</p>
           ) : (
-            <p class="lede enter" style="--i: 3">
+            <p class="lede enter" data-i="3">
               ToutouBien accompagne les propriétaires de chiens dans leur quotidien. Son éducatrice se déplace pour rencontrer les familles et leur chien là où ils vivent&nbsp;: chez eux, ou en extérieur.
             </p>
           )

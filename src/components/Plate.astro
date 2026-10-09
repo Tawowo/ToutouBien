@@ -24,12 +24,15 @@ const { id, class: className, ratio: forcedRatio, priority = false, sizes = '(mi
 const slot = PHOTO_SLOTS[id];
 const ratio = forcedRatio ?? slot.ratio;
 const photo = photoFor(id);
+// Ratio exprimé en attribut (et non en style inline) pour rester compatible avec la CSP.
+const RATIOS: Record<string, number> = { '4-5': 4 / 5, '3-4': 3 / 4, '4-3': 4 / 3, '3-2': 3 / 2, '1-1': 1 };
+const ratioKey = Object.entries(RATIOS).reduce((best, [key, value]) => (Math.abs(value - ratio) < Math.abs(RATIOS[best]! - ratio) ? key : best), '4-5');
 const credit = 'credit' in slot ? (slot.credit as import('~/content/photos').PhotoCredit | undefined) : undefined;
 const motif: PlateMotif = slot.motif;
 ---
 <figure
   class:list={['plate', `plate--${shape}`, `plate--${motif}`, reveal && 'reveal-mask reveal-scale', className]}
-  style={`--ratio: ${ratio}`}
+  data-ratio={ratioKey}
   data-photo-slot={id}
   data-has-photo={photo ? 'true' : 'false'}
 >
@@ -56,11 +59,27 @@ const motif: PlateMotif = slot.motif;
 <style>
   .plate {
     position: relative;
-    aspect-ratio: var(--ratio);
+    aspect-ratio: 4 / 5;
     overflow: hidden;
     border-radius: var(--radius-l);
     background: var(--lin);
     isolation: isolate;
+  }
+
+  .plate[data-ratio='3-4'] {
+    aspect-ratio: 3 / 4;
+  }
+
+  .plate[data-ratio='4-3'] {
+    aspect-ratio: 4 / 3;
+  }
+
+  .plate[data-ratio='3-2'] {
+    aspect-ratio: 3 / 2;
+  }
+
+  .plate[data-ratio='1-1'] {
+    aspect-ratio: 1;
   }
 
   .plate--arch {

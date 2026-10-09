@@ -775,6 +775,14 @@ a:hover {
   }
 }
 
+/* Décalage des apparitions, sans style inline (compatible CSP). */
+[data-i='1'] { --i: 1; }
+[data-i='2'] { --i: 2; }
+[data-i='3'] { --i: 3; }
+[data-i='4'] { --i: 4; }
+[data-i='5'] { --i: 5; }
+[data-i='6'] { --i: 6; }
+
 @keyframes enter {
   from {
     opacity: 0;

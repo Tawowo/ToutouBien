@@ -26,7 +26,7 @@ interface Row {
 }
 const rows: Row[] = [];
 if (purpose) rows.push({ label: 'L’objectif', value: purpose.value, draft: purpose.draft });
-if (places) rows.push({ label: 'Où', value: `${joinFr(places.value).replace(/^./, (c) => c.toUpperCase())}.`, draft: places.draft });
+if (places) rows.push({ label: 'Où', value: `${joinFr(places.value, 'ou').replace(/^./, (c) => c.toUpperCase())}.`, draft: places.draft });
 if (duration) rows.push({ label: 'Durée', value: duration.value, draft: duration.draft });
 if (free?.value === true) rows.push({ label: 'Tarif', value: 'Première rencontre offerte.', draft: free.draft });
 if (conditions) rows.push({ label: 'Conditions', value: conditions.value, draft: conditions.draft });

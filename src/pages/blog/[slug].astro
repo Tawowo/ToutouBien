@@ -52,9 +52,9 @@ const jsonLd = draft || !d.publishDate
             <li><a href={`/blog/categorie/${d.category}/`}>{categoryLabel(d.category)}</a></li>
           </ol>
         </nav>
-        <h1 class="enter" style="--i: 1">{d.title}</h1>
-        <p class="lede enter" style="--i: 2">{d.description}</p>
-        <p class="article__meta enter" style="--i: 3">
+        <h1 class="enter" data-i="1">{d.title}</h1>
+        <p class="lede enter" data-i="2">{d.description}</p>
+        <p class="article__meta enter" data-i="3">
           {d.publishDate && <span>Publié le <time datetime={d.publishDate.toISOString()}>{formatDate(d.publishDate)}</time></span>}
           {d.updatedDate && <span>Mis à jour le <time datetime={d.updatedDate.toISOString()}>{formatDate(d.updatedDate)}</time></span>}
           <span>{readingMinutes(article.body)} min de lecture</span>

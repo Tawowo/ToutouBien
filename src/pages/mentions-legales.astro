@@ -1,0 +1,95 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageIntro from '~/components/PageIntro.astro';
+import LegalRow from '~/components/LegalRow.astro';
+import Draft from '~/components/Draft.astro';
+import { site } from '~/config/site';
+import { confirmedValue } from '~/lib/fields';
+import { PHOTO_SLOTS, photoFor, type PhotoCredit } from '~/content/photos';
+
+const l = site.legal;
+const host = confirmedValue(l.host);
+const credits = Object.values(PHOTO_SLOTS)
+  .filter((slot) => photoFor(slot.id))
+  .map((slot) => ({ slot, credit: (slot as { credit?: PhotoCredit }).credit }));
+---
+<Base title="Mentions légales" description="Mentions légales du site ToutouBien : éditeur, hébergement, propriété intellectuelle et crédits.">
+  <PageIntro eyebrow="Informations légales" title="Mentions légales" fil={false} />
+  <div class="page legal prose-wrap">
+    <section aria-labelledby="editeur">
+      <h2 id="editeur">Éditeur du site</h2>
+      <dl>
+        <LegalRow label="Nom ou dénomination" field={l.publisherName} />
+        <LegalRow label="Statut" field={l.legalForm} />
+        <LegalRow label="SIRET" field={l.siret} />
+        <LegalRow label="Adresse" field={l.address} />
+        <LegalRow label="Téléphone" field={site.contact.phone} />
+        <LegalRow label="E-mail" field={site.contact.email} />
+        <LegalRow label="TVA intracommunautaire" field={l.vatNumber} />
+        <LegalRow label="Directeur·rice de la publication" field={l.publicationDirector} />
+      </dl>
+    </section>
+
+    <section aria-labelledby="hebergement">
+      <h2 id="hebergement">Hébergement</h2>
+      {
+        host ? (
+          <p>{host.name} — {host.address} — {host.contact}</p>
+        ) : (
+          <Draft label="Manquant"><p>{l.host.note}</p></Draft>
+        )
+      }
+    </section>
+
+    <section aria-labelledby="mediation">
+      <h2 id="mediation">Médiation de la consommation</h2>
+      <dl><LegalRow label="Médiateur" field={l.mediator} /></dl>
+    </section>
+
+    <section aria-labelledby="propriete">
+      <h2 id="propriete">Propriété intellectuelle</h2>
+      <p>
+        Le nom ToutouBien, son logo et l’ensemble des contenus de ce site (textes, illustrations, mise en page) sont protégés. Toute reproduction, totale ou partielle, sans autorisation préalable est interdite.
+      </p>
+    </section>
+
+    <section aria-labelledby="credits">
+      <h2 id="credits">Crédits</h2>
+      <ul>
+        <li>Typographies&nbsp;: Fraunces (The Fraunces Project Authors) et Instrument Sans (The Instrument Sans Project Authors), sous licence SIL Open Font License&nbsp;1.1, hébergées sur ce site.</li>
+        <li>Illustrations et compositions graphiques&nbsp;: réalisées pour ToutouBien à partir du logo de l’activité.</li>
+        {
+          credits.map(({ slot, credit }) =>
+            credit ? (
+              <li>
+                Photo «&nbsp;{slot.alt}&nbsp;»&nbsp;: {credit.authentic ? 'ToutouBien' : <a href={credit.sourceUrl} rel="noopener">{credit.author}</a>} — {credit.licence}
+              </li>
+            ) : (
+              <Draft as="span" label="Crédit manquant"><li>{slot.id}</li></Draft>
+            ),
+          )
+        }
+      </ul>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .legal {
+    display: grid;
+    gap: var(--space-xl);
+    max-width: 52rem;
+    padding-bottom: var(--space-2xl);
+  }
+
+  .legal h2 {
+    font-size: var(--step-3);
+    margin-bottom: var(--space-s);
+  }
+
+  .legal ul {
+    display: grid;
+    gap: var(--space-2xs);
+    padding-left: 1.2em;
+  }
+</style>

@@ -1,0 +1,91 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageIntro from '~/components/PageIntro.astro';
+import Draft from '~/components/Draft.astro';
+import { site } from '~/config/site';
+import { confirmedValue } from '~/lib/fields';
+import { formConfig } from '~/config/forms';
+
+const l = site.legal;
+const controller = confirmedValue(l.publisherName);
+const privacyContact = confirmedValue(l.privacyContact) ?? confirmedValue(site.contact.email);
+const retention = confirmedValue(l.retention);
+const providerNames: Record<string, string> = { formspree: 'Formspree', web3forms: 'Web3Forms', custom: 'le service de réception des formulaires' };
+const provider = formConfig ? providerNames[formConfig.provider] : undefined;
+---
+<Base title="Confidentialité" description="Comment ToutouBien traite les informations transmises via ses formulaires : finalités, durée de conservation, destinataires et droits.">
+  <PageIntro eyebrow="Vos données" title="Politique de confidentialité" lede="Les informations que vous partagez sur vous et votre chien servent uniquement à vous répondre. Voici, simplement, ce qu’il en est." fil={false} />
+  <div class="page legal">
+    <section>
+      <h2>Qui est responsable de vos données&nbsp;?</h2>
+      {controller ? <p>{controller}, éditeur du site ToutouBien.</p> : <Draft label="Manquant"><p>{l.publisherName.note}</p></Draft>}
+    </section>
+
+    <section>
+      <h2>Quelles informations sont collectées&nbsp;?</h2>
+      <p>Uniquement celles que vous choisissez de saisir dans les formulaires&nbsp;:</p>
+      <ul>
+        <li>votre prénom (ou nom) et le moyen de vous recontacter (téléphone et/ou e-mail)&nbsp;;</li>
+        <li>des informations sur votre chien et la situation que vous décrivez (âge, sujets, circonstances, secteur, précisions)&nbsp;;</li>
+        <li>vos préférences de contact.</li>
+      </ul>
+      <p>La plupart des questions sont facultatives. Aucune photo ni vidéo n’est demandée.</p>
+    </section>
+
+    <section>
+      <h2>Pourquoi&nbsp;?</h2>
+      <p>Pour répondre à votre demande et préparer un éventuel premier échange. Vos informations ne sont ni revendues, ni utilisées à des fins publicitaires, ni intégrées à une liste de diffusion.</p>
+      <p>Ce traitement repose sur votre demande et sur l’accord que vous donnez en cochant la case prévue avant l’envoi.</p>
+    </section>
+
+    <section>
+      <h2>Qui y a accès&nbsp;?</h2>
+      <p>L’éducatrice de ToutouBien uniquement.{provider && <> Les messages transitent par {provider}, prestataire technique chargé de leur acheminement.</>}</p>
+      {!provider && <Draft label="À compléter"><p>Nommer le prestataire de formulaire retenu et vérifier sa localisation (transferts hors UE).</p></Draft>}
+    </section>
+
+    <section>
+      <h2>Combien de temps&nbsp;?</h2>
+      {retention ? <p>Vos informations sont conservées {retention}, puis supprimées.</p> : <Draft label="À valider"><p>{l.retention.note} Proposition&nbsp;: {l.retention.value}.</p></Draft>}
+    </section>
+
+    <section>
+      <h2>Cookies et mesure d’audience</h2>
+      <p>Ce site n’utilise aucun cookie publicitaire ni outil de mesure d’audience. Les polices de caractères sont hébergées sur le site lui-même&nbsp;: aucune donnée n’est transmise à un service tiers lors de votre visite.</p>
+    </section>
+
+    <section>
+      <h2>Vos droits</h2>
+      <p>
+        Vous pouvez à tout moment demander l’accès à vos données, leur rectification, leur effacement, la limitation de leur traitement ou vous y opposer.
+        {privacyContact && <>Écrivez simplement à <a href={`mailto:${privacyContact}`}>{privacyContact}</a>.</>}
+      </p>
+      {!privacyContact && <Draft label="Manquant"><p>{l.privacyContact.note}</p></Draft>}
+      <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez adresser une réclamation à la CNIL (<a href="https://www.cnil.fr" rel="noopener">cnil.fr</a>).</p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .legal {
+    display: grid;
+    gap: var(--space-l);
+    max-width: 52rem;
+    padding-bottom: var(--space-2xl);
+  }
+
+  .legal h2 {
+    font-size: var(--step-2);
+    margin-bottom: var(--space-2xs);
+  }
+
+  .legal p + p,
+  .legal ul + p {
+    margin-top: var(--space-2xs);
+  }
+
+  .legal ul {
+    padding-left: 1.2em;
+    margin-top: var(--space-2xs);
+  }
+</style>

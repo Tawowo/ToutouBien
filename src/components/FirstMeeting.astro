@@ -1,0 +1,130 @@
+---
+/**
+ * Le premier rendez-vous, en pratique.
+ * Chaque ligne n'apparaît que si l'information est publiable ; les informations
+ * manquantes sont signalées uniquement en développement / préproduction.
+ */
+import Draft from './Draft.astro';
+import Icon from './Icon.astro';
+import { site } from '~/config/site';
+import { draftsVisible, resolve } from '~/lib/fields';
+import { joinFr } from '~/lib/wizard';
+
+const fm = site.firstMeeting;
+const purpose = resolve(fm.purpose);
+const places = resolve(fm.places);
+const free = resolve(fm.free);
+const duration = resolve(fm.duration);
+const conditions = resolve(fm.conditions);
+const remote = resolve(fm.remote);
+const area = resolve(site.serviceArea.label);
+
+interface Row {
+  label: string;
+  value: string;
+  draft: boolean;
+}
+const rows: Row[] = [];
+if (purpose) rows.push({ label: 'L’objectif', value: purpose.value, draft: purpose.draft });
+if (places) rows.push({ label: 'Où', value: `${joinFr(places.value).replace(/^./, (c) => c.toUpperCase())}.`, draft: places.draft });
+if (duration) rows.push({ label: 'Durée', value: duration.value, draft: duration.draft });
+if (free?.value === true) rows.push({ label: 'Tarif', value: 'Première rencontre offerte.', draft: free.draft });
+if (conditions) rows.push({ label: 'Conditions', value: conditions.value, draft: conditions.draft });
+if (area) rows.push({ label: 'Secteur', value: area.value, draft: area.draft });
+if (remote) rows.push({ label: 'À distance', value: remote.value ? 'Un premier échange par téléphone ou en visio est possible.' : 'Le premier échange se fait en présence de votre chien.', draft: remote.draft });
+
+const missingNotes = draftsVisible()
+  ? [fm.duration, fm.free, fm.conditions, fm.remote, site.serviceArea.label].filter((f) => f.status === 'missing' || f.status === 'pending').map((f) => f.note)
+  : [];
+---
+{
+  rows.length > 0 && (
+    <section class="section first-meeting" aria-labelledby="first-meeting-title">
+      <div class="page first-meeting__card reveal">
+        <div class="first-meeting__head">
+          <p class="eyebrow">En pratique</p>
+          <h2 id="first-meeting-title">Le premier <em>rendez-vous</em></h2>
+          <a class="btn" href="/parlons-de-votre-chien/">
+            Demander une rencontre
+            <Icon name="arrow" class="btn__arrow" />
+          </a>
+        </div>
+        <dl class="first-meeting__list">
+          {rows.map((row) => (
+            <div class:list={['first-meeting__row', row.draft && 'draft']}>
+              <dt>{row.label}{row.draft && <span class="draft-badge">À confirmer</span>}</dt>
+              <dd>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
+        {missingNotes.length > 0 && (
+          <Draft label="Informations manquantes">
+            <ul>{missingNotes.map((n) => <li>{n}</li>)}</ul>
+          </Draft>
+        )}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .first-meeting__card {
+    display: grid;
+    gap: var(--space-l);
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: #fffdf9;
+    box-shadow: 0 1px 0 rgb(26 36 34 / 0.06), 0 2rem 4rem -2.5rem rgb(26 36 34 / 0.25);
+  }
+
+  @media (min-width: 60rem) {
+    .first-meeting__card {
+      grid-template-columns: 5fr 7fr;
+      padding: var(--space-xl);
+    }
+  }
+
+  .first-meeting__head {
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+    justify-items: start;
+  }
+
+  .first-meeting__list {
+    display: grid;
+  }
+
+  .first-meeting__row {
+    display: grid;
+    gap: var(--space-3xs);
+    padding-block: var(--space-m);
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+  }
+
+  .first-meeting__row:first-child {
+    padding-top: 0;
+  }
+
+  @media (min-width: 40rem) {
+    .first-meeting__row {
+      grid-template-columns: 9rem 1fr;
+      gap: var(--space-m);
+    }
+  }
+
+  .first-meeting__row dt {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--argile);
+  }
+
+  .first-meeting__row dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    line-height: 1.35;
+  }
+</style>

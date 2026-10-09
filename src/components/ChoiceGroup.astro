@@ -1,0 +1,61 @@
+---
+import type { Choice } from '~/lib/wizard';
+
+interface Props {
+  name: string;
+  legend: string;
+  choices: Choice[];
+  type?: 'radio' | 'checkbox';
+  hint?: string;
+  required?: boolean;
+  stacked?: boolean;
+  /** Valeurs cochées par défaut. */
+  checked?: string[];
+}
+const { name, legend, choices, type = 'radio', hint, required = false, stacked = false, checked = [] } = Astro.props;
+const hintId = hint ? `${name}-hint` : undefined;
+const errorId = `${name}-error`;
+---
+<fieldset class="field choice-group" data-field={name} aria-describedby={[hintId, errorId].filter(Boolean).join(' ')}>
+  <legend class="field__label">
+    {legend}
+    {required ? <span class="req"> (obligatoire)</span> : <span class="opt"> (facultatif)</span>}
+  </legend>
+  {hint && <p class="field__hint" id={hintId}>{hint}</p>}
+  <div class:list={['choices', stacked && 'choices--stacked']}>
+    {
+      choices.map((c) => (
+        <label class="choice">
+          <input type={type} name={name} value={c.value} checked={checked.includes(c.value)} />
+          <span>{c.label}</span>
+        </label>
+      ))
+    }
+  </div>
+  <p class="field__error" id={errorId} data-error-for={name}></p>
+</fieldset>
+
+<style>
+  .choice-group {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .choice-group legend {
+    padding: 0;
+    margin-bottom: var(--space-2xs);
+    font-size: var(--step-1);
+    font-family: var(--font-display);
+    font-weight: 400;
+  }
+
+  .req,
+  .opt {
+    font-family: var(--font-text);
+    font-size: var(--step--1);
+    font-weight: 500;
+    color: var(--encre-douce);
+  }
+</style>

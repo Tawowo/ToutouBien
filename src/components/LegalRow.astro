@@ -1,0 +1,46 @@
+---
+/** Ligne d'information juridique : affichée si confirmée, signalée en dev sinon. */
+import type { Field } from '~/lib/fields';
+import { confirmedValue, draftsVisible } from '~/lib/fields';
+
+interface Props {
+  label: string;
+  field: Field<string>;
+}
+const { label, field } = Astro.props;
+const value = confirmedValue(field);
+const show = draftsVisible();
+---
+{
+  value ? (
+    <div class="legal-row"><dt>{label}</dt><dd>{value}</dd></div>
+  ) : (
+    show && (
+      <div class="legal-row draft"><dt>{label} <span class="draft-badge">Manquant</span></dt><dd>{field.note}</dd></div>
+    )
+  )
+}
+
+<style>
+  .legal-row {
+    display: grid;
+    gap: 0.2rem;
+    padding-block: var(--space-s);
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 12%, transparent);
+  }
+
+  @media (min-width: 40rem) {
+    .legal-row {
+      grid-template-columns: 16rem 1fr;
+      gap: var(--space-m);
+    }
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+</style>

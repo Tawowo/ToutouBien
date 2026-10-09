@@ -1,0 +1,58 @@
+---
+import Base from '~/layouts/Base.astro';
+import Icon from '~/components/Icon.astro';
+import Fil from '~/components/Fil.astro';
+---
+<Base title="Page introuvable" description="Cette page n’existe pas ou plus." noindex>
+  <section class="lost">
+    <Fil variant="boucle" class="lost__fil" immediate />
+    <div class="page lost__inner">
+      <p class="eyebrow">Erreur 404</p>
+      <h1>Le chemin <em>s’arrête ici</em>.</h1>
+      <p class="lede">Cette page n’existe pas, ou plus. Pas d’inquiétude, on vous raccompagne.</p>
+      <div class="lost__links">
+        <a class="btn" href="/">Retour à l’accueil <Icon name="arrow" class="btn__arrow" /></a>
+        <a class="link-arrow" href="/parlons-de-votre-chien/">Parlons de votre chien <Icon name="arrow" /></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    position: relative;
+    min-height: 70vh;
+    display: grid;
+    align-items: center;
+    overflow: hidden;
+    padding-block: var(--space-2xl);
+  }
+
+  .lost__fil {
+    position: absolute;
+    right: -5%;
+    bottom: 10%;
+    width: min(50rem, 90vw);
+    height: auto;
+    color: var(--argile);
+    opacity: 0.5;
+  }
+
+  .lost__inner {
+    position: relative;
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .lost h1 {
+    max-width: 14ch;
+  }
+
+  .lost__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+</style>

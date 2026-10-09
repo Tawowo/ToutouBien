@@ -1,0 +1,22 @@
+---
+/**
+ * Enveloppe un contenu non validé. N'est rendu que lorsque les brouillons sont visibles
+ * (développement ou préproduction) ; le contenu porte alors un marquage explicite.
+ */
+import { draftsVisible } from '~/lib/fields';
+
+interface Props {
+  label?: string;
+  as?: 'div' | 'span';
+}
+const { label = 'À valider', as: Tag = 'div' } = Astro.props;
+const show = draftsVisible();
+---
+{
+  show && (
+    <Tag class="draft" data-draft>
+      <span class="draft-badge">{label}</span>
+      <slot />
+    </Tag>
+  )
+}

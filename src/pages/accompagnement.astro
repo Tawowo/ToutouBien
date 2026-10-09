@@ -1,0 +1,354 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageIntro from '~/components/PageIntro.astro';
+import Plate from '~/components/Plate.astro';
+import Fil from '~/components/Fil.astro';
+import Faq from '~/components/Faq.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import FirstMeeting from '~/components/FirstMeeting.astro';
+import Draft from '~/components/Draft.astro';
+import Icon from '~/components/Icon.astro';
+import { site } from '~/config/site';
+import { resolve } from '~/lib/fields';
+import { joinFr } from '~/lib/wizard';
+
+const purpose = resolve(site.firstMeeting.purpose);
+const places = resolve(site.firstMeeting.places);
+const phone = resolve(site.contact.phone);
+const services = resolve(site.services);
+
+const steps = [
+  {
+    title: 'La prise de contact',
+    text: `Vous décrivez la situation en quelques mots, via le formulaire${phone && !phone.draft ? ' ou par téléphone' : ''}. Pas besoin d’avoir les bons termes : vos mots suffisent.`,
+  },
+  {
+    title: 'La rencontre',
+    text: `${purpose?.value ?? 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}${places && !places.draft ? ` Elle peut se dérouler ${joinFr(places.value)}.` : ''}`,
+  },
+  {
+    title: 'Comprendre la situation',
+    text: 'Observer votre chien dans son environnement aide à comprendre ce qui se passe pour lui, et pour vous. On regarde aussi ce qui fonctionne déjà.',
+  },
+  {
+    title: 'Des pistes à votre mesure',
+    text: 'Des pistes adaptées à votre quotidien, expliquées simplement, que vous pouvez réellement mettre en place, à votre rythme.',
+  },
+  {
+    title: 'La suite, si vous le souhaitez',
+    text: 'Vous décidez librement de la suite. Les modalités vous sont présentées clairement, sans engagement caché.',
+  },
+];
+
+const commitments = [
+  { title: 'Pas de jugement', text: 'Beaucoup de familles se posent les mêmes questions. En parler, c’est déjà prendre soin de votre chien.' },
+  { title: 'Pas de promesse miracle', text: 'Chaque chien progresse à son rythme. Personne ne peut garantir un résultat en un nombre fixe de séances.' },
+  { title: 'Pas de diagnostic à distance', text: 'Le formulaire sert à préparer l’échange, pas à évaluer votre chien. Rien ne remplace une rencontre.' },
+  { title: 'Le vétérinaire quand il le faut', text: 'Un changement brutal de comportement peut avoir une cause médicale, comme une douleur. Dans ce cas, un avis vétérinaire passe en premier.' },
+];
+---
+<Base
+  title="L’accompagnement"
+  description="Comment se déroule l’accompagnement ToutouBien : une prise de contact simple, une rencontre chez vous ou en extérieur, puis des pistes adaptées à votre quotidien et à votre chien."
+>
+  <PageIntro
+    eyebrow="L’accompagnement"
+    title="Avancer <em>à votre rythme</em>, avec votre chien."
+    lede="Chaque chien, chaque famille a son histoire. L’accompagnement part de la vôtre : ce que vous vivez au quotidien, ce que vous aimeriez voir évoluer, et ce qui est réaliste pour vous."
+  />
+
+  <!-- Le parcours -->
+  <section class="section journey" aria-labelledby="journey-title">
+    <div class="page journey__grid">
+      <div class="journey__head">
+        <p class="eyebrow reveal">Le parcours</p>
+        <h2 id="journey-title" class="reveal">Les grandes <em>étapes</em></h2>
+        <p class="lede reveal">Elles donnent une idée du déroulement&nbsp;: dans la réalité, chaque accompagnement s’adapte à la situation.</p>
+      </div>
+      <div class="journey__path">
+        <Fil variant="colonne" class="journey__fil" />
+        <ol class="journey__list" role="list">
+          {
+            steps.map((step, i) => (
+              <li class="journey__step reveal">
+                <span class="journey__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chez vous ou dehors -->
+  {
+    places && (
+      <section class="section places on-lin" aria-labelledby="places-title">
+        <div class="page">
+          <div class="places__head">
+            <p class="eyebrow reveal">Là où vit votre chien</p>
+            <h2 id="places-title" class="reveal">Chez vous <em>ou dehors</em></h2>
+            <p class="lede reveal">
+              Selon la situation, la rencontre peut se dérouler {joinFr(places.value)}. Parce qu’un chien se comprend mieux là où les choses se passent.
+            </p>
+            {places.draft && <Draft label="Lieux à confirmer"><span /></Draft>}
+          </div>
+          <div class="places__grid">
+            <figure class="place">
+              <Plate id="accompagnement-domicile" sizes="(min-width: 60rem) 44vw, 92vw" />
+              <figcaption>
+                <Icon name="home" />
+                <span><strong>À la maison.</strong> Le cadre de vie, les habitudes, les moments du quotidien.</span>
+              </figcaption>
+            </figure>
+            <figure class="place place--offset">
+              <Plate id="accompagnement-exterieur" sizes="(min-width: 60rem) 44vw, 92vw" />
+              <figcaption>
+                <Icon name="tree" />
+                <span><strong>En extérieur.</strong> La balade, les rencontres, les situations qui se présentent.</span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <FirstMeeting />
+
+  <!-- Prestations : affichées uniquement lorsqu'elles sont confirmées -->
+  {
+    services && (
+      <section class="section" aria-labelledby="services-title">
+        <div class="page">
+          <h2 id="services-title">Les formules</h2>
+          {services.draft ? (
+            <Draft label="Prestations à confirmer"><p>Liste des prestations à fournir.</p></Draft>
+          ) : (
+            <ul role="list" class="services">
+              {services.value.map((s) => (
+                <li>
+                  <h3>{s.title}</h3>
+                  <p>{s.summary}</p>
+                  {s.price && <p class="services__price">{s.price}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+    )
+  }
+  <Draft label="Prestations et tarifs à fournir">
+    <div class="page"><p>Aucune prestation détaillée n’est encore confirmée : cette section restera masquée en production tant que la liste n’est pas validée (voir docs/CONTENT-VALIDATION.md).</p></div>
+  </Draft>
+
+  <!-- Engagements -->
+  <section class="section commitments on-dark" aria-labelledby="commitments-title">
+    <Fil variant="vague" class="commitments__fil" />
+    <div class="page">
+      <p class="eyebrow reveal">L’état d’esprit</p>
+      <h2 id="commitments-title" class="reveal">Ce que vous <em>pouvez attendre</em></h2>
+      <ul class="commitments__list" role="list">
+        {
+          commitments.map((c, i) => (
+            <li class="reveal" style={`--i: ${i}`}>
+              <h3>{c.title}</h3>
+              <p>{c.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <Faq scope="accompagnement" />
+  <CtaBand title="Votre situation <em>mérite qu’on en parle.</em>" />
+</Base>
+
+<style>
+  .journey__grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .journey__head {
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
+  }
+
+  @media (min-width: 60rem) {
+    .journey__grid {
+      grid-template-columns: 4fr 7fr;
+    }
+
+    .journey__head {
+      position: sticky;
+      top: 7rem;
+    }
+  }
+
+  .journey__path {
+    position: relative;
+  }
+
+  .journey__fil {
+    position: absolute;
+    left: 1.6rem;
+    top: 0;
+    width: 3rem;
+    height: 100%;
+    transform: translateX(-50%);
+    color: var(--argile);
+    opacity: 0.55;
+  }
+
+  .journey__list {
+    display: grid;
+    gap: var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  .journey__step {
+    display: grid;
+    grid-template-columns: 3.2rem 1fr;
+    gap: var(--space-m);
+    align-items: start;
+  }
+
+  .journey__num {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 50%;
+    background: var(--ivoire);
+    border: 1.5px solid var(--argile);
+    color: var(--argile);
+    font-family: var(--font-display);
+    font-size: var(--step-0);
+  }
+
+  .journey__step h3 {
+    font-size: var(--step-3);
+    margin-bottom: var(--space-2xs);
+  }
+
+  .journey__step p {
+    max-width: 50ch;
+    color: var(--encre-douce);
+  }
+
+  .places__head {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 46rem;
+    margin-bottom: var(--space-xl);
+  }
+
+  .places__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .places__grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      gap: var(--space-xl);
+    }
+
+    .place--offset {
+      margin-top: var(--space-2xl);
+    }
+  }
+
+  .place figcaption {
+    display: flex;
+    gap: var(--space-s);
+    align-items: flex-start;
+    margin-top: var(--space-s);
+    max-width: 40ch;
+    color: var(--encre-douce);
+  }
+
+  .place figcaption :global(svg) {
+    flex: none;
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--argile);
+  }
+
+  .place strong {
+    color: var(--encre);
+  }
+
+  .services {
+    display: grid;
+    gap: var(--space-l);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    padding: 0;
+    margin-top: var(--space-l);
+    list-style: none;
+  }
+
+  .services__price {
+    margin-top: var(--space-xs);
+    font-weight: 600;
+  }
+
+  .commitments {
+    overflow: hidden;
+  }
+
+  .commitments__fil {
+    position: absolute;
+    left: 0;
+    bottom: var(--space-l);
+    width: 100%;
+    height: 4rem;
+    color: var(--lagon);
+    opacity: 0.3;
+  }
+
+  .commitments h2 {
+    margin-top: var(--space-s);
+    max-width: 16ch;
+  }
+
+  .commitments__list {
+    display: grid;
+    gap: var(--space-l) var(--space-xl);
+    margin-top: var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 48rem) {
+    .commitments__list {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .commitments__list li {
+    padding-top: var(--space-m);
+    border-top: 1px solid rgb(255 255 255 / 0.18);
+  }
+
+  .commitments__list h3 {
+    margin-bottom: var(--space-2xs);
+    color: var(--lagon);
+  }
+
+  .commitments__list p {
+    color: var(--craie-douce);
+    max-width: 44ch;
+  }
+</style>

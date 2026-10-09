@@ -1,0 +1,73 @@
+---
+import '~/styles/global.css';
+import SiteHeader from '~/components/SiteHeader.astro';
+import SiteFooter from '~/components/SiteFooter.astro';
+import { site } from '~/config/site';
+import { organizationLd, websiteLd } from '~/lib/seo';
+import { draftsVisible } from '~/lib/fields';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Chemin canonique (par défaut : l'URL courante). */
+  canonicalPath?: string;
+  /** Exclure cette page de l'indexation. */
+  noindex?: boolean;
+  ogImage?: string | undefined;
+  ogType?: 'website' | 'article';
+  /** Thème de l'en-tête : sombre sur l'accueil. */
+  headerTheme?: 'light' | 'dark';
+  jsonLd?: Record<string, unknown>[];
+}
+
+const { title, description, canonicalPath, noindex = false, ogImage = '/og-default.jpg', ogType = 'website', headerTheme = 'light', jsonLd = [] } = Astro.props;
+const brand = site.name.value;
+const fullTitle = title === brand ? `${brand} — ${site.tagline.value}` : `${title} · ${brand}`;
+const base = Astro.site ?? new URL('https://toutoubien.example');
+const canonical = new URL(canonicalPath ?? Astro.url.pathname, base).toString();
+const ogImageUrl = new URL(ogImage, base).toString();
+const indexingAllowed = import.meta.env.PUBLIC_ALLOW_INDEXING === 'true' && !draftsVisible();
+const robots = noindex || !indexingAllowed ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
+const structured = [organizationLd(base), websiteLd(base), ...jsonLd];
+---
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>document.documentElement.classList.replace('no-js', 'js');</script>
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={robots} />
+    <meta name="theme-color" content="#0f1b1a" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content={brand} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`Logo ${brand} : une femme et un chien face à face dans un cœur.`} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {structured.map((ld) => <script type="application/ld+json" set:html={JSON.stringify(ld)} />)}
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <SiteHeader theme={headerTheme} />
+    <main id="contenu" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

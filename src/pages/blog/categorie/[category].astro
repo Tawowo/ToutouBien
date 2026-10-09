@@ -1,0 +1,35 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageIntro from '~/components/PageIntro.astro';
+import ArticleCard from '~/components/ArticleCard.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { CATEGORIES } from '~/lib/categories';
+import { visibleArticles } from '~/lib/articles';
+
+export async function getStaticPaths() {
+  const articles = await visibleArticles();
+  return CATEGORIES.filter((c) => articles.some((a) => a.data.category === c.id)).map((c) => ({ params: { category: c.id }, props: { category: c } }));
+}
+
+const { category } = Astro.props;
+const articles = (await visibleArticles()).filter((a) => a.data.category === category.id);
+---
+<Base title={`${category.label} — articles`} description={category.description}>
+  <PageIntro eyebrow="Thème" title={category.label} lede={category.description} fil={false}>
+    <p><a href="/blog/">← Tous les articles</a></p>
+  </PageIntro>
+  <section class="section section--tight">
+    <div class="page list">
+      {articles.map((a) => <ArticleCard article={a} headingLevel="h2" />)}
+    </div>
+  </section>
+  <CtaBand />
+</Base>
+
+<style>
+  .list {
+    display: grid;
+    gap: var(--space-xl) var(--space-l);
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  }
+</style>

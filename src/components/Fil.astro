@@ -1,0 +1,72 @@
+---
+/**
+ * « Le fil » — signature graphique de ToutouBien.
+ * Une ligne continue, comme une laisse détendue ou un chemin, qui se dessine
+ * au défilement (CSS uniquement). Sans prise en charge ou en mouvement réduit,
+ * la ligne est simplement affichée.
+ */
+interface Props {
+  variant?: 'descente' | 'traversee' | 'boucle' | 'vague' | 'colonne';
+  class?: string;
+  /** Dessin immédiat au chargement (premier écran) plutôt qu'au défilement. */
+  immediate?: boolean;
+}
+const { variant = 'traversee', class: className, immediate = false } = Astro.props;
+const shapes = {
+  descente: { viewBox: '0 0 400 900', d: 'M210 0 C 214 120, 140 170, 150 260 C 160 360, 300 360, 300 470 C 300 560, 190 560, 170 640 C 150 730, 260 760, 250 900' },
+  traversee: { viewBox: '0 0 1600 220', d: 'M0 150 C 160 150, 220 60, 380 70 C 560 82, 560 190, 760 180 C 930 172, 940 40, 1110 52 C 1250 62, 1290 170, 1440 150 C 1520 140, 1560 110, 1600 100' },
+  boucle: { viewBox: '0 0 700 300', d: 'M0 230 C 120 230, 190 200, 260 150 C 330 100, 330 30, 280 30 C 225 30, 220 110, 300 160 C 380 210, 520 120, 700 110' },
+  vague: { viewBox: '0 0 1600 120', d: 'M0 60 C 100 20, 200 20, 300 60 S 500 100, 600 60 S 800 20, 900 60 S 1100 100, 1200 60 S 1400 20, 1600 60' },
+  colonne: { viewBox: '0 0 120 1000', d: 'M60 0 C 60 80, 20 120, 30 200 C 40 280, 100 300, 95 400 C 90 500, 25 520, 30 620 C 35 720, 100 740, 92 840 C 88 900, 60 940, 60 1000' },
+} as const;
+const shape = shapes[variant];
+---
+<svg
+  class:list={['fil', `fil--${variant}`, immediate && 'fil--immediate', className]}
+  viewBox={shape.viewBox}
+  preserveAspectRatio="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d={shape.d} pathLength="1" vector-effect="non-scaling-stroke" />
+</svg>
+
+<style>
+  .fil {
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .fil path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: var(--fil-width, 1.6px);
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fil--immediate path {
+      animation: fil-draw 2.4s var(--ease-in-out) 0.3s both;
+    }
+
+    @supports (animation-timeline: view()) {
+      .fil:not(.fil--immediate) path {
+        animation: fil-draw linear both;
+        animation-timeline: view();
+        animation-range: entry 10% cover 60%;
+      }
+    }
+  }
+
+  @keyframes fil-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+</style>

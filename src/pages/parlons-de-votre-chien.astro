@@ -1,0 +1,567 @@
+---
+import Base from '~/layouts/Base.astro';
+import ChoiceGroup from '~/components/ChoiceGroup.astro';
+import TextField from '~/components/TextField.astro';
+import Icon from '~/components/Icon.astro';
+import Fil from '~/components/Fil.astro';
+import Draft from '~/components/Draft.astro';
+import { formConfig } from '~/config/forms';
+import { visibleArticles } from '~/lib/articles';
+import { site } from '~/config/site';
+import { publicValue, resolve } from '~/lib/fields';
+import {
+  AGE_CHOICES,
+  BEST_TIME_CHOICES,
+  CONTACT_METHOD_CHOICES,
+  CONTEXT_CHOICES,
+  LIMITS,
+  MEETING_CHOICES,
+  SAFETY_CHOICES,
+  SINCE_CHOICES,
+  STEPS,
+  STEP_TITLES,
+  TOPICS,
+} from '~/lib/wizard';
+
+const places = resolve(site.firstMeeting.places);
+const email = publicValue(site.contact.email);
+const phone = publicValue(site.contact.phone);
+const configured = Boolean(formConfig);
+const hasArticles = (await visibleArticles()).length > 0;
+---
+<Base
+  title="Parlons de votre chien"
+  description="Décrivez votre situation en quelques questions simples, sans rien rédiger de long. Vous serez recontacté·e pour un premier échange autour de votre chien."
+>
+  <section class="talk">
+    <Fil variant="traversee" class="talk__fil" immediate />
+    <div class="page talk__grid">
+      <header class="talk__intro">
+        <p class="eyebrow enter" style="--i: 0">Premier contact</p>
+        <h1 class="enter" style="--i: 1">Parlons de <em>votre chien</em></h1>
+        <p class="lede enter" style="--i: 2">
+          Quelques questions courtes pour préparer un premier échange. Il n’y a pas de bonne ou de mauvaise réponse, et la plupart sont facultatives.
+        </p>
+        <ul class="talk__reassure enter" style="--i: 3" role="list">
+          <li><Icon name="check" /> Environ deux minutes</li>
+          <li><Icon name="check" /> Aucun diagnostic&nbsp;: un point de départ pour en parler</li>
+          <li><Icon name="check" /> Vous vérifiez tout avant l’envoi</li>
+        </ul>
+      </header>
+
+      <div class="wizard" data-wizard data-configured={configured ? 'true' : 'false'}>
+        {
+          !configured && (
+            <div class="notice notice--info wizard__offline" data-offline-notice>
+              <p><strong>L’envoi en ligne n’est pas encore activé.</strong></p>
+              <p>
+                Vous pouvez tout de même remplir le parcours&nbsp;: à la fin, vous pourrez copier votre résumé
+                {email ? <> et l’envoyer à <a href={`mailto:${email}`}>{email}</a></> : null}
+                {phone ? <>, ou appeler le <a href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a></> : null}.
+              </p>
+              <Draft label="Configuration"><p>Définir PUBLIC_FORM_PROVIDER (voir docs/DEPLOYMENT.md) pour activer l’envoi.</p></Draft>
+            </div>
+          )
+        }
+
+        <nav class="progress" aria-label="Étapes du parcours" data-progress hidden>
+          <p class="progress__count" data-progress-count>Étape 1 sur {STEPS.length}</p>
+          <div class="progress__bar" aria-hidden="true"><span data-progress-bar></span></div>
+          <ol class="progress__steps" role="list">
+            {STEPS.map((s, i) => <li data-progress-step={s}><span>{i + 1}</span> <span class="progress__label">{STEP_TITLES[s]}</span></li>)}
+          </ol>
+        </nav>
+
+        <form
+          class="wizard__form"
+          data-wizard-form
+          method="post"
+          action={configured && formConfig ? formConfig.endpoint : undefined}
+          aria-describedby="wizard-privacy"
+        >
+          {formConfig?.provider === 'web3forms' && <input type="hidden" name="access_key" value={formConfig.accessKey} />}
+          <input type="hidden" name="subject" value="Nouvelle demande depuis « Parlons de votre chien »" />
+
+          <!-- Piège à robots : invisible pour les personnes, ignoré par les lecteurs d'écran. -->
+          <div class="wizard__trap" aria-hidden="true">
+            <label>Ne pas remplir <input type="text" name="botcheck" tabindex="-1" autocomplete="off" /></label>
+          </div>
+
+          <div class="wizard__error-summary notice notice--error" data-error-summary tabindex="-1" role="alert" hidden></div>
+
+          <fieldset class="step" data-step="chien">
+            <legend class="step__title" tabindex="-1">{STEP_TITLES.chien}</legend>
+            <TextField name="dogName" label="Comment s’appelle-t-il ou elle ?" maxlength={LIMITS.dogName} autocomplete="off" />
+            <ChoiceGroup name="age" legend="Quel âge a votre chien ?" choices={AGE_CHOICES} />
+          </fieldset>
+
+          <fieldset class="step" data-step="situation">
+            <legend class="step__title" tabindex="-1">{STEP_TITLES.situation}</legend>
+            <ChoiceGroup
+              name="topics"
+              type="checkbox"
+              legend="De quoi aimeriez-vous parler ?"
+              hint="Plusieurs réponses possibles."
+              choices={TOPICS}
+              required
+              stacked
+            />
+          </fieldset>
+
+          <fieldset class="step" data-step="contexte">
+            <legend class="step__title" tabindex="-1">{STEP_TITLES.contexte}</legend>
+            <ChoiceGroup name="contexts" type="checkbox" legend="Dans quelles circonstances cela se produit-il ?" hint="Plusieurs réponses possibles." choices={CONTEXT_CHOICES} />
+            <ChoiceGroup name="since" legend="Depuis quand l’avez-vous remarqué ?" choices={SINCE_CHOICES} />
+            <ChoiceGroup
+              name="safety"
+              legend="Quelqu’un (personne ou animal) a-t-il déjà été blessé ?"
+              hint="Cette information aide à préparer l’échange. Elle reste confidentielle."
+              choices={SAFETY_CHOICES}
+            />
+            <div class="notice notice--info safety-note" data-safety-note hidden>
+              <p><strong>Merci de nous le signaler.</strong> Si une personne a été blessée, faites-la soigner en priorité. Une morsure sur une personne doit être déclarée en mairie, avec un suivi vétérinaire. Un changement soudain de comportement peut aussi avoir une cause médicale&nbsp;: votre vétérinaire est un bon premier interlocuteur.</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="step" data-step="lieu">
+            <legend class="step__title" tabindex="-1">{STEP_TITLES.lieu}</legend>
+            <TextField name="area" label="Dans quelle commune ou quel secteur vous trouvez-vous ?" hint="Pour savoir si un déplacement est possible." maxlength={LIMITS.area} autocomplete="address-level2" />
+            {places && !places.draft && <ChoiceGroup name="meeting" legend="Pour une première rencontre, vous préférez…" choices={MEETING_CHOICES} />}
+            <TextField name="message" type="textarea" label="Souhaitez-vous ajouter une précision ?" hint="Inutile de tout détailler : vous pourrez en parler de vive voix." maxlength={LIMITS.message} />
+          </fieldset>
+
+          <fieldset class="step" data-step="contact">
+            <legend class="step__title" tabindex="-1">{STEP_TITLES.contact}</legend>
+            <TextField name="firstName" label="Comment pouvons-nous vous appeler ?" hint="Votre prénom suffit." required maxlength={LIMITS.firstName} autocomplete="given-name" />
+            <ChoiceGroup name="contactMethod" legend="Comment préférez-vous être recontacté·e ?" choices={CONTACT_METHOD_CHOICES} required />
+            <div class="contact-fields">
+              <TextField name="phone" type="tel" label="Téléphone" maxlength={LIMITS.phone} autocomplete="tel" inputmode="tel" conditional />
+              <TextField name="email" type="email" label="E-mail" maxlength={LIMITS.email} autocomplete="email" inputmode="email" conditional />
+            </div>
+            <ChoiceGroup name="bestTime" legend="Quel est le meilleur moment pour vous joindre ?" choices={BEST_TIME_CHOICES} />
+            <div class="field consent" data-field="consent">
+              <label class="consent__label">
+                <input type="checkbox" name="consent" value="oui" required aria-describedby="consent-error wizard-privacy" />
+                <span>J’accepte que les informations saisies soient utilisées pour me recontacter au sujet de ma demande. <span class="req-state">(obligatoire)</span></span>
+              </label>
+              <p class="field__error" id="consent-error" data-error-for="consent"></p>
+            </div>
+          </fieldset>
+
+          <section class="step step--summary" data-step="resume" aria-labelledby="summary-title" hidden>
+            <h2 class="step__title" id="summary-title" tabindex="-1">{STEP_TITLES.resume}</h2>
+            <div class="summary__rephrase" data-rephrase></div>
+            <dl class="summary__list" data-summary></dl>
+            <div class="summary__status" data-status aria-live="polite"></div>
+          </section>
+
+          <div class="wizard__nav">
+            <button type="button" class="btn btn--ghost" data-prev hidden>
+              <Icon name="arrow-left" class="btn__arrow" /> Précédent
+            </button>
+            <button type="button" class="btn" data-next hidden>
+              Continuer <Icon name="arrow" class="btn__arrow" />
+            </button>
+            <button type="submit" class="btn" data-submit hidden={!configured}>
+              <span data-submit-label>Envoyer ma demande</span> <Icon name="arrow" class="btn__arrow" />
+            </button>
+            <button type="button" class="btn btn--ghost" data-copy hidden>Copier mon résumé</button>
+          </div>
+
+          <p class="wizard__privacy" id="wizard-privacy">
+            Vos réponses servent uniquement à préparer notre échange. Elles ne sont ni revendues ni utilisées à d’autres fins.
+            <a href="/confidentialite/">En savoir plus sur vos données</a>.
+          </p>
+        </form>
+
+        <div class="wizard__success" data-success tabindex="-1" hidden>
+          <span class="wizard__success-icon" aria-hidden="true"><Icon name="check" /></span>
+          <h2 data-success-title>Merci, votre demande a bien été reçue.</h2>
+          <p class="lede" data-success-text>Vous serez recontacté·e pour en parler.</p>
+          {hasArticles ? (
+            <a class="link-arrow" href="/ressources/">En attendant, parcourir les ressources <Icon name="arrow" /></a>
+          ) : (
+            <a class="link-arrow" href="/accompagnement/">En attendant, découvrir l’accompagnement <Icon name="arrow" /></a>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { initWizard } from '~/scripts/wizard';
+  initWizard();
+</script>
+
+<style>
+  .talk {
+    position: relative;
+    padding-block: var(--space-xl) var(--space-2xl);
+    overflow: hidden;
+  }
+
+  .talk__fil {
+    position: absolute;
+    left: 0;
+    top: 2rem;
+    width: 100%;
+    height: 8rem;
+    color: var(--argile);
+    opacity: 0.35;
+  }
+
+  .talk__grid {
+    position: relative;
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  @media (min-width: 64rem) {
+    .talk__grid {
+      grid-template-columns: 4fr 7fr;
+      align-items: start;
+    }
+
+    .talk__intro {
+      position: sticky;
+      top: 7rem;
+    }
+  }
+
+  .talk__intro {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .talk__intro h1 {
+    font-size: var(--step-5);
+  }
+
+  .talk__reassure {
+    display: grid;
+    gap: var(--space-2xs);
+    padding: 0;
+    list-style: none;
+  }
+
+  .talk__reassure li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .talk__reassure :global(svg) {
+    width: 1.2rem;
+    height: 1.2rem;
+    flex: none;
+    color: var(--sarcelle);
+  }
+
+  .wizard {
+    display: grid;
+    gap: var(--space-l);
+    padding: var(--space-l) var(--space-m);
+    border-radius: var(--radius-l);
+    background: #fffdf9;
+    box-shadow: 0 1px 0 rgb(26 36 34 / 0.06), 0 2rem 4rem -2.5rem rgb(26 36 34 / 0.3);
+  }
+
+  @media (min-width: 40rem) {
+    .wizard {
+      padding: var(--space-xl);
+    }
+  }
+
+  .wizard__form {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .step {
+    display: grid;
+    gap: var(--space-l);
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .step__title {
+    padding: 0;
+    margin-bottom: var(--space-m);
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    font-weight: 380;
+    line-height: 1.1;
+  }
+
+  .step__title:focus {
+    outline: none;
+  }
+
+  .step__title:focus-visible {
+    outline: 3px solid var(--focus);
+  }
+
+  /* Sans JavaScript, toutes les étapes s'affichent à la suite. */
+  :global(.no-js) .step + .step {
+    padding-top: var(--space-l);
+    border-top: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+  }
+
+  .contact-fields {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  @media (min-width: 40rem) {
+    .contact-fields {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .consent__label {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-s);
+    align-items: start;
+    cursor: pointer;
+  }
+
+  .consent__label input {
+    width: 1.35rem;
+    height: 1.35rem;
+    margin-top: 0.15rem;
+    accent-color: var(--sarcelle);
+  }
+
+  .req-state {
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .wizard__trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .wizard__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+    justify-content: space-between;
+    padding-top: var(--space-m);
+    border-top: 1px solid color-mix(in oklab, var(--encre) 12%, transparent);
+  }
+
+  .wizard__nav [data-next],
+  .wizard__nav [data-submit] {
+    margin-left: auto;
+  }
+
+  .wizard__privacy {
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  /* Progression */
+  .progress {
+    display: grid;
+    gap: var(--space-xs);
+  }
+
+  .progress__count {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--argile);
+  }
+
+  .progress__bar {
+    height: 4px;
+    border-radius: 4px;
+    background: var(--lin);
+    overflow: hidden;
+  }
+
+  .progress__bar span {
+    display: block;
+    height: 100%;
+    width: var(--progress, 0%);
+    background: linear-gradient(90deg, var(--sarcelle), var(--argile));
+    border-radius: inherit;
+    transition: width var(--dur) var(--ease-out);
+  }
+
+  .progress__steps {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-2xs);
+    padding: 0;
+    list-style: none;
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .progress__steps li {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .progress__steps li > span:first-child {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    font-size: 0.75rem;
+  }
+
+  .progress__steps li[data-state='done'] > span:first-child {
+    background: var(--sarcelle);
+    border-color: var(--sarcelle);
+    color: #fff;
+  }
+
+  .progress__steps li[aria-current='step'] {
+    color: var(--encre);
+    font-weight: 600;
+  }
+
+  .progress__steps li[aria-current='step'] > span:first-child {
+    background: var(--nuit);
+    border-color: var(--nuit);
+    color: var(--lagon);
+  }
+
+  @media (max-width: 47.99rem) {
+    .progress__label {
+      display: none;
+    }
+  }
+
+  /* Résumé */
+  .summary__rephrase {
+    display: grid;
+    gap: var(--space-2xs);
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    background: var(--lin);
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    line-height: 1.45;
+  }
+
+  .summary__rephrase:empty {
+    display: none;
+  }
+
+  .summary__list {
+    display: grid;
+  }
+
+  .summary__list :global(.summary__row) {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2xs) var(--space-m);
+    padding-block: var(--space-s);
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 12%, transparent);
+  }
+
+  .summary__list :global(dt) {
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--encre-douce);
+  }
+
+  .summary__list :global(dd) {
+    grid-column: 1;
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .summary__list :global(.summary__edit) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    padding: 0 0.6rem;
+    border: 0;
+    background: none;
+    color: var(--sarcelle);
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .summary__list :global(.summary__edit svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .summary__status:empty {
+    display: none;
+  }
+
+  /* Succès */
+  .wizard__success {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+    padding-block: var(--space-l);
+  }
+
+  .wizard__success:focus {
+    outline: none;
+  }
+
+  .wizard__success-icon {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: var(--succes-fond);
+    color: var(--succes);
+  }
+
+  .wizard__success-icon :global(svg) {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .wizard__success h2 {
+    font-size: var(--step-3);
+  }
+
+  :global(.btn.is-loading) {
+    pointer-events: none;
+  }
+
+  :global(.btn.is-loading)::after {
+    content: '';
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

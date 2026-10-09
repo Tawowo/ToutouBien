@@ -1,0 +1,72 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageIntro from '~/components/PageIntro.astro';
+import ArticleCard from '~/components/ArticleCard.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import { CATEGORIES } from '~/lib/categories';
+import { visibleArticles } from '~/lib/articles';
+
+export async function getStaticPaths() {
+  const articles = await visibleArticles();
+  return articles.length ? [{ params: { index: undefined } }] : [];
+}
+
+const articles = await visibleArticles();
+const used = CATEGORIES.filter((c) => articles.some((a) => a.data.category === c.id));
+---
+<Base title="Blog" description="Tous les articles de ToutouBien : conseils généraux et repères pour la vie quotidienne avec un chien.">
+  <PageIntro eyebrow="Blog" title="Tous les <em>articles</em>" fil={false} />
+  <section class="section section--tight">
+    <div class="page">
+      {
+        used.length > 1 && (
+          <nav class="filters" aria-label="Thèmes">
+            <ul role="list">
+              <li><a href="/blog/" aria-current="page">Tout</a></li>
+              {used.map((c) => <li><a href={`/blog/categorie/${c.id}/`}>{c.label}</a></li>)}
+            </ul>
+          </nav>
+        )
+      }
+      <div class="list">
+        {articles.map((a) => <ArticleCard article={a} headingLevel="h2" />)}
+      </div>
+    </div>
+  </section>
+  <CtaBand />
+</Base>
+
+<style>
+  .filters ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    padding: 0;
+    margin-bottom: var(--space-l);
+    list-style: none;
+  }
+
+  .filters a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 1.1rem;
+    border: 1.5px solid color-mix(in oklab, var(--encre) 25%, transparent);
+    border-radius: var(--radius-pill);
+    color: var(--encre);
+    text-decoration: none;
+  }
+
+  .filters a:hover,
+  .filters a[aria-current='page'] {
+    background: var(--nuit);
+    border-color: var(--nuit);
+    color: var(--craie);
+  }
+
+  .list {
+    display: grid;
+    gap: var(--space-xl) var(--space-l);
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  }
+</style>

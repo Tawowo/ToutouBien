@@ -1,0 +1,158 @@
+---
+/**
+ * Hub des ressources. La page n'est générée que si au moins un contenu est visible,
+ * afin de ne jamais publier une page vide.
+ */
+import Base from '~/layouts/Base.astro';
+import PageIntro from '~/components/PageIntro.astro';
+import ArticleCard from '~/components/ArticleCard.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import Icon from '~/components/Icon.astro';
+import { CATEGORIES } from '~/lib/categories';
+import { visibleArticles } from '~/lib/articles';
+
+export async function getStaticPaths() {
+  const articles = await visibleArticles();
+  return articles.length ? [{ params: { index: undefined } }] : [];
+}
+
+const articles = await visibleArticles();
+const fiches = articles.filter((a) => a.data.format === 'fiche');
+const categories = CATEGORIES.map((c) => ({ ...c, count: articles.filter((a) => a.data.category === c.id).length })).filter((c) => c.count > 0);
+const featured = articles.slice(0, 3);
+---
+<Base
+  title="Ressources"
+  description="Articles et fiches pratiques pour mieux comprendre son chien au quotidien : promenade, arrivée d’un chiot, vie de famille."
+>
+  <PageIntro eyebrow="Ressources" title="Mieux comprendre, <em>entre deux balades</em>" lede="Des contenus courts et concrets, pour éclairer les questions du quotidien. Ils donnent des repères généraux : ils ne remplacent pas un échange autour de votre chien." />
+
+  <section class="section section--tight">
+    <div class="page">
+      <h2 class="sr-only">À la une</h2>
+      <div class="hub__featured">
+        {featured.map((a, i) => <ArticleCard article={a} featured={i === 0} />)}
+      </div>
+    </div>
+  </section>
+
+  {
+    categories.length > 0 && (
+      <section class="section on-lin" aria-labelledby="themes-title">
+        <div class="page">
+          <p class="eyebrow">Par thème</p>
+          <h2 id="themes-title" class="hub__title">Explorer les <em>thèmes</em></h2>
+          <ul class="themes" role="list">
+            {categories.map((c) => (
+              <li>
+                <a class="theme" href={`/blog/categorie/${c.id}/`}>
+                  <span class="theme__label">{c.label}</span>
+                  <span class="theme__desc">{c.description}</span>
+                  <span class="theme__count">{c.count} {c.count > 1 ? 'contenus' : 'contenu'}</span>
+                  <Icon name="arrow" class="theme__arrow" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    fiches.length > 0 && (
+      <section class="section" aria-labelledby="fiches-title">
+        <div class="page">
+          <p class="eyebrow">À garder sous la main</p>
+          <h2 id="fiches-title" class="hub__title">Fiches <em>pratiques</em></h2>
+          <div class="hub__grid">
+            {fiches.map((a) => <ArticleCard article={a} />)}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section section--tight">
+    <div class="page">
+      <a class="link-arrow" href="/blog/">Tous les articles <Icon name="arrow" /></a>
+    </div>
+  </section>
+
+  <CtaBand title="Une question <em>sur votre chien</em>&nbsp;?" />
+</Base>
+
+<style>
+  .hub__featured {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .hub__featured {
+      grid-template-columns: 1.4fr 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .hub__title {
+    margin-block: var(--space-s) var(--space-l);
+  }
+
+  .hub__grid {
+    display: grid;
+    gap: var(--space-l);
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  }
+
+  .themes {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .theme {
+    position: relative;
+    display: grid;
+    gap: var(--space-2xs);
+    height: 100%;
+    padding: var(--space-l) var(--space-l) var(--space-xl);
+    border-radius: var(--radius-l);
+    background: var(--ivoire);
+    color: var(--encre);
+    text-decoration: none;
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) ease;
+  }
+
+  .theme:hover {
+    color: var(--encre);
+    transform: translateY(-3px);
+    box-shadow: 0 1.5rem 3rem -2rem rgb(26 36 34 / 0.4);
+  }
+
+  .theme__label {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+  }
+
+  .theme__desc {
+    color: var(--encre-douce);
+  }
+
+  .theme__count {
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--argile);
+  }
+
+  .theme__arrow {
+    position: absolute;
+    right: var(--space-l);
+    bottom: var(--space-m);
+    width: 1.4rem;
+    height: 1.4rem;
+    color: var(--argile);
+  }
+</style>

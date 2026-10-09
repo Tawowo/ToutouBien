@@ -1,0 +1,58 @@
+---
+/** Compositions graphiques originales de ToutouBien (remplaçantes des photos). Décoratives. */
+import type { PlateMotif } from '~/content/photos';
+import emblemRaw from '~/assets/brand/emblem.svg?raw';
+
+interface Props {
+  motif: PlateMotif;
+  class?: string;
+}
+const { motif, class: className } = Astro.props;
+const emblemPath = emblemRaw.match(/ d="([^"]+)"/)?.[1] ?? '';
+---
+<div class:list={['plate-art', className]} aria-hidden="true">
+  {motif === 'chemin' && (
+    <svg viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="500" fill="var(--lin)" />
+      <circle cx="292" cy="150" r="58" fill="var(--argile-claire)" opacity="0.75" />
+      <path d="M0 210 C 90 196, 170 214, 250 204 S 360 196, 400 202 V500 H0Z" fill="var(--sable)" />
+      <path d="M0 262 C 120 246, 240 268, 400 250 V500 H0Z" fill="color-mix(in oklab, var(--mousse) 55%, var(--sable))" opacity="0.55" />
+      <path d="M188 214 C 170 290, 90 360, 40 500" fill="none" stroke="var(--ivoire)" stroke-width="3" />
+      <path d="M206 214 C 230 290, 300 380, 330 500" fill="none" stroke="var(--ivoire)" stroke-width="3" />
+      <path d="M197 230 C 200 300, 150 360, 190 430 C 220 480, 170 500, 175 520" fill="none" stroke="var(--sarcelle)" stroke-width="2.5" stroke-linecap="round" />
+    </svg>
+  )}
+  {motif === 'horizon' && (
+    <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="300" fill="var(--nuit-2)" />
+      <circle cx="120" cy="170" r="70" fill="none" stroke="var(--lagon)" stroke-width="1.5" opacity="0.8" />
+      <circle cx="120" cy="170" r="44" fill="var(--argile-claire)" opacity="0.9" />
+      <path d="M0 190 C 80 170, 150 182, 230 168 S 360 150, 400 158 V300 H0Z" fill="var(--nuit)" />
+      <path d="M0 230 C 120 214, 260 236, 400 220" fill="none" stroke="var(--lagon)" stroke-width="1.2" opacity="0.6" />
+      <path d="M0 262 C 140 248, 250 270, 400 254" fill="none" stroke="var(--lagon)" stroke-width="1.2" opacity="0.35" />
+    </svg>
+  )}
+  {motif === 'herbes' && (
+    <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+      <rect width="400" height="300" fill="var(--sable)" />
+      <rect x="236" y="42" width="120" height="150" rx="60" fill="var(--ivoire)" opacity="0.7" />
+      {Array.from({ length: 34 }, (_, i) => (
+        <path d={`M${12 + i * 11.5} 300 C ${12 + i * 11.5} ${250 - (i % 5) * 9}, ${18 + i * 11.5 + (i % 3) * 6} ${210 - (i % 4) * 14}, ${24 + i * 11.5} ${190 - (i % 6) * 10}`} fill="none" stroke="var(--mousse)" stroke-width="1.6" opacity={0.35 + (i % 4) * 0.15} />
+      ))}
+      <path d="M0 120 C 80 150, 140 70, 220 110 S 340 160, 400 120" fill="none" stroke="var(--argile)" stroke-width="2.2" stroke-linecap="round" />
+    </svg>
+  )}
+  {(motif === 'rencontre' || motif === 'portrait') && (
+    <svg viewBox={motif === 'rencontre' ? '250 140 600 750' : '150 110 420 640'} preserveAspectRatio="xMidYMid slice">
+      <rect x="0" y="0" width="1080" height="1010" fill={motif === 'rencontre' ? 'var(--lagon)' : 'var(--nuit-2)'} />
+      <path d={emblemPath} fill={motif === 'rencontre' ? 'var(--nuit)' : 'var(--lagon)'} fill-rule="evenodd" opacity={motif === 'rencontre' ? 0.92 : 0.9} />
+    </svg>
+  )}
+</div>
+
+<style>
+  .plate-art svg {
+    width: 100%;
+    height: 100%;
+  }
+</style>

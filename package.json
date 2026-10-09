@@ -1,0 +1,40 @@
+{
+  "name": "toutoubien",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Site de ToutouBien — éducation canine et accompagnement des propriétaires.",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check:launch": "node scripts/launch-check.mjs",
+    "verify": "npm run lint && npm run check && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.2",
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "astro": "^7.3.8"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@axe-core/playwright": "^4.13.0",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.56.1",
+    "eslint": "^10.12.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "globals": "^17.13.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3"
+  }
+}

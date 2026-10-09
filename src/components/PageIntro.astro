@@ -1,0 +1,56 @@
+---
+/** Ouverture éditoriale des pages intérieures. */
+import Fil from './Fil.astro';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  lede?: string;
+  fil?: boolean;
+}
+const { eyebrow, title, lede, fil = true } = Astro.props;
+---
+<section class="page-intro">
+  {fil && <Fil variant="traversee" class="page-intro__fil" immediate />}
+  <div class="page page-intro__inner">
+    <p class="eyebrow enter" style="--i: 0">{eyebrow}</p>
+    <h1 class="enter" style="--i: 1" set:html={title} />
+    {lede && <p class="lede enter" style="--i: 2">{lede}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .page-intro {
+    position: relative;
+    padding-block: var(--space-xl) calc(var(--space-xl) + 5rem);
+    overflow: hidden;
+  }
+
+  .page-intro__inner {
+    position: relative;
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .page-intro h1 {
+    max-width: 16ch;
+    font-size: var(--step-6);
+    line-height: 0.98;
+  }
+
+  .page-intro .lede {
+    max-width: 52ch;
+  }
+
+  .page-intro__fil {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 5.5rem;
+    color: var(--argile);
+    opacity: 0.55;
+  }
+</style>

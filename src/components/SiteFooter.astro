@@ -1,0 +1,176 @@
+---
+import Icon from './Icon.astro';
+import Draft from './Draft.astro';
+import Emblem from '~/assets/brand/emblem.svg';
+import Signature from '~/assets/brand/wordmark-signature.svg';
+import { CTA_NAV, LEGAL_NAV, PRIMARY_NAV } from '~/config/navigation';
+import { site } from '~/config/site';
+import { publicValue, resolve } from '~/lib/fields';
+import { visibleArticles } from '~/lib/articles';
+
+const hasArticles = (await visibleArticles()).length > 0;
+const nav = PRIMARY_NAV.filter((item) => item.href !== '/ressources/' || hasArticles);
+const phone = resolve(site.contact.phone);
+const phoneE164 = publicValue(site.contact.phoneE164);
+const email = resolve(site.contact.email);
+const area = resolve(site.serviceArea.label);
+const social = resolve(site.social);
+const year = new Date().getFullYear();
+---
+<footer class="site-footer on-dark">
+  <div class="page site-footer__grid">
+    <div class="site-footer__brand">
+      <a href="/" class="footer-logo" aria-label="ToutouBien, retour à l’accueil">
+        <Emblem class="footer-logo__emblem" aria-hidden="true" />
+        <Signature class="footer-logo__word" aria-hidden="true" />
+      </a>
+    </div>
+
+    <nav class="site-footer__col" aria-label="Plan du site">
+      <h2 class="site-footer__title">Le site</h2>
+      <ul role="list">
+        <li><a href="/">Accueil</a></li>
+        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        <li><a href={CTA_NAV.href}>{CTA_NAV.label}</a></li>
+      </ul>
+    </nav>
+
+    <div class="site-footer__col">
+      <h2 class="site-footer__title">Nous joindre</h2>
+      <ul role="list" class="site-footer__contact">
+        {
+          phone && (
+            phone.draft ? (
+              <li><Draft as="span">{phone.value}</Draft></li>
+            ) : (
+              <li><Icon name="phone" /><a href={`tel:${phoneE164 ?? phone.value.replace(/\s/g, '')}`}>{phone.value}</a></li>
+            )
+          )
+        }
+        {
+          email && (
+            email.draft ? (
+              <li><Draft as="span">{email.value}</Draft></li>
+            ) : (
+              <li><Icon name="mail" /><a href={`mailto:${email.value}`}>{email.value}</a></li>
+            )
+          )
+        }
+        {area && !area.draft && <li><Icon name="pin" /><span>{area.value}</span></li>}
+        <li><Icon name="chat" /><a href={CTA_NAV.href}>Écrire via le formulaire</a></li>
+      </ul>
+      {social && !social.draft && (
+        <ul role="list" class="site-footer__social">
+          {social.value.map((s) => <li><a href={s.url} rel="me noopener" target="_blank">{s.label}<span class="sr-only"> (nouvel onglet)</span></a></li>)}
+        </ul>
+      )}
+    </div>
+  </div>
+
+  <div class="page site-footer__bottom">
+    <p>© {year} {site.name.value} · {site.tagline.value}</p>
+    <ul role="list">
+      {LEGAL_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-block: var(--space-xl) var(--space-l);
+    font-size: var(--step--1);
+  }
+
+  .site-footer__grid {
+    display: grid;
+    gap: var(--space-l);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    padding-bottom: var(--space-l);
+    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  }
+
+  .footer-logo {
+    display: inline-grid;
+    justify-items: center;
+    gap: 0.4rem;
+    width: min(15rem, 100%);
+    color: var(--lagon);
+    text-decoration: none;
+  }
+
+  .footer-logo__emblem {
+    width: 62%;
+    height: auto;
+  }
+
+  .footer-logo__word {
+    width: 100%;
+    height: auto;
+    color: #2fb3ad;
+  }
+
+  .site-footer__title {
+    margin-bottom: var(--space-s);
+    font-family: var(--font-text);
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--argile-claire);
+  }
+
+  .site-footer ul {
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .site-footer a {
+    display: inline-block;
+    padding-block: 0.45rem;
+    color: var(--craie);
+    text-decoration: none;
+  }
+
+  .site-footer a:hover {
+    color: var(--lagon);
+    text-decoration: underline;
+  }
+
+  .site-footer__contact li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .site-footer__contact :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--lagon);
+    flex: none;
+  }
+
+  .site-footer__social {
+    margin-top: var(--space-s);
+  }
+
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-s);
+    padding-top: var(--space-m);
+    color: var(--craie-douce);
+  }
+
+  .site-footer__bottom ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+  }
+
+  .site-footer__bottom a {
+    color: var(--craie-douce);
+  }
+</style>

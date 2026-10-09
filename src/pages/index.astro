@@ -1,0 +1,665 @@
+---
+import Base from '~/layouts/Base.astro';
+import Icon from '~/components/Icon.astro';
+import Fil from '~/components/Fil.astro';
+import Plate from '~/components/Plate.astro';
+import Faq from '~/components/Faq.astro';
+import CtaBand from '~/components/CtaBand.astro';
+import ArticleCard from '~/components/ArticleCard.astro';
+import Draft from '~/components/Draft.astro';
+import Emblem from '~/assets/brand/emblem.svg';
+import { site } from '~/config/site';
+import { resolve } from '~/lib/fields';
+import { TOPICS, joinFr } from '~/lib/wizard';
+import { visibleArticles } from '~/lib/articles';
+
+const topics = TOPICS.filter((t) => t.teaser);
+const name = resolve(site.educator.displayName);
+const intro = resolve(site.educator.intro);
+const purpose = resolve(site.firstMeeting.purpose);
+const places = resolve(site.firstMeeting.places);
+const free = resolve(site.firstMeeting.free);
+const phone = resolve(site.contact.phone);
+const articles = (await visibleArticles()).slice(0, 3);
+---
+<Base
+  title="ToutouBien"
+  description="ToutouBien accompagne les propriétaires de chiens au quotidien : comprendre son chien, retrouver des balades sereines et une vie de famille plus simple. Premier échange pour parler de votre situation."
+  headerTheme="dark"
+>
+  <!-- 1. Première scène -->
+  <section class="hero on-dark" aria-labelledby="hero-title">
+    <div class="page hero__layout">
+      <div class="hero__art" aria-hidden="true">
+        <Emblem class="hero__emblem" />
+        <Fil variant="descente" class="hero__fil" immediate />
+      </div>
+      <div class="hero__content">
+        <p class="eyebrow enter" style="--i: 0">Éducation canine · accompagnement des familles</p>
+        <h1 id="hero-title" class="hero__title">
+          <span class="enter" style="--i: 1">Comprendre</span>
+          <span class="enter" style="--i: 2">son chien,</span>
+          <span class="enter hero__title-em" style="--i: 3"><em>se sentir bien</em></span>
+          <span class="enter" style="--i: 4">ensemble.</span>
+        </h1>
+        <p class="lede hero__lede enter" style="--i: 5">
+          ToutouBien accompagne les propriétaires et leur chien pour que le quotidien redevienne plus simple, à la maison comme en balade.
+        </p>
+        <div class="hero__actions enter" style="--i: 6">
+          <a class="btn btn--lagon" href="/parlons-de-votre-chien/">
+            Parlons de votre chien
+            <Icon name="arrow" class="btn__arrow" />
+          </a>
+          <a class="hero__secondary" href="#premier-pas">Comment ça se passe&nbsp;?</a>
+        </div>
+      </div>
+    </div>
+    <p class="hero__signature" aria-hidden="true">{site.tagline.value}</p>
+  </section>
+
+  <!-- 2. L'esprit -->
+  <section class="section manifesto" aria-labelledby="manifesto-title">
+    <div class="page manifesto__grid">
+      <div class="manifesto__text">
+        <p class="eyebrow reveal">L’esprit ToutouBien</p>
+        <h2 id="manifesto-title" class="manifesto__statement reveal">
+          Un chien ne vient pas avec un mode d’emploi. <em>Ses réactions ont souvent leurs raisons</em>&nbsp;: encore faut-il les comprendre.
+        </h2>
+        <p class="lede reveal">
+          L’idée n’est pas de « corriger » votre chien, mais de vous aider à mieux le lire, à ajuster quelques habitudes et à retrouver une relation qui fait du bien à toute la famille.
+        </p>
+      </div>
+      <Plate id="accueil-balade" class="manifesto__plate" shape="arch" sizes="(min-width: 60rem) 38vw, 92vw" />
+    </div>
+  </section>
+
+  <!-- 3. Les situations -->
+  <section class="section topics on-lin" aria-labelledby="topics-title">
+    <div class="page">
+      <div class="topics__head">
+        <p class="eyebrow reveal">Vous reconnaissez-vous&nbsp;?</p>
+        <h2 id="topics-title" class="reveal">De quoi aimeriez-vous <em>parler</em>&nbsp;?</h2>
+        <p class="lede reveal">Des situations que vivent beaucoup de familles. Choisissez celle qui vous parle&nbsp;: elle sera présélectionnée dans le formulaire.</p>
+      </div>
+      <ol class="topics__list" role="list">
+        {
+          topics.map((topic, i) => (
+            <li class="reveal">
+              <a class="topic" href={`/parlons-de-votre-chien/?sujet=${topic.value}`}>
+                <span class="topic__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span class="topic__label">{topic.label}</span>
+                <span class="topic__teaser">{topic.teaser}</span>
+                <Icon name="arrow" class="topic__arrow" />
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="topics__more reveal">
+        Votre situation est différente&nbsp;? <a href="/parlons-de-votre-chien/?sujet=autre">Décrivez-la avec vos mots</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- 4. Le premier pas -->
+  <section class="section first-step" id="premier-pas" aria-labelledby="first-step-title">
+    <div class="page first-step__grid">
+      <div class="first-step__intro">
+        <p class="eyebrow reveal">Le premier pas</p>
+        <h2 id="first-step-title" class="reveal">Tout commence par <em>une rencontre</em>.</h2>
+        {
+          free && (
+            free.draft ? (
+              <Draft label="Gratuité à confirmer">
+                <p class="first-step__badge">Première rencontre offerte</p>
+              </Draft>
+            ) : (
+              <p class="first-step__badge reveal">Première rencontre offerte</p>
+            )
+          )
+        }
+        <Plate id="accueil-rencontre" class="first-step__plate" shape="arch" sizes="(min-width: 60rem) 30vw, 80vw" />
+      </div>
+      <div class="steps-wrap">
+      <Fil variant="colonne" class="steps__fil" />
+      <ol class="steps" role="list">
+        <li class="step reveal">
+          <span class="step__num">1</span>
+          <div>
+            <h3>Vous prenez contact</h3>
+            <p>Via le formulaire{phone && !phone.draft ? ' ou par téléphone' : ''}. Quelques mots suffisent pour décrire ce qui vous amène.</p>
+          </div>
+        </li>
+        <li class="step reveal">
+          <span class="step__num">2</span>
+          <div>
+            <h3>On se rencontre{places && !places.draft ? ` ${places.value[0]} ou dehors` : ''}</h3>
+            <p>{purpose ? purpose.value : 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}</p>
+            {places && !places.draft && <p class="step__note">La rencontre peut se dérouler {joinFr(places.value)}.</p>}
+          </div>
+        </li>
+        <li class="step reveal">
+          <span class="step__num">3</span>
+          <div>
+            <h3>Vous décidez de la suite</h3>
+            <p>Vous faites le point ensemble sur ce qui pourrait vous aider, puis vous choisissez librement comment continuer.</p>
+          </div>
+        </li>
+      </ol>
+      </div>
+    </div>
+    <div class="page first-step__more reveal">
+      <a class="link-arrow" href="/accompagnement/">Découvrir l’accompagnement <Icon name="arrow" /></a>
+    </div>
+  </section>
+
+  <!-- 5. Qui vous accompagne -->
+  <section class="section who on-dark" aria-labelledby="who-title">
+    <Fil variant="traversee" class="who__fil" />
+    <div class="page who__grid">
+      <Plate id="educatrice-portrait" class="who__plate" shape="arch" sizes="(min-width: 60rem) 34vw, 80vw" />
+      <div class="who__text">
+        <p class="eyebrow reveal">Qui vous accompagne</p>
+        <h2 id="who-title" class="reveal">
+          {
+            name && !name.draft ? (
+              <>{name.value}, <em>à votre rencontre</em></>
+            ) : (
+              <>Une éducatrice <em>qui vient à vous</em></>
+            )
+          }
+        </h2>
+        {name?.draft && <Draft label="Nom à confirmer"><p>{name.value}</p></Draft>}
+        {
+          intro && !intro.draft ? (
+            <p class="lede reveal">{intro.value}</p>
+          ) : (
+            <p class="lede reveal">
+              Derrière ToutouBien, il y a une éducatrice qui se déplace pour rencontrer les familles et leur chien là où ils vivent. Parce qu’on comprend souvent mieux un chien dans son environnement.
+            </p>
+          )
+        }
+        <a class="link-arrow reveal" href="/a-propos/">Faire connaissance <Icon name="arrow" /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Ressources -->
+  {
+    articles.length > 0 && (
+      <section class="section resources" aria-labelledby="resources-title">
+        <div class="page">
+          <div class="resources__head">
+            <div>
+              <p class="eyebrow reveal">Ressources</p>
+              <h2 id="resources-title" class="reveal">À lire, <em>entre deux balades</em></h2>
+            </div>
+            <a class="link-arrow reveal" href="/ressources/">Toutes les ressources <Icon name="arrow" /></a>
+          </div>
+          <div class="resources__grid">
+            {articles.map((article, i) => <ArticleCard article={article} featured={i === 0} />)}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <Faq scope="accueil" limit={4} />
+  <CtaBand />
+</Base>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    z-index: 1;
+    overflow-x: clip;
+    padding-block: var(--space-l) var(--space-2xl);
+  }
+
+  .hero__layout {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  .hero__art {
+    position: relative;
+    justify-self: end;
+    width: min(78vw, 22rem);
+    margin-right: calc(-0.4 * var(--gutter));
+  }
+
+  .hero__emblem {
+    width: 100%;
+    height: auto;
+    color: var(--lagon);
+  }
+
+  /* Le fil sort de la pointe du cœur et descend vers la suite de la page. */
+  .hero__fil {
+    display: none;
+    position: absolute;
+    left: calc(54.6% - 6rem);
+    top: 96.5%;
+    width: 12rem;
+    height: calc(var(--space-2xl) + 14rem);
+    color: var(--argile-claire);
+    --fil-width: 2px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__emblem {
+      animation: emblem-in 1.4s var(--ease-out) both;
+    }
+  }
+
+  @keyframes emblem-in {
+    from {
+      opacity: 0;
+      transform: translateY(1.5rem) scale(0.97);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hero__content {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .hero__title {
+    display: grid;
+    font-size: clamp(3rem, 1.4rem + 5.8vw, 7.2rem);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    font-weight: 360;
+  }
+
+  .hero__title > span {
+    display: block;
+  }
+
+  .hero__title-em {
+    color: var(--lagon);
+    padding-left: 0.55em;
+  }
+
+  .hero__lede {
+    max-width: 36ch;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-m);
+    margin-top: var(--space-xs);
+  }
+
+  .hero__secondary {
+    display: inline-block;
+    padding-block: 0.6rem;
+    font-weight: 600;
+  }
+
+  .hero__signature {
+    display: none;
+  }
+
+  @media (min-width: 60rem) {
+    .hero {
+      min-height: min(calc(100svh - 4.5rem), 58rem);
+      display: grid;
+      align-items: center;
+      padding-block: var(--space-xl) var(--space-2xl);
+    }
+
+    .hero__layout {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+
+    .hero__fil {
+      display: block;
+    }
+
+    .hero__art {
+      order: 2;
+      width: min(100%, 36rem);
+      margin-right: calc(-1 * var(--gutter));
+    }
+
+    .hero__signature {
+      display: block;
+      position: absolute;
+      left: var(--gutter);
+      bottom: var(--space-m);
+      font-family: var(--font-display);
+      font-style: italic;
+      color: var(--craie-douce);
+    }
+  }
+
+  /* ---------- Manifeste ---------- */
+  .manifesto__grid {
+    display: grid;
+    gap: var(--space-xl);
+    align-items: center;
+  }
+
+  .manifesto__text {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .manifesto__statement {
+    font-size: var(--step-3);
+    line-height: 1.18;
+    font-weight: 360;
+  }
+
+  .manifesto__statement em {
+    color: var(--sarcelle);
+  }
+
+  .manifesto__plate {
+    width: min(100%, 26rem);
+    justify-self: center;
+  }
+
+  @media (min-width: 60rem) {
+    .manifesto__grid {
+      grid-template-columns: 7fr 5fr;
+    }
+
+    .manifesto__text {
+      padding-right: var(--space-l);
+    }
+
+    .manifesto__plate {
+      margin-bottom: calc(-1 * var(--space-2xl) - 6rem);
+      position: relative;
+      z-index: 2;
+    }
+  }
+
+  /* ---------- Situations ---------- */
+  .topics {
+    padding-top: var(--space-2xl);
+  }
+
+  @media (min-width: 60rem) {
+    .topics {
+      padding-top: calc(var(--space-2xl) + 4rem);
+    }
+  }
+
+  .topics__head {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 44rem;
+    margin-bottom: var(--space-l);
+  }
+
+  .topics__list {
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid color-mix(in oklab, var(--encre) 20%, transparent);
+  }
+
+  .topic {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr auto;
+    grid-template-areas: 'num label arrow' '. teaser arrow';
+    column-gap: var(--space-s);
+    row-gap: 0.15rem;
+    align-items: baseline;
+    padding-block: var(--space-m);
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 20%, transparent);
+    color: var(--encre);
+    text-decoration: none;
+    transition: background-color var(--dur) ease, padding var(--dur) var(--ease-out);
+  }
+
+  .topic__num {
+    grid-area: num;
+    font-family: var(--font-display);
+    font-size: var(--step-0);
+    color: var(--argile);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .topic__label {
+    grid-area: label;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.15;
+    font-weight: 360;
+  }
+
+  .topic__teaser {
+    grid-area: teaser;
+    color: var(--encre-douce);
+    font-size: var(--step--1);
+  }
+
+  .topic__arrow {
+    grid-area: arrow;
+    align-self: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--argile);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .topic:hover,
+  .topic:focus-visible {
+    color: var(--encre);
+    background: color-mix(in oklab, var(--ivoire) 70%, transparent);
+  }
+
+  .topic:hover .topic__arrow {
+    transform: translateX(0.4rem);
+  }
+
+  @media (min-width: 60rem) {
+    .topic {
+      grid-template-columns: 4rem minmax(0, 1.3fr) minmax(0, 1fr) 2rem;
+      grid-template-areas: 'num label teaser arrow';
+      padding-inline: var(--space-s);
+    }
+
+    .topic:hover {
+      padding-inline: var(--space-m) var(--space-xs);
+    }
+
+    .topic__teaser {
+      font-size: var(--step-0);
+    }
+  }
+
+  .topics__more {
+    margin-top: var(--space-l);
+  }
+
+  /* ---------- Premier pas ---------- */
+  .first-step__grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .first-step__intro {
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+  }
+
+  .first-step__badge {
+    justify-self: start;
+    display: inline-block;
+    padding: 0.4em 1em;
+    border-radius: var(--radius-pill);
+    background: var(--lagon-clair);
+    color: var(--nuit);
+    font-weight: 600;
+  }
+
+  .first-step__plate {
+    width: min(100%, 22rem);
+    margin-top: var(--space-s);
+  }
+
+  .steps-wrap {
+    position: relative;
+    align-self: center;
+  }
+
+  .steps {
+    position: relative;
+    display: grid;
+    gap: var(--space-xl);
+    padding: 0;
+    list-style: none;
+    align-content: center;
+  }
+
+  .steps__fil {
+    position: absolute;
+    left: 1.1rem;
+    top: 1rem;
+    bottom: 1rem;
+    width: 3rem;
+    height: calc(100% - 2rem);
+    color: var(--argile);
+    opacity: 0.6;
+    transform: translateX(-50%);
+  }
+
+  .step {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-m);
+  }
+
+  .step__num {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: var(--nuit);
+    color: var(--lagon);
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    position: relative;
+    margin-left: -0.2rem;
+  }
+
+  .step h3 {
+    margin-bottom: var(--space-2xs);
+    font-size: var(--step-3);
+  }
+
+  .step p {
+    color: var(--encre-douce);
+    max-width: 46ch;
+  }
+
+  .step__note {
+    margin-top: var(--space-2xs);
+    font-size: var(--step--1);
+  }
+
+  .first-step__more {
+    margin-top: var(--space-xl);
+  }
+
+  @media (min-width: 60rem) {
+    .first-step__grid {
+      grid-template-columns: 5fr 7fr;
+      align-items: start;
+    }
+
+    .steps {
+      padding-top: var(--space-xl);
+    }
+
+    .first-step__more {
+      padding-left: calc(41.66% + var(--space-xl) * 0.42);
+    }
+  }
+
+  /* ---------- Qui ---------- */
+  .who {
+    overflow: hidden;
+  }
+
+  .who__fil {
+    position: absolute;
+    left: 0;
+    top: 10%;
+    width: 100%;
+    height: 9rem;
+    color: var(--lagon);
+    opacity: 0.35;
+  }
+
+  .who__grid {
+    position: relative;
+    display: grid;
+    gap: var(--space-xl);
+    align-items: center;
+  }
+
+  .who__plate {
+    width: min(100%, 24rem);
+  }
+
+  .who__text {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .who__text h2 em {
+    color: var(--lagon);
+  }
+
+  @media (min-width: 60rem) {
+    .who__grid {
+      grid-template-columns: 5fr 7fr;
+    }
+
+    .who__plate {
+      justify-self: end;
+      margin-right: var(--space-l);
+    }
+  }
+
+  /* ---------- Ressources ---------- */
+  .resources__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-m);
+    margin-bottom: var(--space-l);
+  }
+
+  .resources__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .resources__grid {
+      grid-template-columns: 1.4fr 1fr 1fr;
+      align-items: start;
+    }
+  }
+</style>

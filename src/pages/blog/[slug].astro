@@ -1,0 +1,316 @@
+---
+import { render } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import Base from '~/layouts/Base.astro';
+import ArticleCard from '~/components/ArticleCard.astro';
+import Fil from '~/components/Fil.astro';
+import Icon from '~/components/Icon.astro';
+import Draft from '~/components/Draft.astro';
+import { categoryLabel } from '~/lib/categories';
+import { formatDate, isDraftArticle, readingMinutes, relatedArticles, visibleArticles, type Article } from '~/lib/articles';
+import { articleLd, breadcrumbLd } from '~/lib/seo';
+import { TOPICS } from '~/lib/wizard';
+
+export async function getStaticPaths() {
+  const articles = await visibleArticles();
+  return articles.map((article) => ({ params: { slug: article.id }, props: { article, all: articles } }));
+}
+
+interface Props {
+  article: Article;
+  all: Article[];
+}
+const { article, all } = Astro.props;
+const { Content, headings } = await render(article);
+const d = article.data;
+const draft = isDraftArticle(article);
+const base = Astro.site ?? new URL('https://toutoubien.example');
+const path = `/blog/${article.id}/`;
+const cover = d.cover ? await getImage({ src: d.cover, width: 1200, format: 'jpg' }) : undefined;
+const topic = TOPICS.find((t) => t.value === d.ctaTopic);
+const related = relatedArticles(article, all);
+const toc = headings.filter((h) => h.depth === 2);
+const jsonLd = draft || !d.publishDate
+  ? []
+  : [
+      articleLd({ base, path, title: d.title, description: d.description, published: d.publishDate, updated: d.updatedDate, image: cover ? new URL(cover.src, base).toString() : undefined }),
+      breadcrumbLd(base, [
+        { name: 'Accueil', path: '/' },
+        { name: 'Ressources', path: '/ressources/' },
+        { name: d.title, path },
+      ]),
+    ];
+---
+<Base title={d.title} description={d.description} ogType="article" ogImage={cover?.src} noindex={draft} jsonLd={jsonLd}>
+  <article class="article">
+    <header class="article__head">
+      <Fil variant="traversee" class="article__fil" immediate />
+      <div class="page article__head-inner">
+        <nav class="crumbs" aria-label="Fil d’Ariane">
+          <ol role="list">
+            <li><a href="/ressources/">Ressources</a></li>
+            <li><a href={`/blog/categorie/${d.category}/`}>{categoryLabel(d.category)}</a></li>
+          </ol>
+        </nav>
+        <h1 class="enter" style="--i: 1">{d.title}</h1>
+        <p class="lede enter" style="--i: 2">{d.description}</p>
+        <p class="article__meta enter" style="--i: 3">
+          {d.publishDate && <span>Publié le <time datetime={d.publishDate.toISOString()}>{formatDate(d.publishDate)}</time></span>}
+          {d.updatedDate && <span>Mis à jour le <time datetime={d.updatedDate.toISOString()}>{formatDate(d.updatedDate)}</time></span>}
+          <span>{readingMinutes(article.body)} min de lecture</span>
+        </p>
+        {
+          draft && (
+            <Draft label={d.status === 'review' ? 'Article à relire — non publié' : 'Brouillon — non publié'}>
+              {d.reviewNotes.length > 0 && <ul>{d.reviewNotes.map((n) => <li>{n}</li>)}</ul>}
+            </Draft>
+          )
+        }
+      </div>
+    </header>
+
+    {
+      d.cover && (
+        <figure class="page article__cover">
+          <Image src={d.cover} alt={d.coverAlt ?? ''} widths={[600, 1000, 1400]} sizes="(min-width: 84rem) 84rem, 100vw" loading="eager" />
+          {d.coverCredit && (
+            <figcaption>
+              Photo : <a href={d.coverCredit.sourceUrl} rel="noopener">{d.coverCredit.author}</a> — {d.coverCredit.licence}
+            </figcaption>
+          )}
+        </figure>
+      )
+    }
+
+    <div class="page article__layout">
+      {
+        toc.length > 2 && (
+          <aside class="article__toc" aria-labelledby="toc-title">
+            <p id="toc-title" class="article__toc-title">Dans cet article</p>
+            <ol role="list">
+              {toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+            </ol>
+          </aside>
+        )
+      }
+      <div class="article__body">
+        <div class="prose">
+          <Content />
+        </div>
+
+        <p class="article__disclaimer">
+          Ce contenu donne des repères généraux. Il ne remplace pas un échange personnalisé autour de votre chien, ni l’avis d’un vétérinaire en cas de doute sur sa santé.
+        </p>
+
+        {
+          d.sources.length > 0 && (
+            <section class="article__sources" aria-labelledby="sources-title">
+              <h2 id="sources-title">Sources</h2>
+              <ul>{d.sources.map((s) => <li><a href={s.url} rel="noopener">{s.label}</a></li>)}</ul>
+            </section>
+          )
+        }
+
+        <aside class="article__cta on-dark" aria-labelledby="article-cta-title">
+          <h2 id="article-cta-title">{topic ? <>Cette situation <em>vous parle</em>&nbsp;?</> : <>Envie d’en <em>parler</em>&nbsp;?</>}</h2>
+          <p>Chaque chien est différent. Le plus simple est souvent d’en discuter, à partir de votre situation.</p>
+          <a class="btn btn--lagon" href={topic ? `/parlons-de-votre-chien/?sujet=${topic.value}` : '/parlons-de-votre-chien/'}>
+            Parlons de votre chien <Icon name="arrow" class="btn__arrow" />
+          </a>
+        </aside>
+      </div>
+    </div>
+  </article>
+
+  {
+    related.length > 0 && (
+      <section class="section on-lin" aria-labelledby="related-title">
+        <div class="page">
+          <h2 id="related-title" class="related__title">À lire <em>ensuite</em></h2>
+          <div class="related">
+            {related.map((a) => <ArticleCard article={a} />)}
+          </div>
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .article__head {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--space-l) var(--space-xl);
+  }
+
+  .article__fil {
+    position: absolute;
+    inset: auto 0 0 0;
+    width: 100%;
+    height: 5rem;
+    color: var(--argile);
+    opacity: 0.4;
+  }
+
+  .article__head-inner {
+    position: relative;
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .article__head h1 {
+    max-width: 20ch;
+    font-size: var(--step-5);
+  }
+
+  .article__head .lede {
+    max-width: 54ch;
+  }
+
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+
+  .crumbs li + li::before {
+    content: '/';
+    margin-right: 0.5rem;
+    color: var(--encre-douce);
+  }
+
+  .article__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .article__cover {
+    margin-bottom: var(--space-xl);
+  }
+
+  .article__cover :global(img) {
+    width: 100%;
+    max-height: 70vh;
+    object-fit: cover;
+    border-radius: var(--radius-l);
+  }
+
+  .article__cover figcaption {
+    margin-top: var(--space-2xs);
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .article__layout {
+    display: grid;
+    gap: var(--space-xl);
+    padding-bottom: var(--space-2xl);
+  }
+
+  @media (min-width: 64rem) {
+    .article__layout {
+      grid-template-columns: 15rem minmax(0, 1fr);
+    }
+
+    .article__toc {
+      position: sticky;
+      top: 7rem;
+      align-self: start;
+    }
+
+    .article__body {
+      grid-column: 2;
+    }
+  }
+
+  .article__toc-title {
+    margin-bottom: var(--space-xs);
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--argile);
+  }
+
+  .article__toc ol {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0;
+    list-style: none;
+    font-size: var(--step--1);
+  }
+
+  .article__toc a {
+    display: block;
+    padding-block: 0.35rem;
+    color: var(--encre);
+    text-decoration: none;
+  }
+
+  .article__toc a:hover {
+    color: var(--argile);
+    text-decoration: underline;
+  }
+
+  .article__body {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .article__disclaimer {
+    max-width: var(--measure);
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    background: var(--lin);
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .article__sources h2 {
+    font-size: var(--step-1);
+    margin-bottom: var(--space-2xs);
+  }
+
+  .article__sources ul {
+    padding-left: 1.2em;
+    font-size: var(--step--1);
+  }
+
+  .article__cta {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+    max-width: var(--measure);
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+  }
+
+  .article__cta h2 {
+    font-size: var(--step-3);
+  }
+
+  .article__cta h2 em {
+    color: var(--lagon);
+  }
+
+  .article__cta p {
+    color: var(--craie-douce);
+  }
+
+  .related__title {
+    margin-bottom: var(--space-l);
+  }
+
+  .related {
+    display: grid;
+    gap: var(--space-l);
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  }
+</style>

@@ -1,0 +1,298 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageIntro from '~/components/PageIntro.astro';
+import TextField from '~/components/TextField.astro';
+import Icon from '~/components/Icon.astro';
+import Draft from '~/components/Draft.astro';
+import Faq from '~/components/Faq.astro';
+import { formConfig } from '~/config/forms';
+import { site } from '~/config/site';
+import { publicValue, resolve } from '~/lib/fields';
+import { CONTACT_LIMITS } from '~/lib/contact';
+
+const phone = resolve(site.contact.phone);
+const phoneE164 = publicValue(site.contact.phoneE164);
+const email = resolve(site.contact.email);
+const hours = resolve(site.contact.hours);
+const area = resolve(site.serviceArea.label);
+const social = resolve(site.social);
+const configured = Boolean(formConfig);
+---
+<Base
+  title="Contact"
+  description="Contacter ToutouBien pour parler de votre chien : formulaire guidé, message libre et coordonnées."
+>
+  <PageIntro eyebrow="Contact" title="Écrire, <em>tout simplement</em>" lede="Pour parler de votre chien, le plus simple est le parcours guidé. Pour toute autre question, un message libre fait très bien l’affaire." />
+
+  <section class="section section--tight contact">
+    <div class="page contact__grid">
+      <div class="contact__channels">
+        <a class="channel channel--primary" href="/parlons-de-votre-chien/">
+          <span class="channel__kicker">Recommandé</span>
+          <span class="channel__title">Parlons de votre chien</span>
+          <span class="channel__text">Quelques questions à choix, deux minutes, aucun long texte à rédiger.</span>
+          <Icon name="arrow" class="channel__arrow" />
+        </a>
+
+        {
+          phone && !phone.draft && (
+            <a class="channel" href={`tel:${phoneE164 ?? phone.value.replace(/\s/g, '')}`}>
+              <Icon name="phone" class="channel__icon" />
+              <span class="channel__title">{phone.value}</span>
+              {hours && !hours.draft && <span class="channel__text">{hours.value}</span>}
+            </a>
+          )
+        }
+        {
+          email && !email.draft && (
+            <a class="channel" href={`mailto:${email.value}`}>
+              <Icon name="mail" class="channel__icon" />
+              <span class="channel__title">{email.value}</span>
+            </a>
+          )
+        }
+        {area && !area.draft && <p class="contact__area"><Icon name="pin" /> {area.value}</p>}
+        {social && !social.draft && (
+          <ul class="contact__social" role="list">
+            {social.value.map((s) => <li><a href={s.url} rel="me noopener" target="_blank">{s.label}<span class="sr-only"> (nouvel onglet)</span></a></li>)}
+          </ul>
+        )}
+        <Draft label="Coordonnées à fournir">
+          <p>Téléphone, e-mail, horaires, secteur et réseaux sociaux s’afficheront ici une fois confirmés (src/config/site.ts).</p>
+        </Draft>
+      </div>
+
+      <div class="contact__form-wrap">
+        <h2 class="contact__form-title">Un message libre</h2>
+        {
+          !configured && (
+            <div class="notice notice--info">
+              <p><strong>L’envoi en ligne n’est pas encore activé.</strong>{email && !email.draft ? <> Vous pouvez écrire directement à <a href={`mailto:${email.value}`}>{email.value}</a>.</> : ' Le formulaire sera disponible prochainement.'}</p>
+            </div>
+          )
+        }
+        <form class="contact-form" data-contact-form method="post" action={formConfig?.endpoint}>
+          {formConfig?.provider === 'web3forms' && <input type="hidden" name="access_key" value={formConfig.accessKey} />}
+          <input type="hidden" name="subject" value="Nouveau message depuis la page Contact" />
+          <div class="trap" aria-hidden="true"><label>Ne pas remplir <input type="text" name="botcheck" tabindex="-1" autocomplete="off" /></label></div>
+          <div class="notice notice--error" data-error-summary tabindex="-1" role="alert" hidden></div>
+          <TextField name="name" label="Votre prénom ou nom" required maxlength={CONTACT_LIMITS.name} autocomplete="name" />
+          <div class="contact-form__row">
+            <TextField name="email" type="email" label="E-mail" maxlength={CONTACT_LIMITS.email} autocomplete="email" hint="E-mail ou téléphone : au moins l’un des deux." />
+            <TextField name="phone" type="tel" label="Téléphone" maxlength={CONTACT_LIMITS.phone} autocomplete="tel" inputmode="tel" />
+          </div>
+          <TextField name="message" type="textarea" label="Votre message" required maxlength={CONTACT_LIMITS.message} />
+          <div class="field">
+            <label class="consent">
+              <input type="checkbox" name="consent" value="oui" required aria-describedby="f-consent-error" />
+              <span>J’accepte que ces informations soient utilisées pour répondre à mon message. <a href="/confidentialite/">Vos données</a> <span class="req-state">(obligatoire)</span></span>
+            </label>
+            <p class="field__error" id="f-consent-error" data-error-for="consent"></p>
+          </div>
+          <div data-status aria-live="polite"></div>
+          <button type="submit" class="btn" data-submit disabled={!configured}>
+            <span data-submit-label>Envoyer le message</span>
+            <Icon name="arrow" class="btn__arrow" />
+          </button>
+        </form>
+        <div class="contact__success" data-success tabindex="-1" hidden>
+          <h2>Merci, votre message a bien été reçu.</h2>
+          <p>Une réponse vous sera apportée par le moyen de contact indiqué.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Faq scope="contact" title="Avant d’écrire" />
+</Base>
+
+<script>
+  import { initContactForm } from '~/scripts/contact';
+  initContactForm();
+</script>
+
+<style>
+  .contact__grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  @media (min-width: 60rem) {
+    .contact__grid {
+      grid-template-columns: 5fr 7fr;
+      align-items: start;
+    }
+  }
+
+  .contact__channels {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .channel {
+    position: relative;
+    display: grid;
+    gap: var(--space-2xs);
+    padding: var(--space-m) var(--space-l) var(--space-m) var(--space-m);
+    border: 1.5px solid color-mix(in oklab, var(--encre) 18%, transparent);
+    border-radius: var(--radius-l);
+    color: var(--encre);
+    text-decoration: none;
+    transition: border-color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .channel:hover {
+    border-color: var(--encre);
+    color: var(--encre);
+    transform: translateY(-2px);
+  }
+
+  .channel--primary {
+    background: var(--nuit);
+    border-color: var(--nuit);
+    color: var(--craie);
+    padding: var(--space-l) var(--space-xl) var(--space-l) var(--space-l);
+  }
+
+  .channel--primary:hover {
+    color: var(--craie);
+    border-color: var(--nuit);
+  }
+
+  .channel__kicker {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--argile-claire);
+  }
+
+  .channel__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.15;
+  }
+
+  .channel--primary .channel__title {
+    color: var(--lagon);
+    font-size: var(--step-3);
+  }
+
+  .channel__text {
+    color: inherit;
+    opacity: 0.85;
+  }
+
+  .channel__arrow {
+    position: absolute;
+    right: var(--space-m);
+    top: 50%;
+    width: 1.6rem;
+    height: 1.6rem;
+    transform: translateY(-50%);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .channel:hover .channel__arrow {
+    transform: translate(0.3rem, -50%);
+  }
+
+  .channel__icon {
+    width: 1.4rem;
+    height: 1.4rem;
+    color: var(--argile);
+  }
+
+  .contact__area {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .contact__area :global(svg) {
+    width: 1.2rem;
+    height: 1.2rem;
+    color: var(--argile);
+  }
+
+  .contact__form-wrap {
+    display: grid;
+    gap: var(--space-m);
+    padding: var(--space-l) var(--space-m);
+    border-radius: var(--radius-l);
+    background: #fffdf9;
+    box-shadow: 0 1px 0 rgb(26 36 34 / 0.06), 0 2rem 4rem -2.5rem rgb(26 36 34 / 0.3);
+  }
+
+  @media (min-width: 40rem) {
+    .contact__form-wrap {
+      padding: var(--space-xl);
+    }
+  }
+
+  .contact__form-title {
+    font-size: var(--step-3);
+  }
+
+  .contact-form {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .contact-form__row {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  @media (min-width: 40rem) {
+    .contact-form__row {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .contact-form .btn {
+    justify-self: start;
+  }
+
+  .consent {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-s);
+    align-items: start;
+    cursor: pointer;
+  }
+
+  .consent input {
+    width: 1.35rem;
+    height: 1.35rem;
+    margin-top: 0.15rem;
+    accent-color: var(--sarcelle);
+  }
+
+  .req-state {
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .contact__success {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .contact__success:focus {
+    outline: none;
+  }
+
+  .contact__success h2 {
+    font-size: var(--step-3);
+  }
+</style>

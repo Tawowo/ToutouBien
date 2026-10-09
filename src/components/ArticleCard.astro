@@ -1,0 +1,146 @@
+---
+import { Image } from 'astro:assets';
+import PlateArt from './PlateArt.astro';
+import { categoryLabel, categoryMotif } from '~/lib/categories';
+import { formatDate, isDraftArticle, readingMinutes, type Article } from '~/lib/articles';
+
+interface Props {
+  article: Article;
+  featured?: boolean;
+  headingLevel?: 'h2' | 'h3';
+}
+const { article, featured = false, headingLevel: H = 'h3' } = Astro.props;
+const { title, description, category, publishDate, cover, coverAlt, format } = article.data;
+const draft = isDraftArticle(article);
+const formatLabel = { article: 'Article', fiche: 'Fiche pratique', guide: 'Guide' }[format];
+---
+<article class:list={['card', featured && 'card--featured', draft && 'draft', 'reveal']}>
+  <div class="card__visual" aria-hidden={cover ? undefined : 'true'}>
+    {
+      cover ? (
+        <Image src={cover} alt={coverAlt ?? ''} widths={[400, 800]} sizes="(min-width: 60rem) 33vw, 92vw" class="card__img" />
+      ) : (
+        <PlateArt motif={categoryMotif(category)} class="card__art" />
+      )
+    }
+  </div>
+  <div class="card__body">
+    <p class="card__meta">
+      <span>{formatLabel} · {categoryLabel(category)}</span>
+      {draft && <span class="draft-badge">{article.data.status === 'review' ? 'À relire' : 'Brouillon'}</span>}
+    </p>
+    <H class="card__title">
+      <a href={`/blog/${article.id}/`}>{title}</a>
+    </H>
+    <p class="card__desc">{description}</p>
+    <p class="card__foot">
+      {publishDate && <time datetime={publishDate.toISOString()}>{formatDate(publishDate)}</time>}
+      <span>{readingMinutes(article.body)} min de lecture</span>
+    </p>
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .card__visual {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-l);
+    background: var(--lin);
+  }
+
+  .card--featured .card__visual {
+    aspect-ratio: 5 / 4;
+  }
+
+  .card:nth-child(3n + 2) .card__visual {
+    background: var(--sable);
+    border-radius: var(--radius-arch);
+  }
+
+  .card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .card:hover .card__img {
+    transform: scale(1.04);
+  }
+
+  .card__art {
+    position: absolute;
+    inset: 0;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .card:hover .card__art {
+    transform: scale(1.05);
+  }
+
+  .card__body {
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .card__meta,
+  .card__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    align-items: center;
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .card__meta span:first-child {
+    color: var(--argile);
+    font-weight: 600;
+  }
+
+  .card__title {
+    font-size: var(--step-2);
+  }
+
+  .card--featured .card__title {
+    font-size: var(--step-3);
+  }
+
+  .card__title a {
+    color: var(--encre);
+    text-decoration: none;
+  }
+
+  /* Toute la carte est cliquable, via le lien du titre. */
+  .card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .card:hover .card__title a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+  }
+
+  .card__title a:focus-visible {
+    outline: none;
+  }
+
+  .card:has(.card__title a:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 6px;
+    border-radius: var(--radius-m);
+  }
+
+  .card__desc {
+    color: var(--encre-douce);
+  }
+</style>

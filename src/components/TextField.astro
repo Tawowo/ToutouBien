@@ -1,0 +1,56 @@
+---
+interface Props {
+  name: string;
+  label: string;
+  type?: 'text' | 'email' | 'tel' | 'textarea';
+  hint?: string;
+  required?: boolean;
+  maxlength?: number;
+  autocomplete?: string;
+  inputmode?: 'text' | 'email' | 'tel' | 'numeric';
+  /** Le caractère obligatoire dépend d'un autre choix (géré par le script). */
+  conditional?: boolean;
+}
+const { name, label, type = 'text', hint, required = false, maxlength, autocomplete, inputmode, conditional = false } = Astro.props;
+const id = `f-${name}`;
+const hintId = hint ? `${id}-hint` : undefined;
+const errorId = `${id}-error`;
+const counterId = type === 'textarea' && maxlength ? `${id}-count` : undefined;
+const describedBy = [hintId, counterId, errorId].filter(Boolean).join(' ');
+---
+<div class="field" data-field={name}>
+  <label class="field__label" for={id}>
+    {label}
+    {
+      conditional ? (
+        <span class="req-state" data-req-state={name}> (facultatif)</span>
+      ) : required ? (
+        <span class="req-state"> (obligatoire)</span>
+      ) : (
+        <span class="req-state"> (facultatif)</span>
+      )
+    }
+  </label>
+  {hint && <p class="field__hint" id={hintId}>{hint}</p>}
+  {
+    type === 'textarea' ? (
+      <textarea class="textarea" id={id} name={name} maxlength={maxlength} aria-describedby={describedBy} required={required} />
+    ) : (
+      <input class="input" id={id} name={name} type={type} maxlength={maxlength} autocomplete={autocomplete} inputmode={inputmode} aria-describedby={describedBy} required={required} />
+    )
+  }
+  {counterId && <p class="field__hint field__count" id={counterId} data-counter-for={name}>{maxlength} caractères maximum</p>}
+  <p class="field__error" id={errorId} data-error-for={name}></p>
+</div>
+
+<style>
+  .req-state {
+    font-weight: 500;
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .field__count {
+    text-align: right;
+  }
+</style>

@@ -275,3 +275,49 @@ test('orientation : chaque préoccupation mène à un récapitulatif cohérent',
     await page.getByRole('button', { name: 'Recommencer' }).click();
   }
 });
+
+test('photos : les photographies de chiens se chargent, sans image cassée', async ({ page }) => {
+  for (const path of ['/', '/galerie/', '/accompagnements/chiot/', '/blog/']) {
+    await page.goto(path);
+    const h = await page.evaluate(() => document.body.scrollHeight);
+    for (let y = 0; y < h; y += 600) await page.evaluate((y) => scrollTo(0, y), y);
+    await page.waitForLoadState('networkidle');
+    const stats = await page.evaluate(() => {
+      const imgs = Array.from(document.querySelectorAll<HTMLImageElement>('img'));
+      return { total: imgs.length, broken: imgs.filter((i) => i.complete && i.naturalWidth === 0).length, photos: document.querySelectorAll('[data-photo], .g-tile').length };
+    });
+    expect(stats.broken, path).toBe(0);
+    expect(stats.photos, path).toBeGreaterThan(0);
+  }
+});
+
+test('accueil : apprendre à regarder, les six repères se découvrent', async ({ page }) => {
+  await page.goto('/');
+  const spots = page.locator('[data-ho-spot]');
+  await spots.first().scrollIntoViewIfNeeded();
+  await expect(spots).toHaveCount(6);
+  for (let i = 0; i < 6; i++) {
+    await spots.nth(i).click();
+    await expect(spots.nth(i)).toHaveAttribute('aria-pressed', 'true');
+  }
+  await expect(page.locator('[data-ho-count]')).toHaveText('6 / 6 repères observés');
+  await expect(page.locator('[data-ho-done]')).toBeVisible();
+  await expect(page.locator('[data-ho-title]')).toHaveText('L’environnement');
+});
+
+test('galerie : le filtre par thème limite les photos et la visionneuse', async ({ page }) => {
+  await page.goto('/galerie/');
+  const tiles = page.locator('.g-tile');
+  const total = await tiles.count();
+  await page.locator('[data-gal-theme="chiot"]').click();
+  const visible = page.locator('.g-tile:visible');
+  const n = await visible.count();
+  expect(n).toBeGreaterThan(0);
+  expect(n).toBeLessThan(total);
+  await expect(page.locator('[data-gal-count]')).toHaveText(`${n} photos`);
+  await visible.first().locator('[data-lb]').click();
+  await expect(page.locator('dialog.lb [data-lb-count]')).toHaveText(`1 / ${n}`);
+  await page.keyboard.press('Escape');
+  await page.locator('[data-gal-theme=""]').click();
+  await expect(page.locator('.g-tile:visible')).toHaveCount(total);
+});

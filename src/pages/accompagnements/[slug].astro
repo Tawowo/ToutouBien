@@ -1,9 +1,8 @@
 ---
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
-import PlateArt from '~/components/PlateArt.astro';
-import Plate from '~/components/Plate.astro';
-import { photoFor, type PhotoSlotId } from '~/content/photos';
+import Photo from '~/components/Photo.astro';
+import { ACC_PHOTOS } from '~/lib/situation-photos';
 import Fil from '~/components/Fil.astro';
 import Icon from '~/components/Icon.astro';
 import ArticleCard from '~/components/ArticleCard.astro';
@@ -27,10 +26,7 @@ const { a, next } = Astro.props;
 const articles = (await visibleArticles()).filter((art) => a.articles.includes(art.id));
 const base = Astro.site ?? new URL('https://toutoubien.example');
 const topic = a.topics[0];
-// Photo d'illustration associée (affichée seulement si une photo vérifiée a été déposée).
-const ILLUS: Record<Accompagnement['slug'], PhotoSlotId> = { chiot: 'illus-chiot', 'chien-adulte': 'illus-rencontre-chiens', quotidien: 'illus-maison', comprendre: 'illus-balade' };
-const illus = ILLUS[a.slug];
-const hasPhoto = Boolean(photoFor(illus));
+const photos = ACC_PHOTOS[a.slug]!;
 const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompagnements', path: '/accompagnements/' }, { name: a.label, path: `/accompagnements/${a.slug}/` }])];
 ---
 <Base title={a.title} description={a.seoDescription} jsonLd={ld}>
@@ -49,15 +45,7 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
             <a class="acc__jump" href="#situations">Vous reconnaissez-vous&nbsp;?</a>
           </div>
         </div>
-        {
-          hasPhoto ? (
-            <Plate id={illus} class="acc__hero-photo" ratio={4 / 5} shape="arch" priority reveal={false} sizes="(min-width: 60rem) 36vw, 90vw" />
-          ) : (
-            <div class="acc__hero-art reveal-mask" aria-hidden="true">
-              <PlateArt motif={a.motif} />
-            </div>
-          )
-        }
+        <Photo id={photos.hero} class="acc__hero-photo" shape="arch" ratio="4-5" priority sizes="(min-width: 60rem) 36vw, 90vw" />
       </div>
     </header>
 
@@ -75,6 +63,7 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
                 <label class="sit">
                   <input type="checkbox" value={s.title} data-situation />
                   <span class="sit__inner">
+                    {photos.situations[i] && <Photo id={photos.situations[i]!} class="sit__photo" shape="soft" ratio="3-2" credit="none" alt="" sizes="(min-width: 60rem) 22vw, 90vw" />}
                     <span class="sit__num">{String(i + 1).padStart(2, '0')}</span>
                     <span class="sit__title">{s.title}</span>
                     <span class="sit__text">{s.text}</span>
@@ -86,6 +75,7 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
             ))
           }
         </ul>
+        <p class="sit__credits">Photos d’illustration : {photos.situations.map((id, k) => <>{k > 0 && ' · '}<a href={`/credits-photos/#${id}`}>{String(k + 1).padStart(2, '0')}</a></>)}</p>
         <div class="sit__cta" aria-live="polite">
           <p data-sit-summary>Aucune situation sélectionnée pour l’instant.</p>
           <a class="btn btn--ghost" href={`/parlons-de-votre-chien/${topic ? `?sujet=${topic}` : ''}`} data-sit-link>
@@ -283,19 +273,23 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
     justify-self: center;
   }
 
-  .acc__hero-art {
-    position: relative;
-    aspect-ratio: 4 / 5;
-    border-radius: var(--radius-arch);
-    overflow: hidden;
-    width: min(100%, 28rem);
-    justify-self: center;
-    box-shadow: 0 3rem 5rem -3rem rgb(20 33 32 / 0.45);
+  /* Photo de la situation, en tête de carte. */
+  .sit__inner :global(.sit__photo) {
+    margin: calc(var(--space-l) * -1 + 0.4rem) calc(var(--space-l) * -1 + 0.4rem) var(--space-xs);
   }
 
-  .acc__hero-art :global(.plate-art) {
-    position: absolute;
-    inset: 0;
+  .sit__inner :global(.sit__photo .ph__frame) {
+    border-radius: calc(var(--radius-l) - 0.3rem);
+  }
+
+  .sit__credits {
+    margin-top: var(--space-s);
+    font-size: 0.72rem;
+    color: var(--encre-douce);
+  }
+
+  .sit__credits a {
+    color: inherit;
   }
 
   .acc__sec-head {

@@ -1,5 +1,12 @@
 # Rapport de tests
 
+> **État directive n° 7 (10/10/2026)** — 80 photos intégrées. Lint 0 erreur · types 0 erreur · **55 tests unitaires** ·
+> **249 tests de bout en bout réussis, 0 échec** (1 ignoré : souris sur mobile), dont : chargement des photos sans image
+> cassée (accueil, galerie, accompagnement, blog), six repères « Apprendre à regarder », filtre de la galerie et visionneuse
+> limitée au filtre ; axe-core : 0 violation sur 30 pages × 2 formats. Lighthouse (build de production, mobile simulé) :
+> accueil 99 / 100 / 100 (LCP 2,1 s, CLS 0,001), galerie 98, accompagnement 99, blog 99, contact 99. Parcours navigateur :
+> 23 pages bureau + 8 pages mobile, aucune image cassée, aucun débordement horizontal, aucune erreur console.
+
 > **État directive n° 6 (10/10/2026)** — résultats réels de la dernière exécution, sur build de production.
 
 | Vérification | Commande | Résultat |

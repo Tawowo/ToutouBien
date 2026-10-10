@@ -10,6 +10,8 @@ import Icon from '~/components/Icon.astro';
 import Draft from '~/components/Draft.astro';
 import { SITUATIONS, STEPS } from '~/lib/decodeur';
 import { accompagnement } from '~/content/accompagnements';
+import Photo from '~/components/Photo.astro';
+import { situationPhoto } from '~/lib/situation-photos';
 
 const C = 60;
 const star = (i: number, n: number, r = 40) => {
@@ -47,6 +49,8 @@ const star = (i: number, n: number, r = 40) => {
           return (
             <li class="dl__item reveal">
               <a class="dl__card" href={`/dossiers/${s.id}/`}>
+                <span class="dl__visual">
+                <Photo id={situationPhoto(s.id)} shape="none" ratio="3-2" credit="none" alt="" sizes="(min-width: 60rem) 30vw, 90vw" />
                 <svg class="dl__sky" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
                   {s.meanings.map((_, i) => {
                     const p = star(i, n);
@@ -58,6 +62,7 @@ const star = (i: number, n: number, r = 40) => {
                   })}
                   <circle cx={C} cy={C} r="5" class="dl__core" />
                 </svg>
+                </span>
                 <span class="label">Dossier {String(k + 1).padStart(2, '0')}{acc ? ` · ${acc.title}` : ''}</span>
                 <span class="dl__title">{s.title}</span>
                 <span class="dl__voice">{s.voice}</span>
@@ -67,6 +72,7 @@ const star = (i: number, n: number, r = 40) => {
           );
         })}
       </ul>
+      <p class="dl__credits">Photos d’illustration · <a href="/credits-photos/">crédits</a></p>
     </div>
   </section>
 
@@ -206,12 +212,32 @@ const star = (i: number, n: number, r = 40) => {
     box-shadow: 0 1.4rem 3rem -1.6rem rgb(8 40 38 / 0.45);
   }
 
+  .dl__visual {
+    position: relative;
+    display: block;
+    margin: calc(var(--space-l) * -1 + 0.4rem) calc(var(--space-m) * -1 + 0.4rem) var(--space-xs);
+    border-radius: calc(var(--radius-l) - 0.3rem);
+    overflow: hidden;
+  }
+
+  .dl__visual :global(img) {
+    transition: transform 1s var(--ease-out);
+  }
+
+  .dl__card:hover .dl__visual :global(img) {
+    transform: scale(1.04);
+  }
+
+  /* Mini-constellation des pistes, posée sur la photo. */
   .dl__sky {
-    width: 8rem;
-    height: 8rem;
-    margin-bottom: var(--space-xs);
+    position: absolute;
+    right: 0.7rem;
+    bottom: 0.7rem;
+    width: 5.5rem;
+    height: 5.5rem;
     border-radius: 50%;
-    background: radial-gradient(circle, #164b47, var(--nuit) 72%);
+    background: radial-gradient(circle, rgb(14 43 41 / 0.85), rgb(14 43 41 / 0.6) 72%);
+    backdrop-filter: blur(3px);
   }
 
   .dl__ray {
@@ -234,6 +260,16 @@ const star = (i: number, n: number, r = 40) => {
 
   .dl__core {
     fill: var(--turquoise);
+  }
+
+  .dl__credits {
+    margin-top: var(--space-s);
+    font-size: 0.75rem;
+    color: var(--encre-douce);
+  }
+
+  .dl__credits a {
+    color: inherit;
   }
 
   .dl__title {

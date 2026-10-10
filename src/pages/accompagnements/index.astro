@@ -1,7 +1,8 @@
 ---
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
-import PlateArt from '~/components/PlateArt.astro';
+import Photo from '~/components/Photo.astro';
+import { ACC_PHOTOS } from '~/lib/situation-photos';
 import Icon from '~/components/Icon.astro';
 import Faq from '~/components/Faq.astro';
 import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
@@ -28,7 +29,7 @@ import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
               <span class="path__num">{a.num}</span>
               <span class="path__title">{a.label}</span>
               <span class="path__short">{a.short}</span>
-              <span class="path__thumb" aria-hidden="true"><PlateArt motif={a.motif} /></span>
+              <span class="path__thumb"><Photo id={ACC_PHOTOS[a.slug]!.card} shape="none" ratio="fill" credit="none" alt="" sizes="(min-width: 60rem) 30vw, 90vw" /></span>
               <Icon name="arrow" class="path__arrow" />
             </a>
           </li>
@@ -136,7 +137,8 @@ import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
     overflow: hidden;
   }
 
-  .path__thumb :global(.plate-art),
+  .path__thumb :global(.ph),
+  .path__thumb :global(.ph__frame),
   .paths__art {
     position: absolute;
     inset: 0;

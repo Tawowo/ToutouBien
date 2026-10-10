@@ -25,9 +25,9 @@
   --feuillage-clair: #e4f1e4; /* fond feuillage clair */
   --soleil: #fff4dc; /* lumière chaude : halos et dégradés uniquement, jamais en aplat de texte */
   --aube: #fdf8ef; /* fond très clair légèrement réchauffé, pour faire chanter les photos */
-  --nuit: #0b1514;
-  --nuit-2: #132220;
-  --sous-bois: #173130;
+  --nuit: #0e2b29; /* D7 : nuit sarcelle profonde (plus chaude que le noir) */
+  --nuit-2: #14393a;
+  --sous-bois: #1b4744;
 
   /* — Texte — */
   --encre: #142120;

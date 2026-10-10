@@ -1,9 +1,10 @@
 ---
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
-import DogFigure from '~/components/DogFigure.astro';
 import Icon from '~/components/Icon.astro';
 import { EXPERIENCES } from '~/content/explorer';
+import Photo from '~/components/Photo.astro';
+const HUB_PHOTO: Record<string, string> = { flair: 'flair-levriers', distance: 'rencontre-whippets', signaux: 'observe-profil' };
 ---
 <Base
   title="Explorer : voir le monde à hauteur de chien"
@@ -23,6 +24,7 @@ import { EXPERIENCES } from '~/content/explorer';
           <li class="hub__item">
             <a href={e.href} class:list={['hub__card', `hub__card--${e.id}`]}>
               <div class="hub__preview" aria-hidden="true">
+                <Photo id={HUB_PHOTO[e.id] ?? 'observe-duo'} class="hub__photo" shape="none" ratio="fill" credit="none" alt="" sizes="(min-width: 60rem) 45vw, 92vw" />
                 {e.id === 'flair' && (
                   <div class="pv-flair">
                     {Array.from({ length: 26 }, (_, i) => <span data-i={String(i % 6)} />)}
@@ -37,7 +39,7 @@ import { EXPERIENCES } from '~/content/explorer';
                     <i class="pv-distance__dot" />
                   </div>
                 )}
-                {e.id === 'signaux' && <DogFigure class="pv-dog" wag="loose" ears="forward" tail="high" />}
+
               </div>
               <div class="hub__text">
                 <span class="label">Expérience {e.num}</span>
@@ -54,6 +56,7 @@ import { EXPERIENCES } from '~/content/explorer';
         ))
       }
     </ol>
+    <p class="page hub__credits">Photos d’illustration · <a href="/credits-photos/">crédits</a></p>
   </section>
 
   <section class="section page hub-why" aria-labelledby="why-title">
@@ -134,7 +137,25 @@ import { EXPERIENCES } from '~/content/explorer';
     aspect-ratio: 16 / 10;
     border-radius: var(--radius-m);
     overflow: hidden;
-    background: radial-gradient(70% 70% at 50% 40%, var(--sous-bois), var(--nuit-2));
+    background: var(--nuit-2);
+  }
+
+  .hub__preview :global(.hub__photo),
+  .hub__preview :global(.hub__photo .ph__frame) {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+  }
+
+  /* Les animations d'aperçu se posent par-dessus la photo, en transparence. */
+  .hub__preview > :not(:global(.hub__photo)) {
+    z-index: 1;
+  }
+
+  .hub__credits {
+    margin-top: var(--space-m);
+    font-size: 0.75rem;
+    color: var(--craie-douce);
   }
 
   .hub__text {

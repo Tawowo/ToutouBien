@@ -12,7 +12,18 @@ entre une personne et son chien.
 
 Conséquence : on n'ajoute jamais d'étoile « pour faire joli » sur un élément qui ne représente pas un repère.
 
-## Les cinq usages
+## Depuis la directive n° 7 : les étoiles relient les chiens
+
+Les étoiles servent désormais d'abord à **relier des photographies** : un chiot, un chemin, une truffe dans les feuilles
+(ouverture de l'accueil) ; votre point de départ et quatre photos-étoiles (les chemins d'accompagnement) ; les repères
+posés sur une vraie photo (« Apprendre à regarder ») ; une photo au centre de la constellation de chaque situation ;
+une petite étoile entre deux images des rubans de photos. Règle ajoutée : **une étoile ne se pose jamais sur le chien**
+(sauf les repères d'observation, petits, cliquables, et qui pointent un élément précis).
+
+Le sentier de particules WebGL n'est plus affiché sur l'accueil : sa longue séquence sombre (3,2 écrans) allait contre
+la demande d'un site plus lumineux. Le composant (`FlairHero`) et la scène restent disponibles dans le code.
+
+## Les cinq usages (directive n° 6, toujours valables hors accueil)
 
 | Usage | Où | Sens | Comportement |
 | --- | --- | --- | --- |

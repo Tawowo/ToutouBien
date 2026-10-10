@@ -4,6 +4,24 @@
 et ce qui a été **réellement testé** (navigateur Chromium via Playwright, bureau 1366–1440 px, tablette 1024 px,
 mobile Pixel 7 / iPhone 13). « Testé auto » = couvert par un test automatisé qui passe ; « vu » = inspecté sur capture.
 
+## Directive n° 7 : les chiens au premier plan
+
+Toutes les pages ci-dessous ont été reprises : **80 vraies photographies de chiens** (voir `docs/PHOTO-ASSETS.md`),
+palette plus lumineuse, sections sombres réduites. Principales nouveautés :
+
+- **Accueil** : ouverture photographique (photo principale en arche, chiot en médaillon, truffe dans les feuilles,
+  constellation qui relie les trois et fait apparaître *Observer · Comprendre · Avancer ensemble*) ; rubans de photos
+  qui défilent lentement ; « Où en êtes-vous ? » avec quatre photos-étoiles ; **« Apprendre à regarder »** (six
+  repères à découvrir sur une vraie photo) ; une photo au cœur de chaque situation ; section « Qui vous accompagne »
+  illustrée ; fil de l'accompagnement passé en clair ; le sentier WebGL sombre a été retiré de l'accueil.
+- **Accompagnements** : photo d'ouverture par accompagnement, une photo par situation fréquente, cartes photo.
+- **Approche** : une photo par principe. **Dossiers et décodeur** : une photo par situation.
+- **Blog** : couverture photographique par article (liste, article, cartes, catégories, bibliothèque), y compris
+  l'état « articles en cours de relecture ».
+- **Galerie** : 80 photos en mosaïque, filtres par thème, visionneuse limitée au filtre actif.
+- **Qui suis-je** : cartes photo des quatre parcours ; portrait et photo avec son chien **toujours réservés** à ses photos.
+- **Contact, Tarifs, FAQ, Explorer, Orientation, 404** : photos intégrées. Nouvelle page **Crédits photos**.
+
 ## Navigation
 
 - Barre principale (≥ 1200 px) : **Accompagnements · Comprendre · Blog · Galerie · Qui suis-je** + bouton **Contact**.

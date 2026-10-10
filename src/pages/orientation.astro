@@ -2,6 +2,8 @@
 import Base from '~/layouts/Base.astro';
 import Icon from '~/components/Icon.astro';
 import { INSIGHTS, QUESTIONS } from '~/lib/orientation';
+import Photo from '~/components/Photo.astro';
+import { ACC_PHOTOS } from '~/lib/situation-photos';
 import { SITUATIONS } from '~/lib/decodeur';
 import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
 import { EXPERIENCES } from '~/content/explorer';
@@ -110,6 +112,13 @@ const steps = QUESTIONS.length;
         <ul class="or__summary" role="list" data-or-summary></ul>
         <div class="or__cards">
           <a class="or__card or__card--main" data-or-acc href="/accompagnements/">
+            <span class="or__card-photos">
+              {Object.entries(ACC_PHOTOS).map(([slug, ph]) => (
+                <span class="or__card-photo" data-or-photo={slug} hidden>
+                  <Photo id={ph.card} shape="soft" ratio="16-9" credit="none" alt="" sizes="(min-width: 60rem) 30vw, 90vw" />
+                </span>
+              ))}
+            </span>
             <span class="label">L’accompagnement le plus proche</span>
             <strong data-or-acc-label></strong>
             <span data-or-acc-short></span>
@@ -651,6 +660,15 @@ const steps = QUESTIONS.length;
   .or__card:hover {
     transform: translateY(-3px);
     background: rgb(255 255 255 / 0.1);
+  }
+
+  .or__card-photos {
+    display: block;
+    margin: -0.4rem -0.4rem 0.3rem;
+  }
+
+  .or__card-photo[hidden] {
+    display: none;
   }
 
   .or__card--main {

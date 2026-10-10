@@ -118,6 +118,7 @@ export function initOrientation(root: ParentNode = document): void {
       $<HTMLAnchorElement>('[data-or-acc]').href = `/accompagnements/${acc.slug}/`;
       $('[data-or-acc-label]').textContent = acc.label;
       $('[data-or-acc-short]').textContent = acc.short;
+      result.querySelectorAll<HTMLElement>('[data-or-photo]').forEach((ph) => (ph.hidden = ph.dataset.orPhoto !== acc.slug));
     }
     const exp = payload.explorers.find((e) => e.id === r.explorer);
     if (exp) {

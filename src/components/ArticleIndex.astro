@@ -1,8 +1,9 @@
 ---
 /** Sommaire éditorial : un article à la une puis la liste numérotée des autres. */
-import PlateArt from './PlateArt.astro';
+import Photo from './Photo.astro';
+import { coverPhoto } from '~/lib/covers';
 import Icon from './Icon.astro';
-import { categoryLabel, categoryMotif } from '~/lib/categories';
+import { categoryLabel } from '~/lib/categories';
 import { formatDate, isDraftArticle, readingMinutes, type Article } from '~/lib/articles';
 
 interface Props {
@@ -18,7 +19,7 @@ const badge = (a: Article) => (a.data.status === 'review' ? 'À relire' : 'Broui
 {
   first && (
     <a href={`/blog/${first.id}/`} class="ai-lead">
-      <span class="ai-lead__art" aria-hidden="true"><PlateArt motif={categoryMotif(first.data.category)} /></span>
+      <span class="ai-lead__art"><Photo id={coverPhoto(first.id, first.data.category)} shape="none" ratio="fill" credit="none" alt="" sizes="(min-width: 60rem) 45vw, 92vw" /></span>
       <span class="ai-lead__body">
         <span class="label">
           À la une · {FORMATS[first.data.format]} · {categoryLabel(first.data.category)}
@@ -75,17 +76,21 @@ const badge = (a: Article) => (a.data.status === 'review' ? 'À relire' : 'Broui
   .ai-lead__art {
     position: relative;
     aspect-ratio: 4 / 3;
-    border-radius: var(--radius-arch) var(--radius-arch) var(--radius-l) var(--radius-l);
+    border-radius: 12rem var(--radius-l) var(--radius-l) var(--radius-l);
     overflow: hidden;
   }
 
-  .ai-lead__art :global(.plate-art) {
+  .ai-lead__art :global(.ph),
+  .ai-lead__art :global(.ph__frame) {
     position: absolute;
     inset: 0;
+  }
+
+  .ai-lead__art :global(img) {
     transition: transform 1.2s var(--ease-out);
   }
 
-  .ai-lead:hover .ai-lead__art :global(.plate-art) {
+  .ai-lead:hover .ai-lead__art :global(img) {
     transform: scale(1.04);
   }
 

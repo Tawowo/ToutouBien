@@ -5,9 +5,10 @@
  */
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
-import PlateArt from '~/components/PlateArt.astro';
+import Photo from '~/components/Photo.astro';
+import { coverPhoto } from '~/lib/covers';
 import Icon from '~/components/Icon.astro';
-import { CATEGORIES, categoryLabel, categoryMotif } from '~/lib/categories';
+import { CATEGORIES, categoryLabel } from '~/lib/categories';
 import { isDraftArticle, readingMinutes, visibleArticles } from '~/lib/articles';
 import { READING_PATHS } from '~/content/paths';
 import { EXPERIENCES } from '~/content/explorer';
@@ -128,7 +129,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
               data-text={fold(`${a.data.title} ${a.data.description} ${categoryLabel(a.data.category)} ${FORMATS[a.data.format]}`)}
             >
               <a href={`/blog/${a.id}/`} class="lib-item__link">
-                <span class="lib-item__art" aria-hidden="true"><PlateArt motif={categoryMotif(a.data.category)} /></span>
+                <span class="lib-item__art"><Photo id={coverPhoto(a.id, a.data.category)} shape="none" ratio="fill" credit="none" alt="" sizes="12rem" /></span>
                 <span class="lib-item__meta">
                   <span>{FORMATS[a.data.format]} · {categoryLabel(a.data.category)}</span>
                   {isDraftArticle(a) && <span class="draft-badge">{a.data.status === 'review' ? 'À relire' : 'Brouillon'}</span>}
@@ -507,13 +508,17 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
     margin-bottom: 0.3rem;
   }
 
-  .lib-item__art :global(.plate-art) {
+  .lib-item__art :global(.ph),
+  .lib-item__art :global(.ph__frame) {
     position: absolute;
     inset: 0;
+  }
+
+  .lib-item__art :global(img) {
     transition: transform 900ms var(--ease-out);
   }
 
-  .lib-item__link:hover .lib-item__art :global(.plate-art) {
+  .lib-item__link:hover .lib-item__art :global(img) {
     transform: scale(1.05);
   }
 

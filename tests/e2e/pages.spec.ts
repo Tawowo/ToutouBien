@@ -26,6 +26,7 @@ const PAGES = [
   '/dossiers/laisse/',
   '/dossiers/chiot/',
   '/galerie/',
+  '/credits-photos/',
   '/parlons-de-votre-chien/',
   '/contact/',
   '/mentions-legales/',

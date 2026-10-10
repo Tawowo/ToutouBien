@@ -3,7 +3,7 @@ import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
 import Draft from '~/components/Draft.astro';
 import Icon from '~/components/Icon.astro';
-import PlateArt from '~/components/PlateArt.astro';
+import Photo from '~/components/Photo.astro';
 import { site } from '~/config/site';
 import { resolve } from '~/lib/fields';
 import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
@@ -61,7 +61,7 @@ const questions = [
     ) : (
       <section class="section section--tight" aria-labelledby="unpublished-title">
         <div class="page tf-pending">
-          <div class="tf-pending__art" aria-hidden="true"><PlateArt motif="chemin" /></div>
+          <Photo id="balade-sentier-herbes" class="tf-pending__art" shape="arch" ratio="4-5" credit="overlay" sizes="(min-width: 60rem) 26vw, 80vw" />
           <div class="tf-pending__text">
             <p class="eyebrow">Les formules</p>
             <h2 id="unpublished-title">Les tarifs ne sont pas encore <em>publiés en ligne</em>.</h2>
@@ -234,18 +234,9 @@ const questions = [
     }
   }
 
-  .tf-pending__art {
-    position: relative;
-    aspect-ratio: 4 / 5;
-    border-radius: var(--radius-arch);
-    overflow: hidden;
+  .tf-pending :global(.tf-pending__art) {
     width: min(100%, 18rem);
     justify-self: center;
-  }
-
-  .tf-pending__art :global(.plate-art) {
-    position: absolute;
-    inset: 0;
   }
 
   .tf-pending__text {

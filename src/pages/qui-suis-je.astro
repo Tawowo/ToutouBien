@@ -8,6 +8,8 @@
 import Base from '~/layouts/Base.astro';
 import Gallery from '~/components/Gallery.astro';
 import Plate from '~/components/Plate.astro';
+import Photo from '~/components/Photo.astro';
+import { ACC_PHOTOS } from '~/lib/situation-photos';
 import Draft from '~/components/Draft.astro';
 import Icon from '~/components/Icon.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
@@ -167,6 +169,7 @@ const toAsk = [
         {ACCOMPAGNEMENTS.map((a) => (
           <li>
             <a href={`/accompagnements/${a.slug}/`} class="me-publics__item">
+              <Photo id={ACC_PHOTOS[a.slug]!.card} shape="soft" ratio="4-3" credit="none" alt="" class="me-publics__photo" sizes="(min-width: 60rem) 22vw, 90vw" />
               <span class="label">{a.num}</span>
               <span class="me-publics__title">{a.label}</span>
               <span class="me-publics__short">{a.short}</span>
@@ -175,6 +178,7 @@ const toAsk = [
           </li>
         ))}
       </ul>
+      <p class="me-publics__credits">Photos d’illustration (elles ne montrent pas des chiens accompagnés par ToutouBien) · <a href="/credits-photos/">crédits</a></p>
     </div>
   </section>
 
@@ -451,25 +455,45 @@ const toAsk = [
     margin-top: var(--space-l);
     padding: 0;
     list-style: none;
-    border-top: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
   }
 
   .me-publics__item {
     position: relative;
     display: grid;
-    grid-template-columns: 3rem 1fr;
-    gap: 0.2rem var(--space-s);
-    padding: var(--space-m) 3rem var(--space-m) 0;
-    border-bottom: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+    gap: 0.35rem;
+    align-content: start;
+    height: 100%;
+    padding: 0.5rem 0.5rem var(--space-m);
+    border-radius: var(--radius-l);
+    background: var(--blanc);
     color: var(--encre) !important;
     text-decoration: none;
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) ease;
   }
 
-  @media (min-width: 56rem) {
-    .me-publics__item {
-      grid-template-columns: 4rem 1fr 1fr;
-      align-items: baseline;
-    }
+  .me-publics__item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 1.4rem 2.6rem -2rem rgb(20 60 55 / 0.5);
+  }
+
+  .me-publics__item > :not(:global(.me-publics__photo)) {
+    margin-inline: var(--space-s);
+  }
+
+  .me-publics__item :global(.me-publics__photo) {
+    margin-bottom: var(--space-2xs);
+  }
+
+  .me-publics__item :global(.me-publics__photo .ph__frame) {
+    border-radius: calc(var(--radius-l) - 0.4rem);
+  }
+
+  .me-publics__credits {
+    margin-top: var(--space-s);
+    font-size: 0.75rem;
+    color: var(--encre-douce);
   }
 
   .me-publics__title {
@@ -491,11 +515,10 @@ const toAsk = [
 
   .me-publics__arrow {
     position: absolute;
-    right: 0;
-    top: 50%;
+    right: var(--space-s);
+    bottom: var(--space-m);
     width: 1.4rem;
     height: 1.4rem;
-    transform: translateY(-50%);
     color: var(--sarcelle);
   }
 

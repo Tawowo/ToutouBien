@@ -128,6 +128,12 @@ const articles = (await visibleArticles()).slice(0, 3);
     opacity: 0.6;
   }
 
+  @media (max-width: 59.99rem) {
+    .manifesto :global(.manifesto__fil) {
+      display: none;
+    }
+  }
+
   .manifesto__grid {
     display: grid;
     gap: var(--space-l);

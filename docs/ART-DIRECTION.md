@@ -29,6 +29,23 @@ Règles : **aucun orange, or, terracotta ni beige** ; le rouge est réservé aux
 en dur dans les composants SVG/canvas reprennent strictement ces valeurs. Contrastes vérifiés
 automatiquement (axe-core) sur toutes les pages : 0 violation.
 
+### Palette enrichie (directive n° 7)
+
+Objectif : un univers plus lumineux et vivant, au service des photographies, sans couleur arbitraire.
+
+| Jeton | Valeur | Rôle |
+| --- | --- | --- |
+| `--papier` | #f6faf8 | fond général, plus clair qu'avant |
+| `--aube` | #fdf8ef | fond très clair légèrement réchauffé (ouvertures, sections photo) |
+| `--soleil` | #fff4dc | lumière chaude : halos et dégradés uniquement, jamais d'aplat ni de texte |
+| `--ciel` / `--ciel-fonce` | #e5f2f8 / #2b6c8c | fond « ciel » ; accent lisible (AA) |
+| `--feuillage-clair` / `--feuillage` | #e4f1e4 / #386b47 | fond « feuillage » ; accent lisible (AA), utilisé pour l'observation |
+| `--nuit` | #0e2b29 | nuit sarcelle profonde (remplace le quasi-noir #0b1514) |
+
+Règles : le turquoise et le sarcelle du logo restent les seules couleurs d'action ; ciel et feuillage distinguent des
+sections (ciel = rubans de photos et fil de l'accompagnement, feuillage = « apprendre à regarder ») ; les photos ne
+reçoivent aucun filtre de couleur ; le grain de fond est réduit (opacité 0,035) pour ne plus ternir les images.
+
 ## 3. Typographie
 
 - **Instrument Serif** (titres) ; l'**italique porte l'idée-clé** de chaque titre, en turquoise.
@@ -58,6 +75,12 @@ automatiquement (axe-core) sur toutes les pages : 0 violation.
   statique, transitions supprimées), y compris si la préférence change pendant la visite.
 
 ## 6. Photographie
+
+**Depuis la directive n° 7**, les chiens sont les protagonistes visuels : 80 photographies réelles (voir
+`docs/PHOTO-ASSETS.md`), composant `Photo` (point d'intérêt, crédit sur l'image), formes arche, ronde et douce.
+Chaque photo a une fonction (illustrer une situation, un principe, une étape) ; une étoile ne recouvre jamais le chien.
+
+### Règles antérieures
 
 Photos authentiques en priorité (galerie réservée à Mme Petitgand) ; photos libres seulement après
 vérification automatique de la licence, crédit affiché, jamais présentées comme des chiens accompagnés.

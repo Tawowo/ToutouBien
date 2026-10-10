@@ -1,6 +1,7 @@
 ---
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
+import Photo from '~/components/Photo.astro';
 import TextField from '~/components/TextField.astro';
 import Icon from '~/components/Icon.astro';
 import Draft from '~/components/Draft.astro';
@@ -23,22 +24,25 @@ const configured = Boolean(formConfig);
   description="Contacter ToutouBien pour parler de votre chien : formulaire guidé, message libre et coordonnées."
   quietFooter
 >
-  <section class="ch-hero on-dark" data-sky="0.9" data-sky-links>
+  <section class="ch-hero">
     <div class="page ch-hero__inner">
       <div>
         <p class="eyebrow enter">Contact</p>
         <SplitTitle as="h1" text="Écrire, *tout simplement*." now />
         <p class="lede enter" data-i="3">Pour parler de votre chien, le plus simple est le parcours guidé. Pour toute autre question, un message libre fait très bien l’affaire.</p>
       </div>
-      <svg class="ch-hero__trail" viewBox="0 0 320 220" aria-hidden="true" focusable="false">
-        <path d="M20 190 C 90 180, 110 120, 170 120 S 250 60, 300 30" pathLength="1" class="ch-hero__path" />
-        <circle cx="20" cy="190" r="5" class="ch-hero__star" />
-        <circle cx="170" cy="120" r="4" class="ch-hero__star ch-hero__star--mid" />
-        <g class="ch-hero__letter">
-          <rect x="278" y="14" width="40" height="28" rx="4" />
-          <path d="M280 17 L298 31 L316 17" />
-        </g>
-      </svg>
+      <div class="ch-hero__visual">
+        <Photo id="portrait-pre-soleil" shape="arch" ratio="4-5" priority sizes="(min-width: 56rem) 26vw, 70vw" />
+        <svg class="ch-hero__trail" viewBox="0 0 320 220" aria-hidden="true" focusable="false">
+          <path d="M20 190 C 90 180, 110 120, 170 120 S 250 60, 300 30" pathLength="1" class="ch-hero__path" />
+          <circle cx="20" cy="190" r="5" class="ch-hero__star" />
+          <circle cx="170" cy="120" r="4" class="ch-hero__star ch-hero__star--mid" />
+          <g class="ch-hero__letter">
+            <rect x="278" y="14" width="40" height="28" rx="4" />
+            <path d="M280 17 L298 31 L316 17" />
+          </g>
+        </svg>
+      </div>
     </div>
   </section>
 
@@ -150,7 +154,15 @@ const configured = Boolean(formConfig);
 <style>
   .ch-hero {
     padding-block: var(--space-xl);
-    background: radial-gradient(120% 100% at 85% 10%, #134a46, var(--nuit) 62%);
+    background:
+      radial-gradient(60% 80% at 85% 20%, var(--soleil), transparent 70%),
+      linear-gradient(180deg, var(--aube), var(--papier));
+  }
+
+  .ch-hero__visual {
+    position: relative;
+    width: min(100%, 22rem);
+    justify-self: center;
   }
 
   .ch-hero__inner {
@@ -169,42 +181,48 @@ const configured = Boolean(formConfig);
     margin-block: var(--space-s);
     font-size: var(--step-6);
     line-height: 0.95;
-    color: var(--craie);
   }
 
   .ch-hero h1 :global(em) {
-    color: var(--lagon);
+    color: var(--sarcelle);
   }
 
   .ch-hero__trail {
-    width: 100%;
-    max-width: 22rem;
-    justify-self: center;
+    position: absolute;
+    left: -45%;
+    bottom: -8%;
+    width: 80%;
     overflow: visible;
+    pointer-events: none;
   }
 
   .ch-hero__path {
     fill: none;
-    stroke: var(--lagon);
-    stroke-width: 1.5;
+    stroke: var(--turquoise);
+    stroke-width: 2;
     stroke-linecap: round;
     stroke-dasharray: 1;
-    filter: drop-shadow(0 0 5px rgb(154 211 205 / 0.7));
   }
 
   .ch-hero__star {
-    fill: var(--lueur);
+    fill: var(--turquoise);
+  }
+
+  @media (max-width: 55.99rem) {
+    .ch-hero__trail {
+      display: none;
+    }
   }
 
   .ch-hero__letter rect {
-    fill: var(--nuit);
-    stroke: var(--lagon);
+    fill: var(--blanc);
+    stroke: var(--sarcelle);
     stroke-width: 1.5;
   }
 
   .ch-hero__letter path {
     fill: none;
-    stroke: var(--lagon);
+    stroke: var(--sarcelle);
     stroke-width: 1.5;
     stroke-linejoin: round;
   }

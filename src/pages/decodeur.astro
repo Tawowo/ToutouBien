@@ -3,6 +3,8 @@ import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
 import Icon from '~/components/Icon.astro';
 import { SITUATIONS, STEPS } from '~/lib/decodeur';
+import Photo from '~/components/Photo.astro';
+import { situationPhoto } from '~/lib/situation-photos';
 import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
 import { EXPERIENCES } from '~/content/explorer';
 import { visibleArticles } from '~/lib/articles';
@@ -37,6 +39,7 @@ const exp = (id: string | undefined) => EXPERIENCES.find((e) => e.id === id);
           SITUATIONS.map((s, i) => (
             <li>
               <a class="dc-choice" href={`#${s.id}`} data-dc-pick={s.id}>
+                <Photo id={situationPhoto(s.id)} class="dc-choice__photo" shape="soft" ratio="16-9" credit="none" alt="" sizes="(min-width: 60rem) 30vw, 90vw" />
                 <span class="label">{String(i + 1).padStart(2, '0')}</span>
                 <span class="dc-choice__title">{s.title}</span>
                 <span class="dc-choice__voice">{s.voice}</span>
@@ -46,6 +49,7 @@ const exp = (id: string | undefined) => EXPERIENCES.find((e) => e.id === id);
           ))
         }
       </ul>
+      <p class="dc-credits" data-dc-credits>Photos d’illustration · <a href="/credits-photos/">crédits</a></p>
 
       {
         SITUATIONS.map((s) => {
@@ -58,7 +62,10 @@ const exp = (id: string | undefined) => EXPERIENCES.find((e) => e.id === id);
                 <button type="button" class="dc-back" data-dc-close>
                   <Icon name="arrow-left" /> Toutes les situations
                 </button>
-                <h2 id={`${s.id}-title`} class="dc-read__title" tabindex="-1">{s.title}</h2>
+                <div class="dc-read__intro">
+                  <Photo id={situationPhoto(s.id)} class="dc-read__photo" shape="round" credit="none" alt="" sizes="(min-width: 60rem) 9rem, 30vw" />
+                  <h2 id={`${s.id}-title`} class="dc-read__title" tabindex="-1">{s.title}</h2>
+                </div>
               </header>
 
               <ol class="dc-rail" role="list" aria-hidden="true">
@@ -261,9 +268,23 @@ const exp = (id: string | undefined) => EXPERIENCES.find((e) => e.id === id);
     transition: transform var(--dur) var(--ease-out), border-color var(--dur) ease, background-color var(--dur) ease;
   }
 
+  .dc-choice :global(.dc-choice__photo) {
+    margin: calc(var(--space-m) * -1 + 0.4rem) calc(var(--space-m) * -1 + 0.4rem) var(--space-2xs);
+  }
+
+  .dc-choice :global(.dc-choice__photo .ph__frame) {
+    border-radius: calc(var(--radius-l) - 0.3rem);
+  }
+
   .dc-choice:hover {
     transform: translateY(-4px);
     border-color: rgb(154 211 205 / 0.55);
+  }
+
+  .dc-credits {
+    margin-top: var(--space-s);
+    font-size: 0.75rem;
+    color: var(--craie-douce);
   }
 
   .dc-choice__title {
@@ -290,6 +311,17 @@ const exp = (id: string | undefined) => EXPERIENCES.find((e) => e.id === id);
 
   .dc-choice:hover .dc-choice__arrow {
     transform: translateX(0.3rem);
+  }
+
+  .dc-read__intro {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s) var(--space-m);
+    align-items: center;
+  }
+
+  .dc-read__intro :global(.dc-read__photo) {
+    width: clamp(6rem, 14vw, 9rem);
   }
 
   /* Lecture d'une situation */

@@ -34,10 +34,12 @@ export function initLightbox(root: ParentNode = document): void {
   const nextBtn = dialog.querySelector<HTMLButtonElement>('[data-lb-next]')!;
   let index = 0;
   let opener: HTMLElement | null = null;
+  // Seules les vignettes visibles (non filtrées) font partie du parcours.
+  let list = items;
 
   const show = (i: number, dir = 0) => {
-    index = (i + items.length) % items.length;
-    const item = items[index]!;
+    index = (i + list.length) % list.length;
+    const item = list[index]!;
     const node = document.createElement('figure');
     node.className = 'lb__figure';
     if (dir) node.dataset.dir = dir > 0 ? 'next' : 'prev';
@@ -53,17 +55,18 @@ export function initLightbox(root: ParentNode = document): void {
       if (art) node.append(art.cloneNode(true));
     }
     stage.replaceChildren(node);
-    count.textContent = `${index + 1} / ${items.length}`;
+    count.textContent = `${index + 1} / ${list.length}`;
     text.textContent = item.dataset.lbCaption ?? '';
-    const single = items.length < 2;
+    const single = list.length < 2;
     prevBtn.hidden = single;
     nextBtn.hidden = single;
   };
 
-  items.forEach((item, i) =>
+  items.forEach((item) =>
     item.addEventListener('click', () => {
       opener = item;
-      show(i);
+      list = items.filter((el) => el.offsetParent !== null);
+      show(Math.max(0, list.indexOf(item)));
       dialog.showModal();
       document.documentElement.classList.add('lb-open');
     }),
@@ -79,7 +82,7 @@ export function initLightbox(root: ParentNode = document): void {
     if (e.key === 'ArrowRight') show(index + 1, 1);
     else if (e.key === 'ArrowLeft') show(index - 1, -1);
     else if (e.key === 'Home') show(0);
-    else if (e.key === 'End') show(items.length - 1);
+    else if (e.key === 'End') show(list.length - 1);
     else return;
     e.preventDefault();
   });

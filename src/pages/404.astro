@@ -2,11 +2,13 @@
 import Base from '~/layouts/Base.astro';
 import Icon from '~/components/Icon.astro';
 import Fil from '~/components/Fil.astro';
+import Photo from '~/components/Photo.astro';
 ---
 <Base title="Page introuvable" description="Cette page n’existe pas ou plus." noindex>
   <section class="lost">
     <Fil variant="boucle" class="lost__fil" immediate />
     <div class="page lost__inner">
+      <Photo id="attente-rebord" class="lost__photo" shape="round" credit="overlay" sizes="12rem" />
       <p class="eyebrow">Erreur 404</p>
       <h1>Le chemin <em>s’arrête ici</em>.</h1>
       <p class="lede">Cette page n’existe pas, ou plus. Pas d’inquiétude, on vous raccompagne.</p>
@@ -77,5 +79,9 @@ import Fil from '~/components/Fil.astro';
     gap: var(--space-2xs) var(--space-m);
     padding: 0;
     list-style: none;
+  }
+
+  .lost__inner :global(.lost__photo) {
+    width: 11rem;
   }
 </style>

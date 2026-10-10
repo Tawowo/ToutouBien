@@ -17,6 +17,16 @@ const nots = [
   { title: 'Pas de diagnostic à distance', text: 'Les outils du site servent à préparer un échange, jamais à évaluer votre chien.' },
   { title: 'Pas de contrainte inutile', text: 'Ce qui fait peur ou mal n’aide pas un chien à comprendre ce qu’on attend de lui.' },
 ];
+import Photo from '~/components/Photo.astro';
+// Une photo d'illustration par principe, choisie pour ce qu'elle montre.
+const PRINCIPLE_PHOTO: Record<string, string> = {
+  observer: 'observe-dalmatien',
+  comprendre: 'flair-feuillage',
+  respecter: 'rencontre-epagneuls',
+  expliquer: 'lien-laisse-golden',
+  ajuster: 'balade-duo-laisses',
+  orienter: 'senior-hiver',
+};
 ---
 <Base
   title="L’approche"
@@ -55,6 +65,7 @@ const nots = [
             PRINCIPLES.map((p, i) => (
               <section class="pr__panel" role="tabpanel" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} tabindex="0">
                 <span class="pr__big" aria-hidden="true" data-num={String(i + 1).padStart(2, '0')}></span>
+                <Photo id={PRINCIPLE_PHOTO[p.id] ?? 'observe-duo'} class="pr__photo" shape="soft" ratio="16-9" credit="overlay" sizes="(min-width: 60rem) 45vw, 92vw" />
                 <h3>
                   {p.word} <em>{p.tagline}</em>
                 </h3>
@@ -332,6 +343,10 @@ const nots = [
   /* Numéro décoratif : généré en CSS, hors du texte de la page. */
   .pr__big::before {
     content: attr(data-num);
+  }
+
+  .pr__panel :global(.pr__photo) {
+    margin-bottom: var(--space-m);
   }
 
   .pr__panel h3 {

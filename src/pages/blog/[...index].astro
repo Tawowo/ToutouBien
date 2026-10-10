@@ -45,6 +45,7 @@ const hasDemo = articles.some(isDraftArticle);
           <ul class="bl-empty__cats" role="list">
             {CATEGORIES.map((c) => (
               <li>
+                <Photo id={coverPhoto('', c.id)} shape="soft" ratio="3-2" credit="overlay" sizes="(min-width: 60rem) 22vw, 90vw" />
                 <span class="label">Bientôt</span>
                 <strong>{c.label}</strong>
                 <span>{c.description}</span>

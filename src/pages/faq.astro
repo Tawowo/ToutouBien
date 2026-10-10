@@ -21,10 +21,12 @@ const practical: Q[] = [
 ];
 const all = [...general, ...byPath, ...practical];
 const themes = [...new Set(all.map((q) => q.theme))];
+import Photo from '~/components/Photo.astro';
 ---
 <Base title="Questions fréquentes" description="Toutes les réponses aux questions fréquentes sur l’accompagnement ToutouBien : premier contact, chiot, chien adulte, quotidien, tarifs et données personnelles.">
   <section class="fq-hero">
     <div class="page fq-hero__inner">
+      <Photo id="observe-duo" class="fq-hero__photo" shape="round" credit="overlay" priority sizes="(min-width: 60rem) 16rem, 40vw" />
       <p class="eyebrow enter">Questions fréquentes</p>
       <SplitTitle as="h1" text="Une question ? *Cherchons ensemble.*" now />
       <p class="lede enter" data-i="3">Tapez un mot, choisissez un thème. Et si votre question n’y est pas, <a href="/questions/">celles que l’on n’ose pas poser</a> sont peut-être là.</p>
@@ -109,8 +111,22 @@ const themes = [...new Set(all.map((q) => q.theme))];
   }
 
   .fq-hero__inner {
+    position: relative;
     display: grid;
     gap: var(--space-m);
+  }
+
+  .fq-hero__inner :global(.fq-hero__photo) {
+    width: clamp(8rem, 18vw, 15rem);
+    justify-self: end;
+  }
+
+  @media (min-width: 48rem) {
+    .fq-hero__inner :global(.fq-hero__photo) {
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
   }
 
   .fq-hero h1 {

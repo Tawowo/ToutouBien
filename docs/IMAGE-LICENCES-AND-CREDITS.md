@@ -1,8 +1,14 @@
 # Images : licences, crédits et direction photographique
 
-## État actuel (vérifié)
+## État actuel (directive n° 7, 10/10/2026)
 
-**Aucune photographie n'est utilisée sur le site à ce jour** (vérification renouvelée le 10/10/2026 : tous les hôtes de photos libres restent refusés par la politique réseau de cet environnement, erreur 403 du proxy sur commons.wikimedia.org, upload.wikimedia.org, unsplash, pexels, openverse, flickr, pixabay).
+**80 photographies de chiens sont intégrées et affichées sur le site** (photothèque d'illustration, licence CC BY 2.0,
+issues de Flickr via le jeu de données public Google Open Images). Inventaire détaillé, sources, auteurs et pages
+d'utilisation : **[PHOTO-ASSETS.md](PHOTO-ASSETS.md)**. Crédits publics : page `/credits-photos/`.
+
+Wikimedia Commons, Unsplash, Pexels, Openverse et Flickr restent inaccessibles depuis cet environnement (refus du
+proxy, revérifié le 10/10/2026, y compris depuis une session neuve) : la chaîne Commons ci-dessous reste disponible
+pour compléter ou remplacer des images depuis un poste qui y a accès.
 
 ### Chaîne prête à l'emploi (V3)
 
@@ -73,6 +79,8 @@ Les photos authentiques de l'activité vont dans `src/assets/photos/galerie/` (l
 elles apparaissent sur `/galerie/` et sur `/qui-suis-je/`.
 
 ## Photos utilisées
+
+Voir [PHOTO-ASSETS.md](PHOTO-ASSETS.md) (80 photos). Le tableau ci-dessous concerne les emplacements alimentés par la chaîne Commons, toujours vide.
 
 | Fichier | Emplacement | Auteur | Source (URL) | Licence | Attribution | Points à vérifier |
 | --- | --- | --- | --- | --- | --- | --- |

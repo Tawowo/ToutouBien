@@ -106,9 +106,11 @@ src/
   components/    SiteHeader, SiteFooter, Plate/PlateArt (photos et illustrations), Fil (signature), …
   layouts/       Base.astro (métadonnées, SEO, CSP)
   pages/         accueil, accompagnements (+4), approche, déroulement, premier-rendez-vous, tarifs, faq, questions,
-                 orientation, decodeur, explorer (+flair, distance, signaux), a-propos, contact,
-                 parlons-de-votre-chien, ressources, blog, légal, accessibilité, 404, robots.txt
-  scripts/       flair/ (scène WebGL : timeline, scene, quality, shapes, hero), explorer/, decodeur.ts,
+                 orientation, decodeur, explorer (+flair, distance, signaux), qui-suis-je, contact,
+                 dossiers (+6 situations), galerie, blog (+articles, catégories), ressources,
+                 parlons-de-votre-chien, légal, accessibilité, 404, robots.txt
+  scripts/       flair/ (scène WebGL : timeline, scene, quality, shapes, hero), motion.ts (révélations,
+                 ciels étoilés), lightbox.ts (visionneuse), explorer/, decodeur.ts,
                  orientation.ts, prep.ts, wizard.ts, contact.ts (amélioration progressive)
 scripts/photos/  manifest.json + fetch-photos.mjs (photos libres à licence vérifiée via l'API Commons)
   styles/        global.css (système de design)
@@ -128,6 +130,8 @@ Site statique : tout hébergeur de fichiers statiques convient. Build : `npm run
 | [PROJECT-AUDIT](docs/PROJECT-AUDIT.md) | État initial, ressources, contraintes de l'environnement |
 | [CREATIVE-AND-TECHNICAL-RESEARCH](docs/CREATIVE-AND-TECHNICAL-RESEARCH.md) | Références, techniques évaluées, sources |
 | [ART-DIRECTION](docs/ART-DIRECTION.md) | Charte V3 issue du logo : couleurs, typographie, mouvement, règles |
+| [STARS-GRAMMAR](docs/STARS-GRAMMAR.md) | Grammaire des étoiles : quand, pourquoi et comment elles apparaissent |
+| [SITE-MAP-AND-EXPERIENCES](docs/SITE-MAP-AND-EXPERIENCES.md) | Cartographie des pages, expérience visuelle propre à chacune, état testé |
 | [VISUAL-QUALITY-REVIEW](docs/VISUAL-QUALITY-REVIEW.md) | Grille de 12 critères, défauts trouvés et corrigés, captures avant/après |
 | [RESEARCH-ROUND-2](docs/RESEARCH-ROUND-2.md) · [RESEARCH-CREATIVE-BENCHMARK](docs/RESEARCH-CREATIVE-BENCHMARK.md) | Dépôts étudiés, licences, patterns retenus |
 | [BRAND-POSITIONING](docs/BRAND-POSITIONING.md) | Audit, positionnements comparés, proposition de valeur, système de mémorisation |

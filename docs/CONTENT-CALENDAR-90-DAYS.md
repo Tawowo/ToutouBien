@@ -25,7 +25,7 @@
 | 10 | Il saute sur les visiteurs | B | Valeur | Accueillir quand il est plus calme | Vidéo courte | /decodeur/#visites | 📷 | Vidéo authentique | Ouvertures #visites |
 | 11 | Les besoins du chien | C | Pédagogie | Flairer, bouger, se reposer, être en relation | Article (existant) | /blog/les-besoins-du-chien/ | ✅ | Relecture | Lectures |
 | 12 | Retour sur 3 mois | Tous | Confiance | Ce que vous avez le plus décodé | Post bilan (chiffres réels seulement) | /decodeur/ | 🟡 | Mesures réelles | — |
-| 13 | Coulisses réelles | Tous | Proximité | Une journée type **[si elle le souhaite]** | Story / post | /a-propos/ | 📷 | Photos réelles, accords | Visites /a-propos/ |
+| 13 | Coulisses réelles | Tous | Proximité | Une journée type **[si elle le souhaite]** | Story / post | /qui-suis-je/ | 📷 | Photos réelles, accords | Visites /qui-suis-je/ |
 
 **Cadence** : 2 publications Instagram par semaine (dont 1 réutilisée sur Facebook), 1 publication Google par
 mois, 1 article ou fiche toutes les 2 semaines (dont 9 déjà rédigés et à relire).

@@ -51,7 +51,7 @@ Tentatives de téléchargement depuis Unsplash, Pexels, Wikimedia Commons, Flick
 | --- | --- | --- | --- | --- | --- | --- |
 | `accueil-balade` | Accueil, « L'esprit » | Une relation détendue au quotidien | Personne et chien en promenade, laisse **détendue** | Format vertical en arche 4/5, sujets dans le tiers droit | « Une personne marche avec son chien en laisse détendue sur un chemin. » | Aucune traction, aucun matériel coercitif visible |
 | `accueil-rencontre` | Accueil, « Le premier pas » | Prendre le temps de faire connaissance | Personne accroupie, chien qui **s'approche librement** | 4/5, à hauteur du chien | « Une personne accroupie laisse un chien venir à elle tranquillement. » | Le chien ne doit être ni retenu ni forcé |
-| `educatrice-portrait` | Accueil + À propos | La personne qui accompagne | Portrait naturel de l'éducatrice, idéalement avec un chien | 4/5 vertical | « Portrait de l'éducatrice de ToutouBien. » (à personnaliser avec son nom) | **Photo authentique uniquement.** Jamais d'image de banque |
+| `educatrice-portrait` | Accueil + Qui suis-je | La personne qui accompagne | Portrait naturel de l'éducatrice, idéalement avec un chien | 4/5 vertical | « Portrait de l'éducatrice de ToutouBien. » (à personnaliser avec son nom) | **Photo authentique uniquement.** Jamais d'image de banque |
 | `accompagnement-domicile` | L'accompagnement, « Chez vous » | Travailler dans le cadre de vie | Chien au repos près de sa famille, ou discussion avec le chien présent | 4/3, lumière de fenêtre | « Un chien se repose près de sa famille dans le salon. » | Une image de banque ne doit pas être présentée comme un client |
 | `accompagnement-exterieur` | L'accompagnement, « Dehors » | Apprendre là où les situations se présentent | Balade en parc, laisse longue ou détendue | 4/3, horizon bas | « Une personne et son chien se promènent dans un parc. » | — |
 | `illus-balade` | Accompagnement « Mieux comprendre son chien » | La balade partagée | Personne et chien qui marchent, laisse détendue | 4/5 en arche | « Une personne promène son chien en laisse sur un chemin. » | Photo libre, jamais présentée comme un client |
@@ -59,7 +59,18 @@ Tentatives de téléchargement depuis Unsplash, Pexels, Wikimedia Commons, Flick
 | `illus-rencontre-chiens` | Accompagnement « Le chien adulte » | Lire une rencontre | Deux chiens qui se saluent calmement | 4/5 en arche | « Deux chiens se saluent en se reniflant dans un parc. » | Rencontre calme uniquement |
 | `illus-maison` | Accompagnement « Difficultés du quotidien » | Le calme à la maison | Chien allongé à l'intérieur | 4/5 en arche | « Un chien noir se repose, allongé sur le sol d'une cuisine. » | Idem |
 | `illus-chiot` | Accompagnement « L'arrivée d'un chiot » | Le repos du chiot | Chiot endormi | 4/5 en arche | « Un chiot beagle endormi. » | Idem |
-| `apropos-atelier` | À propos (affiché **seulement** si une photo existe) | L'éducatrice au travail | Échange avec un propriétaire, chien détendu | 3/2 | « L'éducatrice échange avec un propriétaire et son chien. » | Photo authentique **avec accord écrit** des personnes visibles |
+| `educatrice-avec-chien` | Qui suis-je (médaillon rond) | Le lien avec son propre chien | Mme Petitgand avec son chien, complicité calme | Carré 1/1 | « Mme Petitgand et son chien. » (à confirmer) | **Photo authentique uniquement** |
+| `apropos-atelier` | Qui suis-je (affiché **seulement** si une photo existe) | L'éducatrice au travail | Échange avec un propriétaire, chien détendu | 3/2 | « L'éducatrice échange avec un propriétaire et son chien. » | Photo authentique **avec accord écrit** des personnes visibles |
+
+## Où apparaissent les photos d'illustration
+
+Depuis la directive n° 6, chaque emplacement `illus-*` sert aussi de couverture : articles du blog (par catégorie,
+`src/lib/covers.ts`), dossiers (`/dossiers/<situation>/`) et galerie (section « Photographies d'illustration »,
+avec auteur et licence sous chaque image). Déposer une photo vérifiée dans `src/assets/photos/<identifiant>.jpg`
+suffit : elle remplace la composition graphique partout, sans autre modification.
+
+Les photos authentiques de l'activité vont dans `src/assets/photos/galerie/` (légendes dans `src/content/galerie.json`) :
+elles apparaissent sur `/galerie/` et sur `/qui-suis-je/`.
 
 ## Photos utilisées
 

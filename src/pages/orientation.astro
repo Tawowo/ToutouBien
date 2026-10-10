@@ -72,7 +72,7 @@ const steps = QUESTIONS.length;
       <form class="or__form" data-or-form novalidate>
         {
           QUESTIONS.map((q, i) => (
-            <fieldset class="or__step" data-step={i} data-key={q.key} data-multiple={q.multiple ? 'true' : undefined}>
+            <fieldset class:list={['or__step', i === 0 && 'is-current']} data-step={i} data-key={q.key} data-multiple={q.multiple ? 'true' : undefined}>
               <legend class="or__q">
                 <span class="label">Question {i + 1} sur {steps}</span>
                 <span class="or__q-text" tabindex="-1" data-step-title>{q.title}</span>
@@ -96,8 +96,8 @@ const steps = QUESTIONS.length;
           ))
         }
 
-        <div class="or__nav" data-or-nav hidden>
-          <button type="button" class="btn btn--ghost" data-or-back><Icon name="arrow-left" /> Retour</button>
+        <div class="or__nav" data-or-nav>
+          <button type="button" class="btn btn--ghost" data-or-back hidden><Icon name="arrow-left" /> Retour</button>
           <button type="submit" class="btn btn--clair" data-or-next><span data-or-next-label>Continuer</span> <Icon name="arrow" class="btn__arrow" /></button>
         </div>
       </form>
@@ -209,7 +209,7 @@ const steps = QUESTIONS.length;
     scroll-margin-top: calc(var(--header-h, 5rem) + var(--space-s));
   }
 
-  .is-live .or__sky {
+  :global(.js) .or__sky {
     display: grid;
     gap: var(--space-xs);
     justify-items: center;
@@ -428,6 +428,10 @@ const steps = QUESTIONS.length;
     font-style: italic;
   }
 
+  :global(.no-js) .or__nav {
+    display: none;
+  }
+
   .or__form {
     display: grid;
     gap: var(--space-l);
@@ -442,7 +446,7 @@ const steps = QUESTIONS.length;
     min-width: 0;
   }
 
-  .is-live .or__step:not(.is-current) {
+  :global(.js) .or__step:not(.is-current) {
     display: none;
   }
 

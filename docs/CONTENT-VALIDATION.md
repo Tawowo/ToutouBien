@@ -84,6 +84,12 @@ Rédigés pour le site : ils ne contiennent ni chiffre, ni promesse, ni qualific
 | Textes de la page Tarifs (« communiqués directement sur simple demande », bonnes questions à poser) | /tarifs/ | Accepte-t-elle cette formule en attendant de publier ses prix ? |
 | Page Accessibilité | /accessibilite/ | Date, contact, éventuel audit |
 | Proposition de valeur et positionnement « famille » | `docs/BRAND-POSITIONING.md` | Validation stratégique |
+| **Dossiers « Comprendre les situations »** (6 pages, `/dossiers/`) : reprennent les contenus du décodeur, plus une phrase d'introduction par dossier | /dossiers/ | Même relecture que le décodeur ; badge « Dossier à relire » visible en préproduction |
+| **Repères pédagogiques du parcours d'orientation** (22 phrases, `INSIGHTS` dans `src/lib/orientation.ts`) | /orientation/ | Généraux et prudents ; à valider un par un (ex. « Rester seul s'apprend progressivement ») |
+| Page Contact : « La suite, pas à pas » (message lu par une personne, réponse par le moyen indiqué, liberté de la suite) | /contact/ | Délai de réponse à fournir (badge « Délai de réponse à confirmer ») |
+| Page « Qui suis-je » : intro de repli, chapitres « Avant ToutouBien », « Mon expérience », « Ma vision », « Ma façon de travailler » | /qui-suis-je/ | **Tout le récit est à fournir** : la page affiche des emplacements « À fournir » en préproduction et masque ces chapitres en production tant qu'ils sont vides |
+| Galerie : légendes du carnet graphique (« Le chemin », « La rencontre »…) | /galerie/ | Ton |
+| Blog : texte d'introduction et état « Les premiers articles sont en cours de relecture » | /blog/ | Affiché en production tant qu'aucun article n'est publié |
 | Voix : « vous », « nous » dans le formulaire, « l'éducatrice » ailleurs | Partout | Préfère-t-elle le « je » ? Le passage au « je » est simple une fois son nom confirmé |
 
 ## Articles (statut `review`, non publiés)

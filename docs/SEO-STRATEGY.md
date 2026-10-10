@@ -4,7 +4,7 @@
 
 | Mécanisme | Implémentation | Vérification |
 | --- | --- | --- |
-| URLs propres, barre oblique finale | `/accompagnement/`, `/a-propos/`, `/parlons-de-votre-chien/`, `/blog/<slug>/`, `/blog/categorie/<id>/` | Tests e2e |
+| URLs propres, barre oblique finale | `/accompagnement/`, `/qui-suis-je/` (ancienne `/a-propos/` redirigée), `/parlons-de-votre-chien/`, `/blog/<slug>/`, `/blog/categorie/<id>/` | Tests e2e |
 | Titre et description uniques par page | Prop `title`/`description` de `Base.astro` ; motif « Titre · ToutouBien » | Test e2e : description > 50 caractères, titre présent |
 | Hiérarchie de titres | **Un seul h1 par page**, puis h2/h3 dans l'ordre | Test e2e + axe |
 | Canoniques absolues | Construites à partir de `PUBLIC_SITE_URL` | Test e2e (égalité stricte) |

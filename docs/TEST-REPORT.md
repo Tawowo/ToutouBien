@@ -1,20 +1,27 @@
 # Rapport de tests
 
-> **État V3 (10/10/2026)** — résultats réels de la dernière exécution, sur build de production.
+> **État directive n° 6 (10/10/2026)** — résultats réels de la dernière exécution, sur build de production.
 
 | Vérification | Commande | Résultat |
 | --- | --- | --- |
 | Lint | `npm run lint` | 0 erreur |
 | Types (Astro + TypeScript strict) | `npm run check` | 0 erreur, 0 avertissement |
-| Tests unitaires (Vitest) | `npm test` | **50 réussis** (modèles : orientation, signaux, flair, distance, qualité 3D, séquence d'accueil, décodeur, parcours de lecture ; champs ; envoi ; formulaire) |
-| Tests de bout en bout (Playwright, bureau 1366 × 860 + Pixel 7) | `npm run test:e2e` | **191 réussis, 0 échec**, 1 ignoré (test souris sur mobile) |
-| Accessibilité automatique (axe-core, WCAG 2.2 AA) | inclus dans e2e | 0 violation sur 24 pages × 2 formats |
-| Liens internes | inclus dans e2e + script de parcours du build | 0 lien cassé |
+| Tests unitaires (Vitest) | `npm test` | **55 réussis**, dont l'orientation sur ses **15 300 combinaisons** de réponses (aucune impasse), les repères pédagogiques, la reprise `?stage=`, la narration du sentier d'accueil |
+| Tests de bout en bout (Playwright, bureau 1366 × 860 + Pixel 7) | `npm run test:e2e` | **239 réussis, 0 échec**, 1 ignoré (test souris sur mobile) |
+| Accessibilité automatique (axe-core, WCAG 2.2 AA) | inclus dans e2e | 0 violation sur 29 pages × 2 formats |
+| Liens internes | inclus dans e2e | 0 lien cassé |
+| Lighthouse 13.5 (mobile simulé, build de production) | `npx lighthouse` | Accueil : perf. 84, accessibilité 100, bonnes pratiques 100 (LCP 1,7 s, CLS 0,001, TBT 620 ms : rendu WebGL logiciel dans cet environnement) · Dossier : 100 / 100 / 100 · Galerie : 100 / 100 / 100 · Blog : 100 / 100 / 100 · Orientation : 99 / 100 / 100 (CLS ramené de 0,119 à 0,056). SEO 66 partout : **voulu**, l'indexation est désactivée tant que le site n'est pas publié |
 
-Nouveaux tests V3 : chaque odeur du « monde par le nez » (trouvée, re-sélectionnée, réinitialisée) ;
-absence d'effet lié au pointeur ; décodeur (situation, étapes, note transmise, retour arrière) ; perte du
-contexte WebGL sans saut de page ; FAQ (recherche, état vide) ; questions ; orientation complète ;
-checklist du premier rendez-vous ; minutage de l'accueil (paliers, un seul texte visible, réversibilité).
+Nouveaux tests (directive n° 6) : navigation principale et redirection `/a-propos/` ; blog toujours publié avec état
+vide honnête ; sélecteur de chemin de l'accueil (clic, flèches, focus) ; histoires → dossier ; galerie (visionneuse :
+ouverture, flèches, boucle, Échap, retour du focus, bouton Fermer) ; dossiers (liste, carte de lecture, sujet transmis,
+dossier suivant) ; orientation au clavier seul (constellation, satellites, repères, erreur si aucune réponse, modifier,
+recommencer), reprise depuis l'accueil, chaque préoccupation.
+
+Vérifié dans le navigateur hors tests automatisés (préproduction, 9 articles de démonstration) : recherche du blog
+(insensible à la casse et aux accents), filtres combinables, « Voir plus » avec focus sur le premier nouvel article,
+message « Aucun article ne correspond » et bouton « Effacer la recherche ». Non testé : le balayage tactile de la
+visionneuse (codé, sans test automatisé), le rendu sur un vrai GPU et sur Safari/Firefox.
 
 ---
 

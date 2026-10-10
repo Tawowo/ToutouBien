@@ -1066,3 +1066,79 @@ a:hover {
   text-transform: uppercase;
   color: var(--accent);
 }
+
+/* ------------------------------------------------------------ Mouvement de repli
+   Navigateurs sans animations pilotées par le défilement (Firefox, Safari ancien) :
+   src/scripts/motion.ts ajoute .io-motion et révèle les éléments à leur entrée dans l'écran.
+   Sans ce script, rien n'est masqué. */
+@media (prefers-reduced-motion: no-preference) {
+  .io-motion .reveal {
+    opacity: 0;
+    transform: translateY(2.2rem);
+    transition: opacity 900ms var(--ease-out), transform 900ms var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 80ms);
+  }
+
+  .io-motion .reveal-mask {
+    clip-path: inset(14% 10% 14% 10% round var(--radius-l));
+    transition: clip-path 1.1s var(--ease-out);
+  }
+
+  .io-motion .reveal-scale img,
+  .io-motion .reveal-scale .plate__art {
+    transform: scale(1.14);
+    transition: transform 1.6s var(--ease-out);
+  }
+
+  .io-motion .split:not(.split--now) .w > * {
+    transform: translateY(105%) rotate(4deg);
+    transition: transform 900ms var(--ease-out);
+    transition-delay: calc(var(--wi, 0) * 55ms);
+  }
+
+  .io-motion .fil:not(.fil--immediate) path {
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 2.2s var(--ease-in-out);
+  }
+
+  .io-motion .reveal.is-in,
+  .io-motion .split.is-in .w > *,
+  .io-motion .reveal-scale.is-in img,
+  .io-motion .reveal-scale.is-in .plate__art {
+    opacity: 1;
+    transform: none;
+  }
+
+  .io-motion .reveal-mask.is-in {
+    clip-path: inset(0 0 0 0 round var(--radius-l));
+  }
+
+  .io-motion .fil.is-in path {
+    stroke-dashoffset: 0;
+  }
+
+  .io-motion .parallax {
+    transform: translateY(var(--py-shift, 0));
+  }
+}
+
+/* ------------------------------------------------------------ Ciel étoilé (signature)
+   Voir docs/STARS-GRAMMAR.md. Le canevas est décoratif et placé derrière le contenu. */
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+[data-sky] {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-sky] > :not(.sky) {
+  position: relative;
+  z-index: 1;
+}

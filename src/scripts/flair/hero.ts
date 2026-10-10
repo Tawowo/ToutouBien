@@ -35,6 +35,7 @@ export function initFlairHero(): void {
     link: section.querySelector<HTMLElement>('[data-block="link"]'),
   };
 
+  const marks = Array.from(section.querySelectorAll<HTMLElement>('[data-mark]'));
   let scene: FlairScene | null = null;
   let visible = true;
 
@@ -97,6 +98,20 @@ export function initFlairHero(): void {
         emblemBox: { x: vb.x, y: vb.y, w: vb.width, h: vb.height },
         tier,
         onProgress: apply,
+        onMarks: (list) => {
+          // Un mot qui tomberait sur le bloc de texte du chapitre est masqué (lisibilité, surtout sur mobile).
+          const card = blocks.walk?.getBoundingClientRect();
+          const top = canvas.getBoundingClientRect().top;
+          list.forEach((m, i) => {
+            const el = marks[i];
+            if (!el) return;
+            const y = m.y + top;
+            const covered = card && y > card.top - 24 && y < card.bottom + 24 && m.x > card.left - 40 && m.x - 200 < card.right;
+            el.style.opacity = (covered ? 0 : m.a).toFixed(3);
+            // Mot à gauche de l'étoile, pour ne pas recouvrir le duo qui passe sur le jalon.
+            el.style.transform = `translate3d(${(m.x - 18 - m.a * 8).toFixed(1)}px, ${m.y.toFixed(1)}px, 0) translate(-100%, -50%)`;
+          });
+        },
         onFallback: toLite,
       });
       section.dataset.ready = 'true';

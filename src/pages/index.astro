@@ -1,8 +1,10 @@
 ---
 import Base from '~/layouts/Base.astro';
 import FlairHero from '~/components/FlairHero.astro';
+import HomeChooser from '~/components/HomeChooser.astro';
+import HomeStories from '~/components/HomeStories.astro';
+import HomeThread from '~/components/HomeThread.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
-import PlateArt from '~/components/PlateArt.astro';
 import Plate from '~/components/Plate.astro';
 import DogFigure from '~/components/DogFigure.astro';
 import Fil from '~/components/Fil.astro';
@@ -10,19 +12,13 @@ import Icon from '~/components/Icon.astro';
 import Faq from '~/components/Faq.astro';
 import ArticleCard from '~/components/ArticleCard.astro';
 import Draft from '~/components/Draft.astro';
-import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
 import { EXPERIENCES } from '~/content/explorer';
 import { site } from '~/config/site';
 import { resolve } from '~/lib/fields';
-import { joinFr } from '~/lib/wizard';
-import { SITUATIONS } from '~/lib/decodeur';
 import { visibleArticles } from '~/lib/articles';
 
 const name = resolve(site.educator.displayName);
 const intro = resolve(site.educator.intro);
-const purpose = resolve(site.firstMeeting.purpose);
-const places = resolve(site.firstMeeting.places);
-const free = resolve(site.firstMeeting.free);
 const articles = (await visibleArticles()).slice(0, 3);
 const signals = [
   { id: 'detendu', label: 'Détendu', state: { body: 'soft', ears: 'relaxed', tail: 'neutral', wag: 'none', head: 'neutral', mouth: 'relaxed', gaze: 'soft' }, text: 'Corps souple, gueule entrouverte, regard doux.' },
@@ -52,66 +48,11 @@ const signals = [
     </div>
   </section>
 
-  <!-- La balade : les quatre chemins, en défilement horizontal -->
-  <section class="walk on-dark grain-dark" aria-labelledby="walk-title">
-    <div class="walk__sticky">
-      <div class="page walk__head">
-        <p class="eyebrow">Quatre chemins</p>
-        <h2 id="walk-title">Où en êtes-vous <em>avec votre chien</em>&nbsp;?</h2>
-      </div>
-      <ol class="walk__track" role="list">
-        {
-          ACCOMPAGNEMENTS.map((a) => (
-            <li class="walk__panel">
-              <a href={`/accompagnements/${a.slug}/`} class="walk__card">
-                <span class="walk__art" aria-hidden="true"><PlateArt motif={a.motif} /></span>
-                <span class="walk__meta">
-                  <span class="label">Chemin {a.num}</span>
-                  <span class="walk__title">{a.label}</span>
-                  <span class="walk__short">{a.short}</span>
-                  <span class="walk__go">Explorer ce chemin <Icon name="arrow" /></span>
-                </span>
-              </a>
-            </li>
-          ))
-        }
-        <li class="walk__panel walk__panel--end">
-          <a href="/orientation/" class="walk__card walk__card--end">
-            <span class="label">Vous hésitez&nbsp;?</span>
-            <span class="walk__title">Trouvons ensemble par où commencer</span>
-            <span class="walk__go">Questionnaire d’orientation <Icon name="arrow" /></span>
-          </a>
-        </li>
-      </ol>
-      <div class="walk__progress" aria-hidden="true"><span></span></div>
-    </div>
-  </section>
+  <!-- Où en êtes-vous : sélecteur en constellation -->
+  <HomeChooser />
 
-  <!-- Le décodeur du quotidien : l'expérience signature -->
-  <section class="section topics" aria-labelledby="topics-title">
-    <div class="page">
-      <div class="topics__head">
-        <p class="eyebrow">Le décodeur du quotidien</p>
-        <SplitTitle id="topics-title" text="Derrière chaque situation, *plusieurs histoires* possibles." />
-        <p class="lede">Choisissez ce que vous vivez. En cinq temps&nbsp;: quoi observer, ce que cela peut vouloir dire, les questions à se poser, et quand demander de l’aide. Gratuit, sans diagnostic, rien n’est enregistré.</p>
-        <a class="link-arrow" href="/decodeur/">Ouvrir le décodeur <Icon name="arrow" /></a>
-      </div>
-      <ol class="topics__list" role="list">
-        {
-          SITUATIONS.map((s, i) => (
-            <li class="reveal">
-              <a class="topic" href={`/decodeur/#${s.id}`}>
-                <span class="topic__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                <span class="topic__label">{s.title}</span>
-                <span class="topic__teaser">{s.voice}</span>
-                <Icon name="arrow" class="topic__arrow" />
-              </a>
-            </li>
-          ))
-        }
-      </ol>
-    </div>
-  </section>
+  <!-- Plusieurs histoires possibles : constellations du décodeur -->
+  <HomeStories />
 
   <!-- Mini-laboratoire : lire son chien -->
   <section class="section lab on-dark grain-dark" aria-labelledby="lab-title" data-mini-lab>
@@ -141,37 +82,8 @@ const signals = [
     </div>
   </section>
 
-  <!-- Le premier pas -->
-  <section class="section first" id="premier-pas" aria-labelledby="first-title">
-    <div class="page first__grid">
-      <div class="first__intro">
-        <p class="eyebrow">Le premier pas</p>
-        <SplitTitle id="first-title" text="Tout commence par *une rencontre*." />
-        {free && (free.draft ? <Draft label="Gratuité à confirmer"><p class="first__badge">Première rencontre offerte</p></Draft> : <p class="first__badge">Première rencontre offerte</p>)}
-        <Plate id="accueil-rencontre" class="first__plate" shape="arch" sizes="(min-width: 60rem) 26vw, 80vw" />
-      </div>
-      <ol class="first__steps" role="list">
-        <li class="reveal">
-          <span class="first__num">01</span>
-          <h3>Vous prenez contact</h3>
-          <p>Quelques questions à choix, deux minutes, aucun long texte à rédiger.</p>
-          <a class="link-arrow" href="/parlons-de-votre-chien/">Parlons de votre chien <Icon name="arrow" /></a>
-        </li>
-        <li class="reveal">
-          <span class="first__num">02</span>
-          <h3>On se rencontre</h3>
-          <p>{purpose ? purpose.value : 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}{places && !places.draft ? ` La rencontre peut se dérouler ${joinFr(places.value, 'ou')}.` : ''}</p>
-          <a class="link-arrow" href="/premier-rendez-vous/">Le premier rendez-vous <Icon name="arrow" /></a>
-        </li>
-        <li class="reveal">
-          <span class="first__num">03</span>
-          <h3>Vous décidez de la suite</h3>
-          <p>Vous faites le point ensemble sur ce qui pourrait vous aider, puis vous choisissez librement comment continuer.</p>
-          <a class="link-arrow" href="/deroulement/">Le déroulement <Icon name="arrow" /></a>
-        </li>
-      </ol>
-    </div>
-  </section>
+  <!-- Le fil d'un accompagnement -->
+  <HomeThread />
 
   <!-- Qui -->
   <section class="section who on-lin" aria-labelledby="who-title">
@@ -312,284 +224,6 @@ const signals = [
     .manifesto__grid > :global(.manifesto__plate) { grid-area: plate; align-self: center; }
   }
 
-  /* ---------- La balade horizontale ---------- */
-  .walk {
-    position: relative;
-  }
-
-  .walk__sticky {
-    padding-block: var(--space-xl);
-    overflow: hidden;
-  }
-
-  .walk__head {
-    margin-bottom: var(--space-l);
-  }
-
-  .walk__head h2 {
-    max-width: 16ch;
-    margin-top: var(--space-s);
-  }
-
-  .walk__head h2 em {
-    color: var(--lagon);
-  }
-
-  .walk__track {
-    display: flex;
-    gap: var(--space-m);
-    padding: 0 var(--gutter);
-    margin: 0;
-    list-style: none;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-
-  .walk__panel {
-    flex: 0 0 min(82vw, 30rem);
-    scroll-snap-align: start;
-  }
-
-  .walk__card {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    height: 100%;
-    border-radius: var(--radius-l);
-    overflow: hidden;
-    background: var(--nuit-2);
-    border: 1px solid rgb(255 255 255 / 0.08);
-    color: var(--craie) !important;
-    text-decoration: none;
-    transition: transform var(--dur-slow) var(--ease-out), border-color var(--dur) ease;
-  }
-
-  .walk__card:hover {
-    transform: translateY(-6px);
-    border-color: rgb(223 243 239 / 0.45);
-  }
-
-  .walk__art {
-    position: relative;
-    display: block;
-    aspect-ratio: 4 / 3;
-    overflow: hidden;
-  }
-
-  .walk__art :global(.plate-art) {
-    position: absolute;
-    inset: 0;
-    transition: transform var(--dur-slow) var(--ease-out);
-  }
-
-  .walk__card:hover .walk__art :global(.plate-art) {
-    transform: scale(1.06);
-  }
-
-  .walk__meta {
-    display: grid;
-    gap: var(--space-2xs);
-    align-content: start;
-    padding: var(--space-l);
-  }
-
-  .walk__title {
-    font-family: var(--font-display);
-    font-size: var(--step-3);
-    line-height: 1;
-  }
-
-  .walk__short {
-    color: var(--craie-douce);
-  }
-
-  .walk__go {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: var(--space-xs);
-    font-weight: 600;
-    color: var(--lueur);
-  }
-
-  .walk__go :global(svg) {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  .walk__card--end {
-    display: grid;
-    align-content: center;
-    gap: var(--space-m);
-    padding: var(--space-l);
-    background: var(--lueur);
-    color: var(--nuit) !important;
-  }
-
-  .walk__card--end .label,
-  .walk__card--end .walk__go {
-    color: var(--nuit);
-  }
-
-  .walk__progress {
-    display: none;
-  }
-
-  /* Grand écran : section épinglée, la piste défile horizontalement au rythme du défilement. */
-  @media (min-width: 60rem) and (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: view()) {
-      .walk {
-        height: 320svh;
-        view-timeline-name: --walk;
-      }
-
-      .walk__sticky {
-        position: sticky;
-        top: 0;
-        height: 100svh;
-        display: grid;
-        align-content: center;
-      }
-
-      .walk__track {
-        overflow: visible;
-        width: max-content;
-        padding-left: max(var(--gutter), (100vw - var(--wide)) / 2);
-        padding-right: 30vw;
-        animation: walk-x linear both;
-        animation-timeline: --walk;
-        animation-range: contain 0% contain 100%;
-      }
-
-      .walk__panel {
-        flex-basis: 30rem;
-      }
-
-      .walk__progress {
-        display: block;
-        position: relative;
-        width: var(--page);
-        height: 2px;
-        margin: var(--space-l) auto 0;
-        background: rgb(255 255 255 / 0.12);
-      }
-
-      .walk__progress span {
-        position: absolute;
-        inset: 0;
-        background: var(--lueur);
-        transform-origin: left;
-        animation: walk-bar linear both;
-        animation-timeline: --walk;
-        animation-range: contain 0% contain 100%;
-      }
-    }
-  }
-
-  @keyframes walk-x {
-    to {
-      transform: translateX(calc(-100% + 100vw));
-    }
-  }
-
-  @keyframes walk-bar {
-    from {
-      transform: scaleX(0);
-    }
-
-    to {
-      transform: scaleX(1);
-    }
-  }
-
-  /* ---------- Situations ---------- */
-  .topics__head {
-    display: grid;
-    gap: var(--space-s);
-    max-width: 44rem;
-    margin-bottom: var(--space-l);
-  }
-
-  .topics__head :global(h2 em) {
-    color: var(--accent);
-  }
-
-  .topics__list {
-    padding: 0;
-    list-style: none;
-    border-top: 1px solid color-mix(in oklab, var(--encre) 20%, transparent);
-  }
-
-  .topic {
-    display: grid;
-    grid-template-columns: 2.6rem 1fr auto;
-    grid-template-areas: 'num label arrow' '. teaser arrow';
-    column-gap: var(--space-s);
-    row-gap: 0.15rem;
-    align-items: baseline;
-    padding-block: var(--space-m);
-    border-bottom: 1px solid color-mix(in oklab, var(--encre) 20%, transparent);
-    color: var(--encre);
-    text-decoration: none;
-    background: linear-gradient(var(--lin), var(--lin)) left / 0% 100% no-repeat;
-    transition: background-size var(--dur) var(--ease-out), padding var(--dur) var(--ease-out);
-  }
-
-  .topic__num {
-    grid-area: num;
-    font-family: var(--font-mono);
-    font-size: var(--step--1);
-    color: var(--accent);
-  }
-
-  .topic__label {
-    grid-area: label;
-    font-family: var(--font-display);
-    font-size: var(--step-2);
-    line-height: 1.1;
-  }
-
-  .topic__teaser {
-    grid-area: teaser;
-    color: var(--encre-douce);
-    font-size: var(--step--1);
-  }
-
-  .topic__arrow {
-    grid-area: arrow;
-    align-self: center;
-    width: 1.6rem;
-    height: 1.6rem;
-    color: var(--accent);
-    transition: transform var(--dur) var(--ease-out);
-  }
-
-  .topic:hover,
-  .topic:focus-visible {
-    color: var(--encre);
-    background-size: 100% 100%;
-  }
-
-  .topic:hover .topic__arrow {
-    transform: translateX(0.4rem);
-  }
-
-  @media (min-width: 60rem) {
-    .topic {
-      grid-template-columns: 4rem minmax(0, 1.3fr) minmax(0, 1fr) 2rem;
-      grid-template-areas: 'num label teaser arrow';
-      padding-inline: var(--space-s);
-    }
-
-    .topic:hover {
-      padding-inline: var(--space-m) var(--space-xs);
-    }
-
-    .topic__teaser {
-      font-size: var(--step-0);
-    }
-  }
-
   /* ---------- Mini-laboratoire ---------- */
   .lab__grid {
     display: grid;
@@ -683,76 +317,6 @@ const signals = [
   }
 
   /* ---------- Premier pas ---------- */
-  .first__grid {
-    display: grid;
-    gap: var(--space-xl);
-  }
-
-  @media (min-width: 60rem) {
-    .first__grid {
-      grid-template-columns: 5fr 7fr;
-      align-items: start;
-    }
-
-    .first__intro {
-      position: sticky;
-      top: 7rem;
-    }
-  }
-
-  .first__intro {
-    display: grid;
-    gap: var(--space-m);
-  }
-
-  .first__intro :global(h2 em) {
-    color: var(--sarcelle);
-  }
-
-  .first__badge {
-    justify-self: start;
-    padding: 0.4em 1em;
-    border-radius: var(--radius-pill);
-    background: var(--lagon-clair);
-    font-weight: 600;
-  }
-
-  .first__plate {
-    width: min(100%, 20rem);
-  }
-
-  .first__steps {
-    display: grid;
-    gap: var(--space-l);
-    padding: 0;
-    list-style: none;
-  }
-
-  .first__steps li {
-    display: grid;
-    gap: var(--space-xs);
-    justify-items: start;
-    padding: var(--space-l);
-    border-radius: var(--radius-l);
-    background: var(--blanc);
-    border: 1px solid color-mix(in oklab, var(--encre) 10%, transparent);
-  }
-
-  .first__num {
-    font-family: var(--font-display);
-    font-size: var(--step-5);
-    line-height: 0.8;
-    color: var(--accent);
-  }
-
-  .first__steps h3 {
-    font-size: var(--step-3);
-  }
-
-  .first__steps p {
-    color: var(--encre-douce);
-    max-width: 48ch;
-  }
 
   /* ---------- Qui ---------- */
   .who__grid {

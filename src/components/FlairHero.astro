@@ -14,6 +14,7 @@ import Icon from './Icon.astro';
 import SplitTitle from './SplitTitle.astro';
 import emblemRaw from '~/assets/brand/emblem.svg?raw';
 import { site } from '~/config/site';
+import { MILESTONES } from '~/scripts/flair/timeline';
 
 const d = emblemRaw.match(/ d="([^"]+)"/)?.[1] ?? '';
 const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
@@ -63,6 +64,10 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
         <a class="link-arrow" href="/approche/">Découvrir l’approche <Icon name="arrow" /></a>
       </div>
     </div>
+
+    <ol class="cine__marks" aria-hidden="true" data-marks>
+      {MILESTONES.map((m, i) => <li data-mark={i}><span class="cine__mark-num">{String(i + 1).padStart(2, '0')}</span>{m.word}</li>)}
+    </ol>
 
     <div class="cine__rail" aria-hidden="true">
       <span class="cine__rail-fill"></span>
@@ -234,8 +239,46 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
   }
 
   .cine__rail,
-  .cine__signature {
+  .cine__signature,
+  .cine__marks {
     display: none;
+  }
+
+  /* Mots des jalons du sentier, positionnés par le script sur les étoiles projetées. */
+  .cine[data-ready='true']:not([data-lite='true']) .cine__marks {
+    display: block;
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    pointer-events: none;
+  }
+
+  .cine__marks li {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    gap: 0.15rem;
+    justify-items: end;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.3rem, 1rem + 1vw, 2rem);
+    line-height: 1;
+    color: var(--craie);
+    text-shadow: 0 0 1.2rem rgb(11 21 20 / 0.9);
+    white-space: nowrap;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  .cine__mark-num {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: var(--step--2);
+    letter-spacing: 0.12em;
+    color: var(--lagon);
   }
 
   /* ============ Mode cinéma ============ */

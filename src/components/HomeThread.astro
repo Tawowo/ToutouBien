@@ -1,0 +1,263 @@
+---
+/**
+ * « Le fil d'un accompagnement » : un trait de lumière se dessine au fil du défilement et
+ * allume, une à une, les cinq étapes du déroulement (les mêmes que la page Déroulement).
+ * Horizontal sur grand écran, vertical sur mobile. Sans JavaScript ou en mouvement réduit,
+ * le fil est entièrement dessiné.
+ */
+import Icon from './Icon.astro';
+import Draft from './Draft.astro';
+import { site } from '~/config/site';
+import { resolve } from '~/lib/fields';
+
+const free = resolve(site.firstMeeting.free);
+const steps = [
+  { title: 'Préparer sa demande', text: 'Quelques questions à choix, deux minutes, aucun long texte.', href: '/parlons-de-votre-chien/', link: 'Parlons de votre chien' },
+  { title: 'Le premier échange', text: 'Parler de la situation et faire connaissance avec votre chien.', href: '/premier-rendez-vous/', link: 'Le premier rendez-vous' },
+  { title: 'Clarifier les besoins', text: 'Observer ensemble ce qui se passe, pour lui et pour vous.', href: '/decodeur/', link: 'Le décodeur' },
+  { title: 'Organiser l’accompagnement', text: 'Des pistes adaptées à votre quotidien, expliquées simplement.', href: '/accompagnements/', link: 'Les accompagnements' },
+  { title: 'Envisager la suite', text: 'Faire le point, continuer, faire une pause : vous restez libre.', href: '/deroulement/', link: 'Le déroulement' },
+];
+// Points du fil (repère 1200 × 220). Sur mobile, le fil est dessiné en CSS le long des étapes.
+const H = [
+  [60, 150],
+  [330, 70],
+  [600, 140],
+  [870, 60],
+  [1140, 120],
+];
+const hPath = `M${H[0]![0]} ${H[0]![1]} C 190 150, 220 70, ${H[1]![0]} ${H[1]![1]} S 500 140, ${H[2]![0]} ${H[2]![1]} S 760 60, ${H[3]![0]} ${H[3]![1]} S 1040 120, ${H[4]![0]} ${H[4]![1]}`;
+---
+<section class="th on-dark" aria-labelledby="th-title" data-thread data-sky="0.9" data-sky-links>
+  <div class="page">
+    <header class="th__head">
+      <p class="eyebrow">Le premier pas</p>
+      <h2 id="th-title">Le fil <em>d’un accompagnement</em>.</h2>
+      <p class="lede">De la première question à la suite du chemin, chaque étape s’explique. Vous savez toujours où vous en êtes.</p>
+      {free && (free.draft ? <Draft label="Gratuité à confirmer"><p class="th__badge">Première rencontre offerte</p></Draft> : <p class="th__badge">Première rencontre offerte</p>)}
+    </header>
+
+    <div class="th__line">
+      <svg class="th__svg th__svg--h" viewBox="0 0 1200 220" aria-hidden="true" focusable="false">
+        <path d={hPath} class="th__track" />
+        <path d={hPath} class="th__glow" pathLength="1" />
+        {H.map(([x, y], i) => (
+          <g class="th__star" data-th-star={i}>
+            <circle cx={x} cy={y} r="22" class="th__halo" />
+            <circle cx={x} cy={y} r="5" class="th__core" />
+          </g>
+        ))}
+      </svg>
+      <ol class="th__steps" role="list">
+        {steps.map((s, i) => (
+          <li class="th__step" data-th-step={i}>
+            <span class="label">Étape {String(i + 1).padStart(2, '0')}</span>
+            <h3>{s.title}</h3>
+            <p>{s.text}</p>
+            <a class="link-arrow" href={s.href}>{s.link} <Icon name="arrow" /></a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-thread]').forEach((root) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    root.classList.add('is-live');
+    const glows = Array.from(root.querySelectorAll<SVGPathElement>('.th__glow'));
+    const stars = Array.from(root.querySelectorAll<SVGGElement>('[data-th-star]'));
+    const steps = Array.from(root.querySelectorAll<HTMLElement>('[data-th-step]'));
+    const line = root.querySelector<HTMLElement>('.th__line')!;
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const r = line.getBoundingClientRect();
+      const vh = innerHeight;
+      // 0 quand le haut du fil atteint 85 % de l'écran, 1 quand son bas atteint 55 %.
+      const p = Math.min(1, Math.max(0, (vh * 0.85 - r.top) / (r.height + vh * 0.3)));
+      glows.forEach((g) => (g.style.strokeDashoffset = String(1 - p)));
+      const lit = p * 4 + 0.15;
+      stars.forEach((s) => s.classList.toggle('is-lit', Number(s.dataset.thStar) <= lit));
+      steps.forEach((s) => s.classList.toggle('is-lit', Number(s.dataset.thStep) <= lit));
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) addEventListener('scroll', onScroll, { passive: true });
+      else removeEventListener('scroll', onScroll);
+    }).observe(root);
+    update();
+  });
+</script>
+
+<style>
+  .th {
+    padding-block: var(--space-2xl);
+    background: linear-gradient(180deg, var(--nuit), #0f2422 60%, var(--nuit));
+    overflow: hidden;
+  }
+
+  .th__head {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 44rem;
+    margin-bottom: var(--space-xl);
+  }
+
+  .th__head h2 em {
+    color: var(--lagon);
+  }
+
+  .th__badge {
+    justify-self: start;
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--lagon);
+    color: var(--lagon);
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+
+  .th__line {
+    position: relative;
+    display: grid;
+  }
+
+  .th__svg {
+    overflow: visible;
+  }
+
+    .th__track {
+    fill: none;
+    stroke: rgb(154 211 205 / 0.14);
+    stroke-width: 1.5;
+    stroke-dasharray: 2 7;
+    stroke-linecap: round;
+  }
+
+  .th__glow {
+    fill: none;
+    stroke: var(--lagon);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    filter: drop-shadow(0 0 6px rgb(154 211 205 / 0.8));
+  }
+
+  .th__halo {
+    fill: rgb(154 211 205 / 0.12);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: fill 500ms ease, transform 700ms var(--ease-out);
+  }
+
+  .th__core {
+    fill: var(--lueur);
+    transition: fill 400ms ease;
+  }
+
+  .is-live .th__star:not(.is-lit) .th__core {
+    fill: rgb(154 211 205 / 0.35);
+  }
+
+  .th__star.is-lit .th__halo {
+    fill: rgb(154 211 205 / 0.28);
+    transform: scale(1.3);
+  }
+
+  .th__steps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--space-m);
+    margin-top: var(--space-m);
+    padding: 0;
+    list-style: none;
+  }
+
+  .th__step {
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+    transition: opacity 600ms var(--ease-out), transform 700ms var(--ease-out);
+  }
+
+  .is-live .th__step:not(.is-lit) {
+    opacity: 0.28;
+    transform: translateY(0.8rem);
+  }
+
+  .th__step h3 {
+    font-size: var(--step-1);
+    color: var(--craie);
+  }
+
+  .th__step p {
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  @media (max-width: 59.99rem) {
+    .th__svg--h {
+      display: none;
+    }
+
+    .th__steps {
+      grid-template-columns: 1fr;
+      gap: 0;
+      margin-top: 0;
+    }
+
+    .th__step {
+      position: relative;
+      padding: 0 0 var(--space-l) 2.6rem;
+    }
+
+    /* Segment du fil et étoile de l'étape. */
+    .th__step::before {
+      content: '';
+      position: absolute;
+      left: 0.7rem;
+      top: 0.4rem;
+      bottom: -0.4rem;
+      width: 2px;
+      background: rgb(154 211 205 / 0.18);
+    }
+
+    .th__step:last-child::before {
+      display: none;
+    }
+
+    .th__step::after {
+      content: '';
+      position: absolute;
+      left: 0.35rem;
+      top: 0.2rem;
+      width: 0.85rem;
+      height: 0.85rem;
+      border-radius: 50%;
+      background: var(--lueur);
+      box-shadow: 0 0 0 6px rgb(154 211 205 / 0.15);
+      transition: background-color 400ms ease, box-shadow 600ms ease;
+    }
+
+    .th__step.is-lit::before {
+      background: var(--lagon);
+      box-shadow: 0 0 8px rgb(154 211 205 / 0.7);
+    }
+
+    .th__step.is-lit::after {
+      box-shadow: 0 0 0 8px rgb(154 211 205 / 0.28), 0 0 16px rgb(154 211 205 / 0.8);
+    }
+
+    .is-live .th__step:not(.is-lit)::after {
+      background: rgb(154 211 205 / 0.35);
+    }
+  }
+</style>

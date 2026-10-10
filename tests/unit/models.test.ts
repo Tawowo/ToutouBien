@@ -191,3 +191,20 @@ describe('décodeur du quotidien', async () => {
     expect(n).not.toContain(s.observe[1]!.label.toLowerCase());
   });
 });
+
+describe('narration du sentier', async () => {
+  const { MILESTONES, milestoneLit, pairT, trailPos } = await import('~/scripts/flair/timeline');
+  it('allume les jalons dans l’ordre, au passage du duo', () => {
+    expect(milestoneLit(MILESTONES[0].t, 0)).toBe(0);
+    expect(MILESTONES.every((m) => milestoneLit(m.t, 1) === 1)).toBe(true);
+    let last = -1;
+    for (const m of MILESTONES) {
+      const firstLit = Array.from({ length: 101 }, (_, i) => i / 100).find((d) => milestoneLit(m.t, d) > 0.5)!;
+      expect(firstLit).toBeGreaterThan(last);
+      last = firstLit;
+    }
+  });
+  it('le duo s’éloigne le long du sentier', () => {
+    expect(trailPos(pairT(1), 0)[2]).toBeLessThan(trailPos(pairT(0), 0)[2]);
+  });
+});

@@ -1,0 +1,416 @@
+---
+/**
+ * « Derrière chaque situation, plusieurs histoires possibles. »
+ * Chaque situation du décodeur devient une constellation : la situation au centre, ses pistes
+ * d'explication autour, jamais une seule. Changer de situation redessine la constellation.
+ * Survoler ou parcourir une piste au clavier allume l'étoile correspondante.
+ */
+import Icon from './Icon.astro';
+import { SITUATIONS } from '~/lib/decodeur';
+
+const C = 260;
+const R = 175;
+const pos = (i: number, n: number) => {
+  const a = -Math.PI / 2 + (i / n) * Math.PI * 2 + (n % 2 ? 0 : Math.PI / n);
+  return { x: C + Math.cos(a) * R, y: C + Math.sin(a) * R };
+};
+---
+<section class="st" aria-labelledby="st-title" data-stories>
+  <div class="page">
+    <header class="st__head">
+      <p class="eyebrow">Le décodeur du quotidien</p>
+      <h2 id="st-title">Derrière chaque situation, <em>plusieurs histoires</em> possibles.</h2>
+      <p class="lede">Un même comportement peut avoir des raisons très différentes. Choisissez une situation&nbsp;: voici les pistes qu’on explore avant de chercher une solution.</p>
+    </header>
+
+    <div class="st__tabs" role="tablist" aria-label="Situations">
+      {
+        SITUATIONS.map((s, i) => (
+          <button type="button" role="tab" id={`st-tab-${s.id}`} aria-controls={`st-panel-${s.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} class="st__tab" data-st-tab={s.id}>
+            {s.title}
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="st__body">
+      <svg class="st__sky" viewBox="0 0 520 520" aria-hidden="true" focusable="false">
+        <defs>
+          <radialGradient id="st-glow">
+            <stop offset="0%" stop-color="#0e5f5b" stop-opacity="0.55" />
+            <stop offset="100%" stop-color="#0e5f5b" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <circle cx={C} cy={C} r={R} class="st__orbit" />
+        <circle cx={C} cy={C} r={R + 34} class="st__orbit st__orbit--dust" />
+        {
+          SITUATIONS.map((s, k) => (
+            <g class:list={['st__set', k === 0 && 'is-on']} data-st-set={s.id}>
+              {s.meanings.map((_, i) => {
+                const p = pos(i, s.meanings.length);
+                return <line x1={C} y1={C} x2={p.x} y2={p.y} pathLength="1" class="st__line" data-st-i={i} />;
+              })}
+              {s.meanings.map((_, i) => {
+                const p = pos(i, s.meanings.length);
+                return (
+                  <g class="st__star" data-st-i={i}>
+                    <circle cx={p.x} cy={p.y} r="26" fill="url(#st-glow)" />
+                    <circle cx={p.x} cy={p.y} r="15" class="st__disc" />
+                    <text x={p.x} y={p.y + 4.5} text-anchor="middle" class="st__num">{i + 1}</text>
+                  </g>
+                );
+              })}
+            </g>
+          ))
+        }
+        <circle cx={C} cy={C} r="54" fill="url(#st-glow)" />
+        <circle cx={C} cy={C} r="9" class="st__center" />
+      </svg>
+
+      <div class="st__panels">
+        {
+          SITUATIONS.map((s, k) => (
+            <div class:list={['st__panel', k === 0 && 'is-on']} role="tabpanel" id={`st-panel-${s.id}`} aria-labelledby={`st-tab-${s.id}`} data-st-panel={s.id}>
+              <p class="st__voice">{s.voice}</p>
+              <ol class="st__meanings" role="list">
+                {s.meanings.map((m, i) => (
+                  <li tabindex="0" data-st-hover={i}>
+                    <span class="st__badge" aria-hidden="true">{i + 1}</span>
+                    {m}
+                  </li>
+                ))}
+              </ol>
+              <div class="st__links">
+                <a class="btn btn--sm" href={`/decodeur/#${s.id}`}>Décoder cette situation <Icon name="arrow" class="btn__arrow" /></a>
+                <a class="link-arrow" href={`/dossiers/${s.id}/`}>Lire le dossier <Icon name="arrow" /></a>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-stories]').forEach((root) => {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-st-tab]'));
+    root.classList.add('is-live');
+    const show = (id: string, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t.dataset.stTab === id;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      root.querySelectorAll<SVGElement>('[data-st-set]').forEach((g) => g.classList.toggle('is-on', g.dataset.stSet === id));
+      root.querySelectorAll<HTMLElement>('[data-st-panel]').forEach((p) => p.classList.toggle('is-on', p.dataset.stPanel === id));
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => show(t.dataset.stTab!));
+      t.addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        show(tabs[(i + d + tabs.length) % tabs.length]!.dataset.stTab!, true);
+      });
+    });
+    // Survol ou focus d'une piste : l'étoile correspondante s'allume.
+    const light = (i: string | null) => {
+      root.querySelectorAll<SVGElement>('.st__set.is-on [data-st-i]').forEach((el) => el.classList.toggle('is-lit', el.dataset.stI === i));
+    };
+    root.querySelectorAll<HTMLElement>('[data-st-hover]').forEach((li) => {
+      const i = li.dataset.stHover!;
+      li.addEventListener('pointerenter', () => light(i));
+      li.addEventListener('focus', () => light(i));
+      li.addEventListener('pointerleave', () => light(null));
+      li.addEventListener('blur', () => light(null));
+    });
+    // La constellation se dessine à l'entrée de la section.
+    new IntersectionObserver((entries, io) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        root.classList.add('is-in');
+        io.disconnect();
+      }
+    }, { threshold: 0.3 }).observe(root);
+  });
+</script>
+
+<style>
+  .st {
+    padding-block: var(--space-2xl);
+  }
+
+  .st__head {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 46rem;
+  }
+
+  .st__head h2 em {
+    color: var(--sarcelle);
+  }
+
+  .st__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-block: var(--space-l);
+  }
+
+  .st__tab {
+    min-height: 2.7rem;
+    padding: 0 1.05rem;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid color-mix(in oklab, var(--encre) 18%, transparent);
+    background: transparent;
+    color: var(--encre);
+    font: inherit;
+    font-size: var(--step--1);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  }
+
+  .st__tab:hover {
+    border-color: var(--encre);
+  }
+
+  .st__tab[aria-selected='true'] {
+    background: var(--nuit);
+    border-color: var(--nuit);
+    color: var(--craie);
+  }
+
+  .st__tab:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .st__body {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .st__body {
+      grid-template-columns: 5fr 6fr;
+      gap: var(--space-xl);
+    }
+  }
+
+  .st__sky {
+    width: min(100%, 30rem);
+    justify-self: center;
+    overflow: visible;
+  }
+
+  .st__orbit {
+    fill: none;
+    stroke: color-mix(in oklab, var(--turquoise) 25%, transparent);
+    stroke-width: 1;
+  }
+
+  .st__orbit--dust {
+    stroke-dasharray: 1 9;
+    stroke-linecap: round;
+    stroke-width: 2;
+    transform-origin: 260px 260px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .st__orbit--dust {
+      animation: st-turn 90s linear infinite;
+    }
+
+    .st__center {
+      animation: st-pulse 4s ease-in-out infinite;
+      transform-origin: 260px 260px;
+    }
+  }
+
+  @keyframes st-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes st-pulse {
+    50% {
+      transform: scale(1.35);
+    }
+  }
+
+  .st__center {
+    fill: var(--turquoise);
+  }
+
+  .st__set {
+    visibility: hidden;
+  }
+
+  .st__set.is-on {
+    visibility: visible;
+  }
+
+  .st__line {
+    stroke: var(--turquoise);
+    stroke-width: 1.2;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 900ms var(--ease-out), stroke-width 300ms ease;
+  }
+
+  .st__star {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0.4);
+    transition: opacity 500ms var(--ease-out), transform 700ms var(--ease-out);
+  }
+
+  /* Dessin échelonné : chaque piste après la précédente. */
+  .st:not(.is-live) .st__line,
+  .st.is-in .st__set.is-on .st__line {
+    stroke-dashoffset: 0;
+  }
+
+  .st:not(.is-live) .st__star,
+  .st.is-in .st__set.is-on .st__star {
+    opacity: 1;
+    transform: none;
+  }
+
+  .st.is-in .st__set.is-on [data-st-i='1'] {
+    transition-delay: 120ms;
+  }
+
+  .st.is-in .st__set.is-on [data-st-i='2'] {
+    transition-delay: 240ms;
+  }
+
+  .st.is-in .st__set.is-on [data-st-i='3'] {
+    transition-delay: 360ms;
+  }
+
+  .st.is-in .st__set.is-on [data-st-i='4'] {
+    transition-delay: 480ms;
+  }
+
+  .st__disc {
+    fill: var(--blanc);
+    stroke: var(--turquoise);
+    stroke-width: 1.5;
+    transition: fill 300ms ease;
+  }
+
+  .st__num {
+    font: 500 12px var(--font-mono);
+    fill: var(--sarcelle);
+  }
+
+  .st__line.is-lit {
+    stroke-width: 2.6;
+  }
+
+  .st__star.is-lit .st__disc {
+    fill: var(--turquoise);
+  }
+
+  .st__star.is-lit .st__num {
+    fill: var(--blanc);
+  }
+
+  .st__panels {
+    display: grid;
+  }
+
+  .is-live .st__panels {
+    grid-template-areas: 'stack';
+  }
+
+  .is-live .st__panel {
+    grid-area: stack;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(1.5rem);
+    transition: opacity 450ms var(--ease-out), transform 600ms var(--ease-out), visibility 0s 450ms;
+  }
+
+  .is-live .st__panel.is-on {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 150ms, 150ms, 0s;
+  }
+
+  .st:not(.is-live) .st__panel {
+    margin-bottom: var(--space-l);
+  }
+
+  .st__panel {
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+  }
+
+  .st__voice {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-3);
+    line-height: 1.1;
+    color: var(--sarcelle);
+  }
+
+  .st__meanings {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .st__meanings li {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: var(--space-s);
+    align-items: start;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-m);
+    background: var(--blanc);
+    border: 1px solid color-mix(in oklab, var(--encre) 8%, transparent);
+    transition: border-color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .st__meanings li:hover,
+  .st__meanings li:focus-visible {
+    border-color: var(--turquoise);
+    transform: translateX(4px);
+    outline: none;
+  }
+
+  .st__badge {
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--turquoise);
+    font: 500 var(--step--2) var(--font-mono);
+    color: var(--sarcelle);
+  }
+
+  .st__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .st__line,
+    .st__star,
+    .is-live .st__panel {
+      transition: none;
+    }
+  }
+</style>

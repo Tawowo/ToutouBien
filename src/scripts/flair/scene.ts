@@ -10,10 +10,10 @@
  * que les textes HTML suivent exactement le même rythme que les particules, dans les deux sens.
  * Aucune interaction liée au pointeur.
  */
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, PerspectiveCamera, Points, Scene, ShaderMaterial, WebGLRenderer } from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Group, PerspectiveCamera, Points, Scene, ShaderMaterial, Vector3, WebGLRenderer } from 'three';
 import { PROFILES, lowerTier, type RenderTier, type Tier } from './quality';
 import { cloud, dust, mulberry32, samplePath, type ViewBox } from './shapes';
-import { timeline } from './timeline';
+import { MILESTONES, milestoneLit, pairT, timeline, trailPos } from './timeline';
 
 const COMMON = /* glsl */ `
   #define PI 3.14159265
@@ -134,6 +134,101 @@ const dustFragment = /* glsl */ `
   }
 `;
 
+const TRAIL_GLSL = /* glsl */ `
+  vec3 trailPos(float t, float side) {
+    float z = 3.0 - t * 40.0;
+    float center = sin(t * 7.0) * (1.0 + t * 3.5) + sin(t * 2.1) * 1.2;
+    float width = 1.35 - t * 0.85;
+    return vec3(center + side * width, -1.8 + sin(t * 3.0) * 0.3, z);
+  }
+`;
+
+/** Le duo : une colonne de lumière (l'humain), une forme basse (le chien), une laisse souple. */
+const pairVertex = /* glsl */ `
+  ${TRAIL_GLSL}
+  attribute vec4 aRand;
+  attribute float aWho;
+  uniform float uT;
+  uniform float uTime;
+  uniform float uAlpha;
+  uniform float uPixelRatio;
+  varying float vAlpha;
+  varying float vWho;
+  void main() {
+    float step = uTime * 5.2;
+    vec3 h = trailPos(uT, -0.16);
+    vec3 d = trailPos(uT - 0.006, 0.22);
+    vec3 p;
+    if (aWho < 0.5) {
+      float y = aRand.x;
+      float w = 0.09 + 0.08 * sin(y * 3.14159);
+      p = h + vec3((aRand.y - 0.5) * w * 2.0, 0.12 + y * 1.2 + abs(sin(step)) * 0.04, (aRand.z - 0.5) * w * 1.5);
+    } else if (aWho < 1.5) {
+      p = d + vec3((aRand.y - 0.5) * 0.6, 0.1 + aRand.x * 0.3 + abs(sin(step * 1.4 + 1.0)) * 0.035, (aRand.z - 0.5) * 0.22);
+    } else {
+      vec3 a = h + vec3(0.12, 0.78, 0.0);
+      vec3 b = d + vec3(0.22, 0.36, 0.0);
+      float s = aRand.x;
+      p = mix(a, b, s);
+      p.y -= sin(s * 3.14159) * 0.14;
+    }
+    vec4 mv = modelViewMatrix * vec4(p, 1.0);
+    gl_Position = projectionMatrix * mv;
+    float size = aWho > 1.5 ? 1.6 : 3.4 + aRand.w * 2.4;
+    gl_PointSize = clamp(size * uPixelRatio * (6.0 / -mv.z), 1.0, 28.0);
+    vAlpha = uAlpha * smoothstep(0.6, 2.5, -mv.z) * (aWho > 1.5 ? 0.55 : 0.95);
+    vWho = aWho;
+  }
+`;
+
+const pairFragment = /* glsl */ `
+  varying float vAlpha;
+  varying float vWho;
+  void main() {
+    float r = length(gl_PointCoord - 0.5);
+    if (r > 0.5) discard;
+    float a = pow(1.0 - r * 2.0, 1.4);
+    vec3 col = vWho < 0.5 ? vec3(0.937, 0.984, 0.973) : vec3(0.604, 0.827, 0.804);
+    gl_FragColor = vec4(col, a * vAlpha);
+  }
+`;
+
+/** Jalons du sentier : une étoile par étape, qui s'allume au passage du duo. */
+const markVertex = /* glsl */ `
+  attribute float aLit;
+  uniform float uAlpha;
+  uniform float uPixelRatio;
+  uniform float uTime;
+  varying float vLit;
+  void main() {
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mv;
+    float pulse = 1.0 + 0.12 * sin(uTime * 2.0 + position.z);
+    gl_PointSize = clamp((10.0 + aLit * 26.0) * pulse * uPixelRatio * (6.0 / -mv.z), 2.0, 70.0);
+    vLit = aLit * uAlpha + 0.25 * uAlpha;
+  }
+`;
+
+const markFragment = /* glsl */ `
+  varying float vLit;
+  void main() {
+    vec2 c = gl_PointCoord - 0.5;
+    float r = length(c);
+    if (r > 0.5) discard;
+    float core = smoothstep(0.12, 0.0, r);
+    float halo = pow(1.0 - r * 2.0, 2.2) * 0.6;
+    float cross = (smoothstep(0.035, 0.0, abs(c.x)) + smoothstep(0.035, 0.0, abs(c.y))) * smoothstep(0.5, 0.0, r) * 0.5;
+    gl_FragColor = vec4(vec3(0.875, 0.953, 0.937), (core + halo + cross) * vLit);
+  }
+`;
+
+export interface MarkScreen {
+  x: number;
+  y: number;
+  /** 0…1 : visibilité du mot (allumé et sentier affiché). */
+  a: number;
+}
+
 export interface FlairOptions {
   canvas: HTMLCanvasElement;
   emblemPath: string;
@@ -141,6 +236,8 @@ export interface FlairOptions {
   tier: RenderTier;
   /** Progression lissée, à chaque image : les textes s'y synchronisent. */
   onProgress: (p: number) => void;
+  /** Positions à l'écran (px, relatives au canevas) et visibilité des mots des jalons. */
+  onMarks?: (marks: MarkScreen[]) => void;
   /** Appelé si l'appareil ne tient pas la cadence même au niveau le plus bas. */
   onFallback: () => void;
 }
@@ -153,6 +250,13 @@ export class FlairScene {
   private dustMaterial: ShaderMaterial;
   private points: Points;
   private dust: Points;
+  private rig = new Group();
+  private pair: Points;
+  private pairMaterial: ShaderMaterial;
+  private marks: Points;
+  private markMaterial: ShaderMaterial;
+  private markLit: Float32Array;
+  private tmp = new Vector3();
   private tier: RenderTier;
   private raw = 0;
   private p = 0;
@@ -198,7 +302,35 @@ export class FlairScene {
     this.dust = new Points(this.buildDust(Math.round(PROFILES[this.tier].particles / 10)), this.dustMaterial);
     this.points.frustumCulled = false;
     this.dust.frustumCulled = false;
-    this.scene.add(this.dust, this.points);
+
+    this.pairMaterial = new ShaderMaterial({
+      vertexShader: pairVertex,
+      fragmentShader: pairFragment,
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+      uniforms: { uT: { value: 0 }, uTime: { value: 0 }, uAlpha: { value: 0 }, uPixelRatio: { value: 1 } },
+    });
+    this.pair = new Points(this.buildPair(), this.pairMaterial);
+    this.pair.frustumCulled = false;
+
+    this.markLit = new Float32Array(MILESTONES.length);
+    const markGeo = new BufferGeometry();
+    markGeo.setAttribute('position', new BufferAttribute(new Float32Array(MILESTONES.flatMap((m) => trailPos(m.t, 0)).map((v, i) => (i % 3 === 1 ? v + 0.05 : v))), 3));
+    markGeo.setAttribute('aLit', new BufferAttribute(this.markLit, 1));
+    this.markMaterial = new ShaderMaterial({
+      vertexShader: markVertex,
+      fragmentShader: markFragment,
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+      uniforms: { uAlpha: { value: 0 }, uPixelRatio: { value: 1 }, uTime: { value: 0 } },
+    });
+    this.marks = new Points(markGeo, this.markMaterial);
+    this.marks.frustumCulled = false;
+
+    this.rig.add(this.points, this.pair, this.marks);
+    this.scene.add(this.dust, this.rig);
     this.resize();
     this.place(1, 0, 1);
   }
@@ -212,6 +344,24 @@ export class FlairScene {
     g.setAttribute('aCloud', new BufferAttribute(cloud(n, rand), 3));
     const r = new Float32Array(n * 4);
     for (let i = 0; i < r.length; i++) r[i] = rand();
+    g.setAttribute('aRand', new BufferAttribute(r, 4));
+    return g;
+  }
+
+  private buildPair(): BufferGeometry {
+    const rand = mulberry32(31);
+    const counts = [260, 170, 70];
+    const n = counts.reduce((a, b) => a + b, 0);
+    const who = new Float32Array(n);
+    const r = new Float32Array(n * 4);
+    let k = 0;
+    counts.forEach((c, w) => {
+      for (let i = 0; i < c; i++, k++) who[k] = w;
+    });
+    for (let i = 0; i < r.length; i++) r[i] = rand();
+    const g = new BufferGeometry();
+    g.setAttribute('position', new BufferAttribute(new Float32Array(n * 3), 3));
+    g.setAttribute('aWho', new BufferAttribute(who, 1));
     g.setAttribute('aRand', new BufferAttribute(r, 4));
     return g;
   }
@@ -235,6 +385,8 @@ export class FlairScene {
     this.renderer.setSize(w, h, false);
     this.material.uniforms.uPixelRatio!.value = dpr;
     this.dustMaterial.uniforms.uPixelRatio!.value = dpr;
+    this.pairMaterial.uniforms.uPixelRatio!.value = dpr;
+    this.markMaterial.uniforms.uPixelRatio!.value = dpr;
     this.camera.aspect = w / h;
     this.aspect = w / h;
     this.camera.updateProjectionMatrix();
@@ -256,8 +408,8 @@ export class FlairScene {
     const side = this.aspect > 1.15 ? Math.max(0, halfW - 2.1 - 0.5) : 0;
     const up = narrow ? halfH * 0.5 : 0;
     const shapeW = wMeet + wRings;
-    this.points.position.set(side * shapeW, up * shapeW, 0);
-    this.points.rotation.x = wTrail * 0.3;
+    this.rig.position.set(side * shapeW, up * shapeW, 0);
+    this.rig.rotation.x = wTrail * 0.3;
     // Travelling avant sur le sentier.
     // Le sentier se regarde toujours de près, quel que soit l'écran.
     this.camera.position.set(0, wTrail * 0.4, baseZ + (8.5 - baseZ) * wTrail - wTrail * dolly * 6.5);
@@ -307,6 +459,34 @@ export class FlairScene {
     this.place(Math.max(0, 1 - wTrail - wRings), wTrail, wRings, t.dolly);
     this.opts.onProgress(this.p);
 
+    // Narration du sentier : le duo avance, les jalons s'allument, les mots apparaissent.
+    const pt = pairT(t.dolly);
+    const pu = this.pairMaterial.uniforms;
+    pu.uT!.value = pt;
+    pu.uTime!.value = now / 1000;
+    pu.uAlpha!.value = Math.max(0, (wTrail - 0.35) / 0.65);
+    const mu = this.markMaterial.uniforms;
+    mu.uAlpha!.value = pu.uAlpha!.value;
+    mu.uTime!.value = now / 1000;
+    MILESTONES.forEach((m, i) => (this.markLit[i] = milestoneLit(m.t, t.dolly)));
+    (this.marks.geometry.getAttribute('aLit') as BufferAttribute).needsUpdate = true;
+    if (this.opts.onMarks) {
+      this.rig.updateMatrixWorld();
+      this.camera.updateMatrixWorld();
+      const canvas = this.opts.canvas;
+      const marks = MILESTONES.map((m, i) => {
+        const [x, y, z] = trailPos(m.t, 0);
+        this.tmp.set(x, y + 0.05, z).applyMatrix4(this.rig.matrixWorld).project(this.camera);
+        const inFront = this.tmp.z < 1 && Math.abs(this.tmp.x) < 1.1 && Math.abs(this.tmp.y) < 1.1;
+        return {
+          x: (this.tmp.x * 0.5 + 0.5) * canvas.clientWidth,
+          y: (-this.tmp.y * 0.5 + 0.5) * canvas.clientHeight,
+          a: inFront ? this.markLit[i]! * pu.uAlpha!.value : 0,
+        };
+      });
+      this.opts.onMarks(marks);
+    }
+
     this.renderer.render(this.scene, this.camera);
     this.watchBudget(dt * 1000);
     this.raf = requestAnimationFrame(this.frame);
@@ -346,8 +526,12 @@ export class FlairScene {
     this.stop();
     this.points.geometry.dispose();
     this.dust.geometry.dispose();
+    this.pair.geometry.dispose();
+    this.marks.geometry.dispose();
     this.material.dispose();
     this.dustMaterial.dispose();
+    this.pairMaterial.dispose();
+    this.markMaterial.dispose();
     this.renderer.dispose();
     this.renderer.forceContextLoss();
   }

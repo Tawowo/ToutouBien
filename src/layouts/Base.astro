@@ -75,5 +75,9 @@ const structured = [organizationLd(base), websiteLd(base), ...jsonLd];
       <slot />
     </main>
     <SiteFooter quiet={quietFooter} />
+    <script>
+      import { initMotion } from '~/scripts/motion';
+      initMotion();
+    </script>
   </body>
 </html>

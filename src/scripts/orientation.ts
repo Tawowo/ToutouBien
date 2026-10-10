@@ -1,13 +1,14 @@
-import { isComplete, noteFor, orient, QUESTIONS, type OrientationAnswers, type WishId } from '~/lib/orientation';
+import { isComplete, noteFor, orient, QUESTIONS, stageFromQuery, type OrientationAnswers, type WishId } from '~/lib/orientation';
 
 interface Payload {
   articles: { id: string; title: string; minutes: number }[];
   accompagnements: { slug: string; label: string; short: string }[];
   explorers: { id: string; title: string; question: string; href: string }[];
+  dossiers: { id: string; title: string; voice: string }[];
 }
 
 const NEXT: Record<WishId, string> = {
-  lire: 'Voir les ressources',
+  lire: 'Lire et comprendre',
   preparer: 'Préparer le rendez-vous',
   parler: 'En parler avec l’éducatrice',
 };
@@ -19,7 +20,12 @@ export function initOrientation(root: ParentNode = document): void {
   if (!wrap || !form) return;
   const payload = JSON.parse(wrap.dataset.payload ?? '{}') as Payload;
   const steps = Array.from(form.querySelectorAll<HTMLFieldSetElement>('[data-step]'));
-  const dots = Array.from(wrap.querySelectorAll<HTMLElement>('[data-dot]'));
+  const sky = wrap.querySelector<HTMLElement>('[data-or-sky]');
+  const stars = Array.from(wrap.querySelectorAll<SVGGElement>('[data-star]'));
+  const rays = Array.from(wrap.querySelectorAll<SVGLineElement>('[data-ray]'));
+  const sats = Array.from(wrap.querySelectorAll<SVGGElement>('[data-sat]'));
+  const count = wrap.querySelector<HTMLElement>('[data-or-count]');
+  const preset = wrap.querySelector<HTMLElement>('[data-or-preset]');
   const nav = form.querySelector<HTMLElement>('[data-or-nav]')!;
   const back = form.querySelector<HTMLButtonElement>('[data-or-back]')!;
   const nextLabel = form.querySelector<HTMLElement>('[data-or-next-label]')!;
@@ -44,9 +50,37 @@ export function initOrientation(root: ParentNode = document): void {
 
   const answered = (i: number) => steps[i]!.querySelector('input:checked') !== null;
 
+  /**
+   * La constellation suit les réponses en direct : une étoile s'allume dès qu'une question a
+   * une réponse, chaque préoccupation cochée ajoute une étoile satellite, et le trait relie les
+   * étoiles allumées qui se suivent. `n` est l'étape affichée (steps.length = récapitulatif).
+   */
   const setTrail = (n: number) => {
-    dots.forEach((d, k) => (d.dataset.state = k < n ? 'done' : k === n ? 'current' : 'todo'));
-    wrap.style.setProperty('--trail', (n / steps.length).toFixed(3));
+    if (!sky) return;
+    const lit = steps.map((_, i) => answered(i));
+    const done = n >= steps.length;
+    stars.forEach((st, k) => {
+      const on = k < steps.length ? lit[k]! : done;
+      st.classList.toggle('is-on', on);
+      st.classList.toggle('is-current', k === n);
+    });
+    rays.forEach((r, k) => r.classList.toggle('is-on', Boolean(lit[k]) && (k + 1 < steps.length ? Boolean(lit[k + 1]) : done)));
+    const checked = Array.from(steps[1]?.querySelectorAll<HTMLInputElement>('input') ?? []).map((i) => i.checked);
+    sats.forEach((s, k) => s.classList.toggle('is-on', Boolean(checked[k])));
+    if (count) count.textContent = done ? 'Votre constellation est complète' : `${lit.filter(Boolean).length} / ${steps.length} étoiles`;
+  };
+
+  // Repère pédagogique : celui de la dernière réponse choisie dans l'étape.
+  const showInsight = (step: HTMLFieldSetElement, input?: HTMLInputElement) => {
+    const box = step.querySelector<HTMLElement>('[data-insight]:not(input)');
+    if (!box) return;
+    const source = input?.checked ? input : Array.from(step.querySelectorAll<HTMLInputElement>('input:checked')).pop();
+    const text = source?.dataset.insight ?? '';
+    if (box.textContent === text) return;
+    box.textContent = text;
+    box.classList.remove('is-new');
+    void box.offsetWidth;
+    box.classList.add('is-new');
   };
 
   const go = (n: number, focus = true) => {
@@ -55,11 +89,12 @@ export function initOrientation(root: ParentNode = document): void {
     result.hidden = true;
     form.hidden = false;
     steps.forEach((s, k) => s.classList.toggle('is-current', k === n));
+    showInsight(steps[n]!);
     back.hidden = n === 0;
     nextLabel.textContent = n === steps.length - 1 ? 'Voir mon récapitulatif' : 'Continuer';
     setTrail(n);
     if (focus) steps[n]!.querySelector<HTMLElement>('[data-step-title]')?.focus({ preventScroll: true });
-    if (focus) wrap.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (focus) (sky ?? wrap).scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
 
   const el = (tag: string, text?: string) => {
@@ -91,6 +126,19 @@ export function initOrientation(root: ParentNode = document): void {
       $('[data-or-exp-question]').textContent = exp.question;
     }
 
+    const dossiers = r.dossiers.map((id) => payload.dossiers.find((d) => d.id === id)).filter((d): d is Payload['dossiers'][number] => Boolean(d));
+    $('[data-or-dossiers]').hidden = dossiers.length === 0;
+    $('[data-or-dossiers-list]').replaceChildren(
+      ...dossiers.map((d) => {
+        const li = el('li');
+        const link = el('a') as HTMLAnchorElement;
+        link.href = `/dossiers/${d.id}/`;
+        link.append(el('strong', d.title), el('small', d.voice));
+        li.append(link);
+        return li;
+      }),
+    );
+
     // Seuls les articles réellement publiés sont proposés.
     const reads = r.articles.map((id) => payload.articles.find((a) => a.id === id)).filter((a): a is Payload['articles'][number] => Boolean(a));
     $('[data-or-reads]').hidden = reads.length === 0;
@@ -113,14 +161,15 @@ export function initOrientation(root: ParentNode = document): void {
       url.searchParams.set('note', noteFor(answers));
       primary.href = url.pathname + url.search;
     } else {
-      primary.href = r.next === 'preparer' ? '/premier-rendez-vous/' : reads.length ? '/ressources/' : '/explorer/';
+      primary.href = r.next === 'preparer' ? '/premier-rendez-vous/' : dossiers.length ? `/dossiers/${dossiers[0]!.id}/` : reads.length ? '/blog/' : '/dossiers/';
     }
 
     form.hidden = true;
     result.hidden = false;
+    if (preset) preset.hidden = true;
     setTrail(steps.length);
     $('#or-result-title').focus({ preventScroll: true });
-    wrap.scrollIntoView({ block: 'start' });
+    (sky ?? wrap).scrollIntoView({ block: 'start' });
   };
 
   form.addEventListener('submit', (e) => {
@@ -143,20 +192,36 @@ export function initOrientation(root: ParentNode = document): void {
   form.addEventListener('change', (e) => {
     const input = e.target as HTMLInputElement;
     steps[current]!.querySelector<HTMLElement>('[data-step-error]')!.textContent = '';
+    showInsight(steps[current]!, input);
+    setTrail(current);
     window.clearTimeout(timer);
     if (input.type !== 'radio' || keyboard) return;
     const at = current;
     timer = window.setTimeout(() => {
       if (current === at && !form.hidden) form.requestSubmit();
-    }, 380);
+    }, 1200);
   });
 
   back.addEventListener('click', () => go(Math.max(0, current - 1)));
   $('[data-or-edit]').addEventListener('click', () => go(0));
   $('[data-or-restart]').addEventListener('click', () => {
     form.reset();
+    steps.forEach((st) => showInsight(st));
+    if (preset) preset.hidden = true;
     go(0);
   });
 
-  go(0, false);
+  // Réponse reprise depuis l'accueil (`?stage=`) : la première question est déjà répondue,
+  // on commence à la deuxième, et « Retour » permet toujours de la modifier.
+  const stage = stageFromQuery(new URLSearchParams(location.search).get('stage'));
+  const stageInput = stage ? steps[0]!.querySelector<HTMLInputElement>(`input[value="${stage}"]`) : null;
+  if (stageInput) {
+    stageInput.checked = true;
+    showInsight(steps[0]!, stageInput);
+    if (preset) {
+      preset.textContent = `Repris de l’accueil : « ${stageInput.closest('label')?.querySelector('.or__opt-label')?.textContent ?? ''} ». Modifiable avec « Retour ».`;
+      preset.hidden = false;
+    }
+    go(1, false);
+  } else go(0, false);
 }

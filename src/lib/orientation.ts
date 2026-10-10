@@ -86,6 +86,8 @@ export interface OrientationResult {
   /** Message de prudence à afficher en premier (santé, sécurité). */
   care: boolean;
   next: WishId;
+  /** Dossiers « Comprendre les situations » liés aux préoccupations choisies. */
+  dossiers: string[];
 }
 
 const label = <T extends string>(list: Option<T>[], id: T | undefined) => list.find((o) => o.id === id)?.label;
@@ -111,6 +113,45 @@ const CONCERN_TOPIC: Record<ConcernId, string> = {
   mordille: 'chiot',
   comprendre: 'comprendre',
 };
+
+const CONCERN_DOSSIER: Partial<Record<ConcernId, string>> = {
+  promenade: 'laisse',
+  rappel: 'rappel',
+  solitude: 'solitude',
+  visites: 'visites',
+  congeneres: 'chiens',
+  mordille: 'chiot',
+};
+
+/**
+ * Repère pédagogique affiché après chaque réponse : une idée générale et prudente,
+ * jamais une interprétation de la situation de la personne. Textes à relire par l'éducatrice.
+ */
+export const INSIGHTS: Record<StageId | ConcernId | FeelingId | WishId, string> = {
+  'chiot-a-venir': 'Préparer avant l’arrivée apporte beaucoup de sérénité : un coin de repos, des règles communes à toute la famille, les premiers trajets.',
+  'chiot-arrive': 'Les premières semaines sont faites de découvertes. Un chiot dort beaucoup : le repos compte autant que les apprentissages.',
+  adopte: 'Un chien qui change de foyer a besoin de temps pour prendre ses repères. Rien ne presse.',
+  installe: 'Des habitudes installées peuvent évoluer à tout âge, en douceur, quand on comprend ce qui les entretient.',
+  senior: 'En vieillissant, un chien peut changer de rythme et de besoins. Un avis vétérinaire aide à faire la part des choses.',
+  promenade: 'Notre pas est lent pour beaucoup de chiens, et flairer fait partie de leurs besoins : une laisse tendue a souvent plusieurs raisons.',
+  rappel: 'Revenir, pour un chien, c’est choisir entre ce qu’il fait et ce qu’on lui propose. Le contexte compte beaucoup.',
+  solitude: 'Rester seul s’apprend progressivement. Filmer quelques minutes d’absence aide à voir ce qui se passe vraiment.',
+  visites: 'Sauter est souvent une façon de saluer. Nos réactions, même pour repousser, peuvent l’entretenir sans le vouloir.',
+  congeneres: 'La distance à laquelle un chien commence à réagir est un repère précieux pour avancer.',
+  inquietude: 'Une peur se respecte : on avance à une distance où le chien reste capable d’observer.',
+  mordille: 'Un chiot explore le monde avec sa gueule. C’est normal, et cela s’accompagne.',
+  comprendre: 'Observer sans juger est déjà une belle façon de mieux se comprendre.',
+  curieux: 'La curiosité est un excellent point de départ.',
+  perplexe: 'Ne pas savoir par où commencer est très fréquent : c’est justement l’objet de ce parcours.',
+  fatigue: 'Votre fatigue compte aussi : les pistes doivent pouvoir tenir dans votre quotidien.',
+  inquiet: 'Si votre chien semble souffrir, ou si la sécurité de quelqu’un est en jeu, parlez-en d’abord à votre vétérinaire.',
+  lire: 'Les dossiers et le blog sont faits pour cela : à votre rythme, sans engagement.',
+  preparer: 'Noter quelques observations à l’avance rend le premier échange plus riche.',
+  parler: 'Un court récapitulatif de vos réponses vous sera proposé dans le formulaire, modifiable.',
+};
+
+/** Étape reprise depuis l'accueil (`?stage=`), si elle est valide. */
+export const stageFromQuery = (value: string | null): StageId | undefined => STAGES.find((s) => s.id === value)?.id;
 
 const CONCERN_EXPLORER: Record<ConcernId, ExplorerId> = {
   promenade: 'flair',
@@ -164,6 +205,7 @@ export function orient(a: OrientationAnswers): OrientationResult {
     topic: puppy && main === 'comprendre' ? 'chiot' : CONCERN_TOPIC[main],
     care: a.feeling === 'inquiet' || a.stage === 'senior',
     next: a.wish ?? 'lire',
+    dossiers: [...new Set(concerns.map((c) => CONCERN_DOSSIER[c]).filter((d): d is string => Boolean(d)))].slice(0, 3),
   };
 }
 

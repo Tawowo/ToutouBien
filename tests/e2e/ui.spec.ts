@@ -213,3 +213,78 @@ test('dossiers : la liste mène à chaque dossier, la carte suit la lecture', as
   await page.getByRole('link', { name: /Dossier suivant/ }).click();
   await expect(page).toHaveURL(/\/dossiers\/rappel\/$/);
 });
+
+test('orientation : parcours entièrement au clavier, constellation et repères', async ({ page }) => {
+  await page.goto('/orientation/');
+  const step = page.locator('.or__step.is-current');
+  // Question 1 : flèches pour choisir (pas d'avance automatique au clavier), Entrée pour valider.
+  await step.locator('input').first().focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(step.locator('input:checked')).toHaveValue('chiot-arrive');
+  await expect(step.locator('.or__insight')).toContainText('premières semaines');
+  await expect(page.locator('[data-star="0"]')).toHaveClass(/is-on/);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.or__step.is-current .or__q-text')).toHaveText(/occupe vos pensées/);
+  // Question 2 : cases à cocher avec Espace ; chaque coche ajoute une étoile satellite.
+  const boxes = page.locator('.or__step.is-current input');
+  await boxes.nth(0).focus();
+  await page.keyboard.press('Space');
+  await boxes.nth(2).focus();
+  await page.keyboard.press('Space');
+  await expect(page.locator('[data-sat].is-on')).toHaveCount(2);
+  await page.keyboard.press('Enter');
+  await page.locator('.or__step.is-current input').first().focus();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await page.locator('.or__step.is-current input').first().focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.or__step.is-current [data-step-error]')).toHaveText(/Choisissez une réponse/);
+  await page.keyboard.press('Space');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('heading', { name: /récapitulatif/ })).toBeFocused();
+  await expect(page.locator('[data-star="4"]')).toHaveClass(/is-on/);
+  await expect(page.locator('[data-or-dossiers-list] a')).toHaveCount(2);
+  await expect(page.locator('[data-or-primary]')).toHaveAttribute('href', '/dossiers/laisse/');
+  // Modifier conserve les réponses ; Recommencer les efface.
+  await page.getByRole('button', { name: 'Modifier mes réponses' }).click();
+  await expect(page.locator('input[name="stage"]:checked')).toHaveValue('chiot-arrive');
+  await page.getByRole('button', { name: /Continuer/ }).click();
+  await page.getByRole('button', { name: /Continuer/ }).click();
+  await page.getByRole('button', { name: /Continuer/ }).click();
+  await page.getByRole('button', { name: /récapitulatif/ }).click();
+  await page.getByRole('button', { name: 'Recommencer' }).click();
+  await expect(page.locator('.or__form input:checked')).toHaveCount(0);
+  await expect(page.locator('[data-star].is-on')).toHaveCount(0);
+  await expect(page.locator('.or__step.is-current .or__q-text')).toHaveText(/situation aujourd/);
+});
+
+test('orientation : reprise du choix fait sur l’accueil, modifiable', async ({ page }) => {
+  await page.goto('/orientation/?stage=adopte');
+  await expect(page.locator('[data-or-preset]')).toContainText('Un chien adulte vient d’arriver');
+  await expect(page.locator('.or__step.is-current .or__q-text')).toHaveText(/occupe vos pensées/);
+  await page.getByRole('button', { name: 'Retour' }).click();
+  await expect(page.locator('input[name="stage"]:checked')).toHaveValue('adopte');
+  await page.goto('/orientation/?stage=inconnu');
+  await expect(page.locator('[data-or-preset]')).toBeHidden();
+  await expect(page.locator('.or__step.is-current .or__q-text')).toHaveText(/situation aujourd/);
+});
+
+test('orientation : chaque préoccupation mène à un récapitulatif cohérent', async ({ page }) => {
+  await page.goto('/orientation/');
+  const labels = await page.locator('input[name="concerns"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
+  for (const value of labels) {
+    await page.locator('input[name="stage"][value="installe"]').check({ force: true });
+    await page.getByRole('button', { name: /Continuer/ }).click();
+    await page.locator(`input[name="concerns"][value="${value}"]`).check({ force: true });
+    await page.getByRole('button', { name: /Continuer/ }).click();
+    await page.locator('input[name="feeling"][value="curieux"]').check({ force: true });
+    await page.getByRole('button', { name: /Continuer/ }).click();
+    await page.locator('input[name="wish"][value="lire"]').check({ force: true });
+    await page.getByRole('button', { name: /récapitulatif/ }).click();
+    await expect(page.getByRole('heading', { name: /récapitulatif/ })).toBeVisible();
+    await expect(page.locator('[data-or-acc]')).toHaveAttribute('href', /^\/accompagnements\/[a-z-]+\/$/);
+    const href = await page.locator('[data-or-primary]').getAttribute('href');
+    expect(href).toMatch(/^\/(dossiers|blog)\//);
+    await page.getByRole('button', { name: 'Recommencer' }).click();
+  }
+});

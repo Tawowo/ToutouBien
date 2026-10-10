@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getCollection } from 'astro:content';
-import { isComplete, noteFor, orient, QUESTIONS } from '~/lib/orientation';
+import { INSIGHTS, isComplete, noteFor, orient, QUESTIONS, stageFromQuery } from '~/lib/orientation';
+import { SITUATIONS } from '~/lib/decodeur';
 import { DEFAULT_STATE, readPosture, cuesSentence, SCENARIOS } from '~/lib/signaux';
 import { SCENTS, scentAt, sniff, distanceTo, levelWord } from '~/lib/flair-field';
 import { thresholds, zoneFor } from '~/lib/distance';
@@ -44,6 +45,37 @@ describe('orientation', () => {
         expect(topics).toContain(r.topic);
         expect(r.articles.length).toBeLessThanOrEqual(4);
       }
+  });
+
+  it('donne un résultat complet pour toutes les combinaisons de réponses, sans impasse', () => {
+    const dossierIds = SITUATIONS.map((d) => d.id);
+    const concerns = QUESTIONS[1].options.map((o) => o.id);
+    let n = 0;
+    for (const stage of QUESTIONS[0].options)
+      for (let mask = 1; mask < 1 << concerns.length; mask++) {
+        const picked = concerns.filter((_, i) => mask & (1 << i));
+        for (const feeling of QUESTIONS[2].options)
+          for (const wish of QUESTIONS[3].options) {
+            const r = orient({ stage: stage.id, concerns: picked, feeling: feeling.id, wish: wish.id });
+            expect(['chiot', 'chien-adulte', 'quotidien', 'comprendre']).toContain(r.accompagnement);
+            expect(['flair', 'distance', 'signaux']).toContain(r.explorer);
+            expect(r.summary.length).toBeGreaterThanOrEqual(3);
+            expect(r.next).toBe(wish.id);
+            r.dossiers.forEach((d) => expect(dossierIds).toContain(d));
+            n++;
+          }
+      }
+    expect(n).toBe(5 * 255 * 4 * 3);
+  });
+
+  it('propose un repère pédagogique pour chaque réponse possible', () => {
+    for (const q of QUESTIONS) for (const o of q.options) expect(INSIGHTS[o.id]?.length ?? 0).toBeGreaterThan(20);
+  });
+
+  it('ne reprend depuis l’adresse qu’une étape valide', () => {
+    expect(stageFromQuery('adopte')).toBe('adopte');
+    expect(stageFromQuery('<script>')).toBeUndefined();
+    expect(stageFromQuery(null)).toBeUndefined();
   });
 
   it('reformule prudemment et limite la note transmise', () => {

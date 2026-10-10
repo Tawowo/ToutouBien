@@ -1,7 +1,8 @@
 ---
 import Base from '~/layouts/Base.astro';
 import Icon from '~/components/Icon.astro';
-import { QUESTIONS } from '~/lib/orientation';
+import { INSIGHTS, QUESTIONS } from '~/lib/orientation';
+import { SITUATIONS } from '~/lib/decodeur';
 import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
 import { EXPERIENCES } from '~/content/explorer';
 import { visibleArticles, readingMinutes } from '~/lib/articles';
@@ -11,7 +12,22 @@ const data = {
   articles,
   accompagnements: ACCOMPAGNEMENTS.map((a) => ({ slug: a.slug, label: a.label, short: a.short })),
   explorers: EXPERIENCES.map((e) => ({ id: e.id, title: e.title, question: e.question, href: e.href })),
+  dossiers: SITUATIONS.map((d) => ({ id: d.id, title: d.title, voice: d.voice })),
 };
+// Constellation du parcours : une étoile par question, l'arrivée, et une étoile satellite par préoccupation.
+const STARS = [
+  { x: 46, y: 196, word: 'Situation' },
+  { x: 118, y: 92, word: 'Préoccupations' },
+  { x: 204, y: 160, word: 'Ressenti' },
+  { x: 262, y: 70, word: 'Envie' },
+];
+const END = { x: 290, y: 214, word: 'Vos pistes' };
+const concernCount = QUESTIONS[1].options.length;
+const SAT = Array.from({ length: concernCount }, (_, i) => {
+  const a = (i / concernCount) * Math.PI * 2 - Math.PI / 2;
+  return { x: STARS[1]!.x + Math.cos(a) * 34, y: STARS[1]!.y + Math.sin(a) * 34 };
+});
+const POINTS = [...STARS, END];
 const steps = QUESTIONS.length;
 ---
 <Base
@@ -28,11 +44,31 @@ const steps = QUESTIONS.length;
         <p class="or__intro">Quatre questions, deux minutes. Vous obtenez un récapitulatif et des pistes pour la suite. Ce n’est pas un diagnostic, et rien n’est enregistré ni envoyé.</p>
       </header>
 
-      <ol class="or__trail" aria-hidden="true">
-        {QUESTIONS.map((_, i) => <li data-dot={i}><span>{String(i + 1).padStart(2, '0')}</span></li>)}
-        <li data-dot={steps}><span><Icon name="check" /></span></li>
-      </ol>
+      <div class="or__stage">
+      <figure class="or__sky" aria-hidden="true" data-or-sky>
+        <svg viewBox="0 0 320 250" focusable="false">
+          {POINTS.slice(1).map((p, i) => (
+            <line x1={POINTS[i]!.x} y1={POINTS[i]!.y} x2={p.x} y2={p.y} pathLength="1" class="or__ray" data-ray={i} />
+          ))}
+          {SAT.map((p, i) => (
+            <g class="or__sat" data-sat={i}>
+              <line x1={STARS[1]!.x} y1={STARS[1]!.y} x2={p.x} y2={p.y} pathLength="1" />
+              <circle cx={p.x} cy={p.y} r="2.6" />
+            </g>
+          ))}
+          {POINTS.map((p, i) => (
+            <g class:list={['or__star', i === POINTS.length - 1 && 'or__star--end']} data-star={i}>
+              <circle cx={p.x} cy={p.y} r="16" class="or__halo" />
+              <circle cx={p.x} cy={p.y} r={i === POINTS.length - 1 ? 6 : 4.5} class="or__core" />
+              <text x={p.x} y={p.y + (i === 1 ? -46 : p.y > 150 ? 30 : -22)} text-anchor="middle">{p.word}</text>
+            </g>
+          ))}
+        </svg>
+        <figcaption class="or__sky-count" data-or-count></figcaption>
+      </figure>
 
+      <div class="or__main">
+      <p class="or__preset" data-or-preset hidden></p>
       <form class="or__form" data-or-form novalidate>
         {
           QUESTIONS.map((q, i) => (
@@ -45,7 +81,7 @@ const steps = QUESTIONS.length;
               <div class="or__options">
                 {q.options.map((o) => (
                   <label class="or__opt">
-                    <input type={q.multiple ? 'checkbox' : 'radio'} name={q.key} value={o.id} />
+                    <input type={q.multiple ? 'checkbox' : 'radio'} name={q.key} value={o.id} data-insight={INSIGHTS[o.id]} />
                     <span class="or__opt-body">
                       <span class="or__opt-label">{o.label}</span>
                       {'hint' in o && o.hint && <span class="or__opt-hint">{o.hint}</span>}
@@ -54,6 +90,7 @@ const steps = QUESTIONS.length;
                   </label>
                 ))}
               </div>
+              <p class="or__insight" aria-live="polite" data-insight></p>
               <p class="or__error" role="alert" data-step-error></p>
             </fieldset>
           ))
@@ -85,6 +122,10 @@ const steps = QUESTIONS.length;
             <Icon name="arrow" class="or__card-arrow" />
           </a>
         </div>
+        <div class="or__dossiers" data-or-dossiers hidden>
+          <h3>Les dossiers liés à vos réponses</h3>
+          <ul role="list" data-or-dossiers-list></ul>
+        </div>
         <div class="or__reads" data-or-reads hidden>
           <h3>À lire pour commencer</h3>
           <ul role="list" data-or-reads-list></ul>
@@ -96,6 +137,8 @@ const steps = QUESTIONS.length;
         </div>
         <p class="or__privacy">Vos réponses restent dans cette page et disparaissent dès que vous la quittez. Si vous choisissez d’en parler, seul un court récapitulatif est proposé dans le formulaire, que vous pouvez modifier ou effacer.</p>
       </section>
+      </div>
+      </div>
 
       <noscript>
         <p class="or__noscript">Ce parcours a besoin de JavaScript. Vous pouvez aussi parcourir directement <a href="/accompagnements/">les accompagnements</a> ou <a href="/parlons-de-votre-chien/">nous écrire</a>.</p>
@@ -118,7 +161,7 @@ const steps = QUESTIONS.length;
   .or__inner {
     display: grid;
     gap: var(--space-l);
-    max-width: 62rem;
+    max-width: 74rem;
   }
 
   .or__head {
@@ -141,74 +184,248 @@ const steps = QUESTIONS.length;
     color: var(--craie-douce);
   }
 
-  /* Le sentier : quatre étapes et l'arrivée. */
-  .or__trail {
+  /* La constellation du parcours : chaque réponse allume une étoile. */
+  .or__stage {
+    display: grid;
+    gap: var(--space-l);
+    align-items: start;
+  }
+
+  @media (min-width: 60rem) {
+    .or__stage {
+      grid-template-columns: 17rem minmax(0, 1fr);
+      gap: var(--space-xl);
+    }
+
+    .or__sky {
+      position: sticky;
+      top: calc(var(--header-h, 5rem) + var(--space-m));
+    }
+  }
+
+  .or__sky {
     display: none;
+    margin: 0;
+    scroll-margin-top: calc(var(--header-h, 5rem) + var(--space-s));
+  }
+
+  .is-live .or__sky {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: center;
+  }
+
+  .or__sky svg {
+    width: 100%;
+    max-width: 17rem;
+    overflow: visible;
+  }
+
+  @media (max-width: 59.99rem) {
+    .or__sky svg {
+      max-width: 11rem;
+    }
+
+    .or__stage {
+      gap: var(--space-s);
+    }
+  }
+
+  .or__ray,
+  .or__sat line {
+    stroke: var(--lagon);
+    stroke-width: 1.2;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 900ms var(--ease-out);
+  }
+
+  .or__ray {
+    filter: drop-shadow(0 0 4px rgb(154 211 205 / 0.7));
+  }
+
+  .or__ray.is-on,
+  .or__sat.is-on line {
+    stroke-dashoffset: 0;
+  }
+
+  .or__sat line {
+    stroke-width: 0.8;
+    opacity: 0.7;
+  }
+
+  .or__sat circle {
+    fill: var(--lueur);
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0.2);
+    transition: opacity 400ms ease 250ms, transform 600ms var(--ease-out) 250ms;
+  }
+
+  .or__sat.is-on circle {
+    opacity: 1;
+    transform: none;
+  }
+
+  .or__halo {
+    fill: rgb(154 211 205 / 0.08);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: fill 500ms ease, transform 700ms var(--ease-out);
+  }
+
+  .or__core {
+    fill: rgb(154 211 205 / 0.28);
+    transition: fill 400ms ease;
+  }
+
+  .or__star text {
+    fill: var(--craie-douce);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    transition: opacity 400ms ease, fill 400ms ease;
+  }
+
+  .or__star.is-current .or__halo {
+    fill: rgb(154 211 205 / 0.18);
+    transform: scale(1.25);
+  }
+
+  .or__star.is-current text,
+  .or__star.is-on text {
+    opacity: 1;
+    fill: var(--craie);
+  }
+
+  .or__star.is-on .or__core {
+    fill: var(--lueur);
+  }
+
+  .or__star.is-on .or__halo {
+    fill: rgb(154 211 205 / 0.22);
+  }
+
+  .or__star--end.is-on .or__halo {
+    fill: rgb(154 211 205 / 0.35);
+    transform: scale(1.6);
+  }
+
+  .or__sky-count {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--lagon);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .or__star.is-current .or__halo {
+      animation: or-breathe 2.8s ease-in-out infinite;
+    }
+  }
+
+  @keyframes or-breathe {
+    50% {
+      transform: scale(1.5);
+    }
+  }
+
+  .or__main {
+    display: grid;
+    gap: var(--space-m);
+    min-width: 0;
+  }
+
+  .or__preset {
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgb(154 211 205 / 0.35);
+    color: var(--lagon);
+    font-size: var(--step--1);
+    justify-self: start;
+  }
+
+  .or__preset[hidden] {
+    display: none;
+  }
+
+  .or__insight {
     position: relative;
-    grid-template-columns: repeat(5, 1fr);
+    padding-left: 1.6rem;
+    color: var(--craie);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-1);
+    line-height: 1.3;
+  }
+
+  .or__insight:empty {
+    display: none;
+  }
+
+  .or__insight::before {
+    content: '';
+    position: absolute;
+    left: 0.2rem;
+    top: 0.55em;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    background: var(--lueur);
+    box-shadow: 0 0 10px rgb(154 211 205 / 0.9);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .or__insight.is-new {
+      animation: or-in 600ms var(--ease-out) both;
+    }
+  }
+
+  .or__dossiers h3,
+  .or__reads h3 {
+    margin-bottom: var(--space-s);
+  }
+
+  .or__dossiers :global(ul) {
+    display: grid;
+    gap: var(--space-s);
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
     padding: 0;
     list-style: none;
   }
 
-  .is-live .or__trail {
+  .or__dossiers :global(a) {
     display: grid;
+    gap: 0.25rem;
+    height: 100%;
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    border: 1px solid rgb(154 211 205 / 0.25);
+    background: rgb(255 255 255 / 0.03);
+    color: var(--craie) !important;
+    text-decoration: none;
+    transition: border-color var(--dur) ease, transform var(--dur) var(--ease-out);
   }
 
-  .or__trail::before,
-  .or__trail::after {
-    content: '';
-    position: absolute;
-    left: 10%;
-    right: 10%;
-    top: 50%;
-    height: 2px;
-    border-radius: 2px;
-    background: rgb(255 255 255 / 0.14);
+  .or__dossiers :global(a:hover) {
+    border-color: var(--lagon);
+    transform: translateY(-2px);
   }
 
-  .or__trail::after {
-    right: auto;
-    width: calc(80% * var(--trail, 0));
-    background: var(--lueur);
-    transition: width 700ms var(--ease-out);
+  .or__dossiers :global(a strong) {
+    line-height: 1.1;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--step-1);
   }
 
-  .or__trail li {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    place-items: center;
-  }
-
-  .or__trail span {
-    display: grid;
-    place-items: center;
-    width: 2.6rem;
-    height: 2.6rem;
-    border-radius: 50%;
-    background: var(--nuit);
-    border: 1.5px solid rgb(255 255 255 / 0.25);
-    font-family: var(--font-mono);
-    font-size: var(--step--2);
+  .or__dossiers :global(a small) {
     color: var(--craie-douce);
-    transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease, transform 500ms var(--ease-out);
-  }
-
-  .or__trail span :global(svg) {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  .or__trail li[data-state='done'] span {
-    background: var(--lueur);
-    border-color: var(--lueur);
-    color: var(--nuit);
-  }
-
-  .or__trail li[data-state='current'] span {
-    border-color: var(--lueur);
-    color: var(--craie);
-    transform: scale(1.18);
+    font-style: italic;
   }
 
   .or__form {

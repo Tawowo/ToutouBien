@@ -155,8 +155,22 @@ const year = new Date().getFullYear();
   .site-footer__grid {
     display: grid;
     gap: var(--space-l);
-    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     padding-bottom: var(--space-l);
+  }
+
+  .site-footer__brand {
+    grid-column: 1 / -1;
+  }
+
+  @media (min-width: 56rem) {
+    .site-footer__grid {
+      grid-template-columns: 1.3fr repeat(3, 1fr);
+    }
+
+    .site-footer__brand {
+      grid-column: auto;
+    }
   }
 
   .site-footer__brand {

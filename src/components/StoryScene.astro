@@ -33,10 +33,9 @@ const dots = Array.from({ length: 22 }, (_, i) => ({ x: 120 + ((i * 97) % 360), 
   {
     scene === 'echange' && (
       <g class="s-echange">
-        <svg x="60" y="40" width="480" height="380" viewBox="150 110 800 620">
+        <svg x="130" y="62" width="340" height="318" viewBox="0 0 1080 1010">
           <path d={emblem} fill="#9ad3cd" fill-rule="evenodd" />
         </svg>
-        <circle cx="300" cy="190" r="70" fill="#dff3ef" opacity="0.12" class="s-glow" />
       </g>
     )
   }
@@ -89,9 +88,6 @@ const dots = Array.from({ length: 22 }, (_, i) => ({ x: 120 + ((i * 97) % 360), 
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .s-glow {
-      animation: glow 3s ease-in-out infinite alternate;
-    }
 
     .s-lens {
       animation: lens 6s ease-in-out infinite alternate;

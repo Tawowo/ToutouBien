@@ -33,7 +33,8 @@ export interface Capabilities {
 
 export function pickTier(c: Capabilities): Tier {
   if (!c.webgl2 || c.reducedMotion || c.saveData) return 'fallback';
-  if (c.coarsePointer && c.width < 768) return 'low';
+  // Petits écrans (téléphones) : palier léger, quel que soit le type de pointeur.
+  if (c.width < 768) return 'low';
   const memory = c.memoryGb ?? 8;
   if (c.cores <= 4 || memory <= 4 || c.width < 1100) return 'medium';
   return 'high';

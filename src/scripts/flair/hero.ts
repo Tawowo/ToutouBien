@@ -17,11 +17,17 @@ export function initFlairHero(): void {
 
   const tier = tierFromQuery(location.search) ?? pickTier(readCapabilities());
   section.dataset.tier = tier;
-  if (tier === 'fallback') return;
+  if (tier === 'fallback') {
+    section.dataset.mode = 'static';
+    return;
+  }
 
   const emblem = section.querySelector<SVGPathElement>('[data-emblem-path]');
   const svg = emblem?.ownerSVGElement;
-  if (!emblem || !svg) return;
+  if (!emblem || !svg) {
+    section.dataset.mode = 'static';
+    return;
+  }
   section.dataset.mode = 'cinema';
   const vb = svg.viewBox.baseVal;
   const blocks = {
@@ -97,7 +103,10 @@ export function initFlairHero(): void {
     (entries) => {
       if (entries.some((e) => e.isIntersecting)) {
         near.disconnect();
-        void load();
+        // Chargement quand le navigateur est disponible : le texte et le logo statique s'affichent d'abord.
+        const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+        if (idle) idle(() => void load(), { timeout: 1200 });
+        else setTimeout(() => void load(), 200);
       }
     },
     { rootMargin: '300px' },

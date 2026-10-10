@@ -19,7 +19,7 @@ const d = emblemRaw.match(/ d="([^"]+)"/)?.[1] ?? '';
 const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
 
 ---
-<section class="cine on-dark" data-cine data-mode="static" data-chapter="0" aria-labelledby="cine-title">
+<section class="cine on-dark" data-cine data-mode="auto" data-chapter="0" aria-labelledby="cine-title">
   <div class="cine__sticky">
     <div class="cine__glow" aria-hidden="true"></div>
     <canvas class="cine__canvas" aria-hidden="true"></canvas>
@@ -126,39 +126,39 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
     transition: opacity 900ms var(--ease-out);
   }
 
-  .cine[data-mode='static'] .cine__sticky {
+  :is(.cine[data-mode='static'], :global(html:not(.can-cine)) .cine) .cine__sticky {
     grid-template-areas: 'art' 'intro' 'chapters';
     width: var(--page);
     margin-inline: auto;
   }
 
-  .cine[data-mode='static'] .cine__intro,
-  .cine[data-mode='static'] .cine__chapters {
+  :is(.cine[data-mode='static'], :global(html:not(.can-cine)) .cine) .cine__intro,
+  :is(.cine[data-mode='static'], :global(html:not(.can-cine)) .cine) .cine__chapters {
     width: auto;
     margin: 0;
   }
 
-  .cine[data-mode='static'] .cine__intro {
+  :is(.cine[data-mode='static'], :global(html:not(.can-cine)) .cine) .cine__intro {
     grid-area: intro;
   }
 
-  .cine[data-mode='static'] .cine__chapters {
+  :is(.cine[data-mode='static'], :global(html:not(.can-cine)) .cine) .cine__chapters {
     grid-area: chapters;
   }
 
-  .cine[data-mode='static'] .cine__static {
+  :is(.cine[data-mode='static'], :global(html:not(.can-cine)) .cine) .cine__static {
     width: min(70%, 18rem);
     justify-self: end;
   }
 
   @media (min-width: 60rem) {
-    .cine[data-mode='static'] .cine__sticky {
+    :is(.cine[data-mode='static'], :global(html:not(.can-cine)) .cine) .cine__sticky {
       grid-template-columns: 7fr 5fr;
       grid-template-areas: 'intro art' 'chapters chapters';
       column-gap: var(--space-xl);
     }
 
-    .cine[data-mode='static'] .cine__static {
+    :is(.cine[data-mode='static'], :global(html:not(.can-cine)) .cine) .cine__static {
       width: min(100%, 30rem);
       justify-self: center;
     }
@@ -239,11 +239,11 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
   }
 
   /* ============ Mode cinéma ============ */
-  .cine[data-mode='cinema'] {
+  :global(.can-cine) .cine:not([data-mode='static']) {
     height: 320svh;
   }
 
-  .cine[data-mode='cinema'] .cine__sticky {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__sticky {
     position: sticky;
     top: 0;
     height: 100svh;
@@ -255,7 +255,7 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
     opacity: 1;
   }
 
-  .cine[data-mode='cinema'] .cine__static {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__static {
     position: absolute;
     z-index: -1;
     right: 6%;
@@ -269,28 +269,28 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
   }
 
   /* Chaque bloc suit la progression lissée (--a), exactement comme les particules. */
-  .cine[data-mode='cinema'] .cine__block {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__block {
     --a: 0;
     opacity: var(--a);
     transform: translate3d(0, calc((1 - var(--a)) * 1.5rem), 0);
     will-change: opacity, transform;
   }
 
-  .cine[data-mode='cinema'] .cine__intro {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__intro {
     --a: 1;
     position: absolute;
     inset: 0;
     padding-top: 4.75rem;
   }
 
-  .cine[data-mode='cinema'] .cine__chapters {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__chapters {
     position: absolute;
     inset: auto 0 13svh 0;
     margin: 0 auto;
     display: block;
   }
 
-  .cine[data-mode='cinema'] .cine__chapter {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__chapter {
     position: absolute;
     left: 0;
     bottom: 0;
@@ -299,11 +299,11 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
     padding-top: 0;
   }
 
-  .cine[data-mode='cinema'] .cine__chapter-title {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__chapter-title {
     font-size: clamp(2.2rem, 1.3rem + 3vw, 4.4rem);
   }
 
-  .cine[data-mode='cinema'] .cine__rail {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__rail {
     display: block;
     position: absolute;
     right: var(--gutter);
@@ -335,7 +335,7 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
     white-space: nowrap;
   }
 
-  .cine[data-mode='cinema'] .cine__signature {
+  :global(.can-cine) .cine:not([data-mode='static']) .cine__signature {
     display: block;
     position: absolute;
     right: calc(var(--gutter) + 2rem);
@@ -347,34 +347,34 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
   }
 
   @media (max-width: 59.99rem) {
-    .cine[data-mode='cinema'] .cine__static {
+    :global(.can-cine) .cine:not([data-mode='static']) .cine__static {
       top: 9%;
       right: 50%;
       width: min(62vw, 17rem);
       transform: translateX(50%);
     }
 
-    .cine[data-mode='cinema'] .cine__intro > .eyebrow {
+    :global(.can-cine) .cine:not([data-mode='static']) .cine__intro > .eyebrow {
       display: none;
     }
 
-    .cine[data-mode='cinema'] .cine__intro {
+    :global(.can-cine) .cine:not([data-mode='static']) .cine__intro {
       align-content: end;
       gap: var(--space-s);
       padding-bottom: 6svh;
       background: linear-gradient(to top, rgb(11 21 20 / 0.94) 42%, rgb(11 21 20 / 0.55) 60%, transparent 76%);
     }
 
-    .cine[data-mode='cinema'] .cine__rail,
-    .cine[data-mode='cinema'] .cine__signature {
+    :global(.can-cine) .cine:not([data-mode='static']) .cine__rail,
+    :global(.can-cine) .cine:not([data-mode='static']) .cine__signature {
       display: none;
     }
 
-    .cine[data-mode='cinema'] .cine__chapters {
+    :global(.can-cine) .cine:not([data-mode='static']) .cine__chapters {
       bottom: 7svh;
     }
 
-    .cine[data-mode='cinema'] .cine__chapter {
+    :global(.can-cine) .cine:not([data-mode='static']) .cine__chapter {
       padding: var(--space-m);
       border-radius: var(--radius-l);
       background: rgb(11 21 20 / 0.78);

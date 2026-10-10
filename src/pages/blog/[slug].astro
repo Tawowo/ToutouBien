@@ -196,6 +196,12 @@ const jsonLd = draft || !d.publishDate
     padding-block: var(--space-l) var(--space-xl);
   }
 
+  @media (max-width: 47.99rem) {
+    .article__head :global(.article__fil) {
+      display: none;
+    }
+  }
+
   .article__fil {
     position: absolute;
     inset: auto 0 0 0;

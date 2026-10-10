@@ -1,15 +1,16 @@
 ---
 /**
- * Hub des ressources. La page n'est générée que si au moins un contenu est visible,
- * afin de ne jamais publier une page vide.
+ * Bibliothèque vivante : recherche, filtres combinables et parcours de lecture.
+ * La page n'est générée que si au moins un contenu est visible, afin de ne jamais publier une page vide.
  */
 import Base from '~/layouts/Base.astro';
-import PageIntro from '~/components/PageIntro.astro';
-import ArticleCard from '~/components/ArticleCard.astro';
-import CtaBand from '~/components/CtaBand.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import PlateArt from '~/components/PlateArt.astro';
 import Icon from '~/components/Icon.astro';
-import { CATEGORIES } from '~/lib/categories';
-import { visibleArticles } from '~/lib/articles';
+import { CATEGORIES, categoryLabel, categoryMotif } from '~/lib/categories';
+import { isDraftArticle, readingMinutes, visibleArticles } from '~/lib/articles';
+import { READING_PATHS } from '~/content/paths';
+import { EXPERIENCES } from '~/content/explorer';
 
 export async function getStaticPaths() {
   const articles = await visibleArticles();
@@ -17,142 +18,627 @@ export async function getStaticPaths() {
 }
 
 const articles = await visibleArticles();
-const fiches = articles.filter((a) => a.data.format === 'fiche');
-const categories = CATEGORIES.map((c) => ({ ...c, count: articles.filter((a) => a.data.category === c.id).length })).filter((c) => c.count > 0);
-const featured = articles.slice(0, 3);
+const FORMATS = { article: 'Article', fiche: 'Fiche pratique', guide: 'Guide' } as const;
+const STAGES = [
+  { id: 'chiot', label: 'Chiot' },
+  { id: 'adulte', label: 'Adulte' },
+  { id: 'senior', label: 'Senior' },
+] as const;
+const items = articles.map((a) => ({
+  a,
+  minutes: readingMinutes(a.body),
+  // Vide = tous les âges : l'article apparaît pour chaque étape de vie.
+  stages: a.data.stages.length ? a.data.stages : STAGES.map((s) => s.id),
+}));
+const categories = CATEGORIES.filter((c) => articles.some((a) => a.data.category === c.id));
+const formats = (Object.keys(FORMATS) as (keyof typeof FORMATS)[]).filter((f) => articles.some((a) => a.data.format === f));
+const byId = new Map(items.map((i) => [i.a.id, i]));
+const paths = READING_PATHS.map((p) => ({ ...p, list: p.articles.map((id) => byId.get(id)).filter((x) => x !== undefined) })).filter((p) => p.list.length >= 2);
+const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 ---
 <Base
   title="Ressources"
-  description="Articles et fiches pratiques pour mieux comprendre son chien au quotidien : promenade, arrivée d’un chiot, vie de famille."
+  description="La bibliothèque ToutouBien : articles, guides et fiches pratiques à chercher, filtrer par thème, format ou âge du chien, et des parcours de lecture pour avancer pas à pas."
 >
-  <PageIntro eyebrow="Ressources" title="Mieux comprendre, <em>entre deux balades</em>" lede="Des contenus courts et concrets, pour éclairer les questions du quotidien. Ils donnent des repères généraux : ils ne remplacent pas un échange autour de votre chien." />
+  <section class="lib-hero">
+    <div class="page lib-hero__inner">
+      <p class="eyebrow enter">Ressources</p>
+      <SplitTitle as="h1" text="La *bibliothèque*." now />
+      <p class="lede enter" data-i="3">Des repères concrets, à lire entre deux balades. Ils éclairent les questions du quotidien sans remplacer un échange autour de votre chien.</p>
+    </div>
+  </section>
 
-  <section class="section section--tight">
+  {
+    paths.length > 0 && (
+      <section class="section section--tight lib-paths" aria-labelledby="paths-title">
+        <div class="page">
+          <h2 id="paths-title" class="lib-sec">Parcours <em>de lecture</em></h2>
+          <ol class="lib-paths__list" role="list">
+            {paths.map((p, i) => (
+              <li class="lib-path reveal" style={`--i:${i}`}>
+                <div class="lib-path__head">
+                  <span class="label">{String(i + 1).padStart(2, '0')} · {p.list.length} étapes</span>
+                  <h3>{p.title}</h3>
+                  <p>{p.text}</p>
+                </div>
+                <ol class="lib-path__steps" role="list">
+                  {p.list.map((it, k) => (
+                    <li>
+                      <a href={`/blog/${it.a.id}/`}>
+                        <span class="lib-path__dot" aria-hidden="true">{k + 1}</span>
+                        <span>{it.a.data.title}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section lib on-lin" aria-labelledby="lib-title" data-library>
     <div class="page">
-      <h2 class="sr-only">À la une</h2>
-      <div class="hub__featured">
-        {featured.map((a, i) => <ArticleCard article={a} featured={i === 0} />)}
+      <div class="lib__top">
+        <h2 id="lib-title" class="lib-sec">Tous les <em>contenus</em></h2>
+        <label class="lib__search">
+          <span class="sr-only">Rechercher dans la bibliothèque</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
+          <input type="search" placeholder="Rechercher : laisse, chiot, solitude…" data-lib-q autocomplete="off" />
+        </label>
+      </div>
+
+      <div class="lib__filters" data-lib-filters hidden>
+        <fieldset>
+          <legend class="label">Thème</legend>
+          {categories.map((c) => <button type="button" class="chip" aria-pressed="false" data-filter="category" data-value={c.id}>{c.label}</button>)}
+        </fieldset>
+        {
+          formats.length > 1 && (
+            <fieldset>
+              <legend class="label">Format</legend>
+              {formats.map((f) => <button type="button" class="chip" aria-pressed="false" data-filter="format" data-value={f}>{FORMATS[f]}</button>)}
+            </fieldset>
+          )
+        }
+        <fieldset>
+          <legend class="label">Âge du chien</legend>
+          {STAGES.map((s) => <button type="button" class="chip" aria-pressed="false" data-filter="stage" data-value={s.id}>{s.label}</button>)}
+        </fieldset>
+        <fieldset>
+          <legend class="label">Temps</legend>
+          <button type="button" class="chip" aria-pressed="false" data-filter="short" data-value="1">Moins de 3 min</button>
+        </fieldset>
+      </div>
+
+      <p class="lib__status" aria-live="polite" data-lib-status></p>
+
+      <ul class="lib__list" role="list" data-lib-list>
+        {
+          items.map(({ a, minutes, stages }) => (
+            <li
+              class:list={['lib-item', isDraftArticle(a) && 'draft']}
+              data-item
+              data-category={a.data.category}
+              data-format={a.data.format}
+              data-stage={stages.join(' ')}
+              data-minutes={minutes}
+              data-text={fold(`${a.data.title} ${a.data.description} ${categoryLabel(a.data.category)} ${FORMATS[a.data.format]}`)}
+            >
+              <a href={`/blog/${a.id}/`} class="lib-item__link">
+                <span class="lib-item__art" aria-hidden="true"><PlateArt motif={categoryMotif(a.data.category)} /></span>
+                <span class="lib-item__meta">
+                  <span>{FORMATS[a.data.format]} · {categoryLabel(a.data.category)}</span>
+                  {isDraftArticle(a) && <span class="draft-badge">{a.data.status === 'review' ? 'À relire' : 'Brouillon'}</span>}
+                </span>
+                <span class="lib-item__title">{a.data.title}</span>
+                <span class="lib-item__desc">{a.data.description}</span>
+                <span class="lib-item__foot">{minutes} min de lecture <Icon name="arrow" /></span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="lib__empty" data-lib-empty hidden>
+        <p>Aucun contenu ne correspond pour l’instant.</p>
+        <div>
+          <button type="button" class="btn btn--ghost btn--sm" data-lib-reset>Effacer les filtres</button>
+          <a class="link-arrow" href="/questions/">Les questions que l’on n’ose pas poser <Icon name="arrow" /></a>
+        </div>
       </div>
     </div>
   </section>
 
-  {
-    categories.length > 0 && (
-      <section class="section on-lin" aria-labelledby="themes-title">
-        <div class="page">
-          <p class="eyebrow">Par thème</p>
-          <h2 id="themes-title" class="hub__title">Explorer les <em>thèmes</em></h2>
-          <ul class="themes" role="list">
-            {categories.map((c) => (
-              <li>
-                <a class="theme" href={`/blog/categorie/${c.id}/`}>
-                  <span class="theme__label">{c.label}</span>
-                  <span class="theme__desc">{c.description}</span>
-                  <span class="theme__count">{c.count} {c.count > 1 ? 'contenus' : 'contenu'}</span>
-                  <Icon name="arrow" class="theme__arrow" />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    )
-  }
-
-  {
-    fiches.length > 0 && (
-      <section class="section" aria-labelledby="fiches-title">
-        <div class="page">
-          <p class="eyebrow">À garder sous la main</p>
-          <h2 id="fiches-title" class="hub__title">Fiches <em>pratiques</em></h2>
-          <div class="hub__grid">
-            {fiches.map((a) => <ArticleCard article={a} />)}
-          </div>
-        </div>
-      </section>
-    )
-  }
-
-  <section class="section section--tight">
+  <section class="section lib-tools" aria-labelledby="tools-title">
     <div class="page">
-      <a class="link-arrow" href="/blog/">Tous les articles <Icon name="arrow" /></a>
+      <h2 id="tools-title" class="lib-sec">Apprendre <em>en manipulant</em></h2>
+      <ul class="lib-tools__list" role="list">
+        {
+          EXPERIENCES.map((e) => (
+            <li>
+              <a href={e.href} class="lib-tool">
+                <span class="label">{e.num}</span>
+                <span class="lib-tool__title">{e.title}</span>
+                <span class="lib-tool__q">{e.question}</span>
+                <Icon name="arrow" class="lib-tool__arrow" />
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href="/orientation/" class="lib-tool lib-tool--alt">
+            <span class="label">Parcours</span>
+            <span class="lib-tool__title">Par où commencer&nbsp;?</span>
+            <span class="lib-tool__q">Quatre questions pour trouver vos lectures.</span>
+            <Icon name="arrow" class="lib-tool__arrow" />
+          </a>
+        </li>
+      </ul>
     </div>
   </section>
-
-  <CtaBand title="Une question <em>sur votre chien</em>&nbsp;?" />
 </Base>
 
+<script>
+  const root = document.querySelector<HTMLElement>('[data-library]');
+  if (root) {
+    const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    const q = root.querySelector<HTMLInputElement>('[data-lib-q]')!;
+    const chips = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-filter]'));
+    const items = Array.from(root.querySelectorAll<HTMLElement>('[data-item]'));
+    const status = root.querySelector<HTMLElement>('[data-lib-status]')!;
+    const empty = root.querySelector<HTMLElement>('[data-lib-empty]')!;
+    root.querySelector<HTMLElement>('[data-lib-filters]')!.hidden = false;
+
+    const update = () => {
+      const terms = fold(q.value).split(/\s+/).filter(Boolean);
+      // À l'intérieur d'un même groupe : OU ; entre groupes : ET.
+      const active: Record<string, string[]> = {};
+      chips.filter((c) => c.getAttribute('aria-pressed') === 'true').forEach((c) => (active[c.dataset.filter!] ??= []).push(c.dataset.value!));
+      let shown = 0;
+      for (const it of items) {
+        const d = it.dataset;
+        const ok =
+          terms.every((t) => d.text!.includes(t)) &&
+          (!active.category || active.category.includes(d.category!)) &&
+          (!active.format || active.format.includes(d.format!)) &&
+          (!active.stage || active.stage.some((s) => d.stage!.split(' ').includes(s))) &&
+          (!active.short || Number(d.minutes) < 3);
+        it.hidden = !ok;
+        if (ok) shown++;
+      }
+      const filtering = terms.length > 0 || Object.keys(active).length > 0;
+      status.textContent = filtering ? `${shown} contenu${shown > 1 ? 's' : ''} sur ${items.length}` : `${items.length} contenus`;
+      empty.hidden = shown > 0;
+    };
+
+    chips.forEach((c) =>
+      c.addEventListener('click', () => {
+        c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true'));
+        update();
+      }),
+    );
+    q.addEventListener('input', update);
+    root.querySelector('[data-lib-reset]')?.addEventListener('click', () => {
+      q.value = '';
+      chips.forEach((c) => c.setAttribute('aria-pressed', 'false'));
+      update();
+      q.focus();
+    });
+    const initial = new URLSearchParams(location.search).get('q');
+    if (initial) q.value = initial.slice(0, 80);
+    update();
+  }
+</script>
+
 <style>
-  .hub__featured {
-    display: grid;
-    gap: var(--space-l);
+  .lib-hero {
+    padding-block: var(--space-xl) var(--space-l);
   }
 
-  @media (min-width: 60rem) {
-    .hub__featured {
-      grid-template-columns: 1.4fr 1fr 1fr;
-      align-items: start;
-    }
-  }
-
-  .hub__title {
-    margin-block: var(--space-s) var(--space-l);
-  }
-
-  .hub__grid {
-    display: grid;
-    gap: var(--space-l);
-    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
-  }
-
-  .themes {
+  .lib-hero__inner {
     display: grid;
     gap: var(--space-m);
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+
+  .lib-hero h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+  }
+
+  .lib-hero h1 :global(em) {
+    color: var(--sarcelle);
+  }
+
+  .lib-hero .lede {
+    max-width: 52ch;
+  }
+
+  .lib-sec {
+    margin-bottom: var(--space-l);
+  }
+
+  .lib-sec em {
+    color: var(--argile);
+  }
+
+  /* Parcours de lecture */
+  .lib-paths__list {
+    display: grid;
+    gap: var(--space-m);
     padding: 0;
     list-style: none;
   }
 
-  .theme {
+  @media (min-width: 60rem) {
+    .lib-paths__list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .lib-path {
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: var(--nuit);
+    color: var(--craie);
+  }
+
+  .lib-path:nth-child(2n) {
+    background: var(--sous-bois);
+  }
+
+  .lib-path__head {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .lib-path__head .label {
+    color: var(--or);
+  }
+
+  .lib-path__head h3 {
+    font-size: var(--step-3);
+    color: var(--craie);
+  }
+
+  .lib-path__head p {
+    color: var(--craie-douce);
+  }
+
+  .lib-path__steps {
     position: relative;
     display: grid;
-    gap: var(--space-2xs);
-    height: 100%;
-    padding: var(--space-l) var(--space-l) var(--space-xl);
-    border-radius: var(--radius-l);
-    background: var(--ivoire);
+    padding: 0;
+    list-style: none;
+  }
+
+  .lib-path__steps::before {
+    content: '';
+    position: absolute;
+    left: 0.95rem;
+    top: 1rem;
+    bottom: 1rem;
+    width: 1px;
+    background: rgb(255 255 255 / 0.25);
+  }
+
+  .lib-path__steps a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: var(--space-s);
+    align-items: center;
+    padding: 0.45rem 0;
+    color: var(--craie) !important;
+    text-decoration: none;
+  }
+
+  .lib-path__dot {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: var(--nuit);
+    border: 1.5px solid var(--or);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--or);
+    transition: background-color var(--dur) ease, color var(--dur) ease;
+  }
+
+  .lib-path__steps a:hover .lib-path__dot {
+    background: var(--or);
+    color: var(--nuit);
+  }
+
+  .lib-path__steps a:hover span:last-child {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* Bibliothèque */
+  .lib__top {
+    display: grid;
+    gap: var(--space-m);
+    align-items: end;
+  }
+
+  @media (min-width: 56rem) {
+    .lib__top {
+      grid-template-columns: 1fr minmax(20rem, 28rem);
+    }
+  }
+
+  .lib__top .lib-sec {
+    margin: 0;
+  }
+
+  .lib__search {
+    position: relative;
+    display: block;
+  }
+
+  .lib__search svg {
+    position: absolute;
+    left: 1.1rem;
+    top: 50%;
+    width: 1.25rem;
+    height: 1.25rem;
+    transform: translateY(-50%);
+    fill: none;
+    stroke: var(--encre-douce);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .lib__search input {
+    width: 100%;
+    min-height: 3.4rem;
+    padding: 0 1.2rem 0 3rem;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid color-mix(in oklab, var(--encre) 22%, transparent);
+    background: var(--papier);
+    font: inherit;
     color: var(--encre);
+  }
+
+  .lib__search input:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .lib__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m) var(--space-l);
+    margin-top: var(--space-l);
+  }
+
+  .lib__filters[hidden] {
+    display: none;
+  }
+
+  .lib__filters fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .lib__filters legend {
+    float: left;
+    margin-right: 0.4rem;
+  }
+
+  .chip {
+    min-height: 2.6rem;
+    padding: 0 1rem;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid color-mix(in oklab, var(--encre) 22%, transparent);
+    background: transparent;
+    font: inherit;
+    font-size: var(--step--1);
+    color: var(--encre);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  }
+
+  .chip:hover {
+    border-color: var(--encre);
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--nuit);
+    border-color: var(--nuit);
+    color: var(--craie);
+  }
+
+  .lib__status {
+    margin-block: var(--space-m);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .lib__list {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .lib-item[hidden] {
+    display: none;
+  }
+
+  .lib-item__link {
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    gap: 0.5rem;
+    height: 100%;
+    padding: var(--space-s) var(--space-s) var(--space-m);
+    border-radius: var(--radius-l);
+    background: var(--papier);
+    color: var(--encre) !important;
     text-decoration: none;
     transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) ease;
   }
 
-  .theme:hover {
-    color: var(--encre);
-    transform: translateY(-3px);
-    box-shadow: 0 1.5rem 3rem -2rem rgb(26 36 34 / 0.4);
+  .lib-item__link:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 1.5rem 3rem -2rem rgb(26 36 34 / 0.45);
   }
 
-  .theme__label {
+  .lib-item__art {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    margin-bottom: 0.3rem;
+  }
+
+  .lib-item__art :global(.plate-art) {
+    position: absolute;
+    inset: 0;
+    transition: transform 900ms var(--ease-out);
+  }
+
+  .lib-item__link:hover .lib-item__art :global(.plate-art) {
+    transform: scale(1.05);
+  }
+
+  .lib-item__meta,
+  .lib-item__title,
+  .lib-item__desc,
+  .lib-item__foot {
+    padding-inline: var(--space-2xs);
+  }
+
+  .lib-item__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: var(--step--2);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--argile);
+  }
+
+  .lib-item__title {
     font-family: var(--font-display);
     font-size: var(--step-2);
+    line-height: 1.05;
   }
 
-  .theme__desc {
+  .lib-item__desc {
+    font-size: var(--step--1);
     color: var(--encre-douce);
   }
 
-  .theme__count {
+  .lib-item__foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: var(--step--1);
     font-weight: 600;
-    color: var(--argile);
   }
 
-  .theme__arrow {
-    position: absolute;
-    right: var(--space-l);
-    bottom: var(--space-m);
-    width: 1.4rem;
-    height: 1.4rem;
+  .lib-item__foot :global(svg) {
+    width: 1.2rem;
+    height: 1.2rem;
     color: var(--argile);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .lib-item__link:hover .lib-item__foot :global(svg) {
+    transform: translateX(0.3rem);
+  }
+
+  .lib__empty {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: var(--papier);
+  }
+
+  .lib__empty[hidden] {
+    display: none;
+  }
+
+  .lib__empty div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  /* Outils */
+  .lib-tools__list {
+    display: grid;
+    gap: var(--space-s);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .lib-tool {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+    height: 100%;
+    padding: var(--space-m) var(--space-m) var(--space-xl);
+    border-radius: var(--radius-l);
+    border: 1.5px solid color-mix(in oklab, var(--encre) 14%, transparent);
+    color: var(--encre) !important;
+    text-decoration: none;
+    transition: background-color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .lib-tool:hover {
+    background: var(--lin);
+    transform: translateY(-3px);
+  }
+
+  .lib-tool--alt {
+    background: var(--lagon);
+    border-color: var(--lagon);
+  }
+
+  .lib-tool--alt:hover {
+    background: color-mix(in oklab, var(--lagon) 85%, white);
+  }
+
+  .lib-tool__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.05;
+  }
+
+  .lib-tool__q {
+    color: var(--encre-douce);
+    font-size: var(--step--1);
+  }
+
+  .lib-tool__arrow {
+    position: absolute;
+    right: var(--space-m);
+    bottom: var(--space-m);
+    width: 1.3rem;
+    height: 1.3rem;
   }
 </style>

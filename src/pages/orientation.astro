@@ -1,0 +1,527 @@
+---
+import Base from '~/layouts/Base.astro';
+import Icon from '~/components/Icon.astro';
+import { QUESTIONS } from '~/lib/orientation';
+import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
+import { EXPERIENCES } from '~/content/explorer';
+import { visibleArticles, readingMinutes } from '~/lib/articles';
+
+const articles = (await visibleArticles()).map((a) => ({ id: a.id, title: a.data.title, minutes: readingMinutes(a.body) }));
+const data = {
+  articles,
+  accompagnements: ACCOMPAGNEMENTS.map((a) => ({ slug: a.slug, label: a.label, short: a.short })),
+  explorers: EXPERIENCES.map((e) => ({ id: e.id, title: e.title, question: e.question, href: e.href })),
+};
+const steps = QUESTIONS.length;
+---
+<Base
+  title="Où en êtes-vous avec votre chien ?"
+  description="Quatre questions pour savoir par où commencer : un récapitulatif, l’accompagnement le plus proche de votre situation, des lectures et une suite possible. Aucun diagnostic, aucune donnée enregistrée."
+  headerTheme="dark"
+  quietFooter
+>
+  <section class="or on-dark grain-dark" aria-labelledby="or-title" data-orientation data-payload={JSON.stringify(data)}>
+    <div class="page or__inner">
+      <header class="or__head">
+        <p class="eyebrow">Parcours d’orientation</p>
+        <h1 id="or-title" class="or__title">Où en êtes-vous <em>avec votre chien</em>&nbsp;?</h1>
+        <p class="or__intro">Quatre questions, deux minutes. Vous obtenez un récapitulatif et des pistes pour la suite. Ce n’est pas un diagnostic, et rien n’est enregistré ni envoyé.</p>
+      </header>
+
+      <ol class="or__trail" aria-hidden="true">
+        {QUESTIONS.map((_, i) => <li data-dot={i}><span>{String(i + 1).padStart(2, '0')}</span></li>)}
+        <li data-dot={steps}><span><Icon name="check" /></span></li>
+      </ol>
+
+      <form class="or__form" data-or-form novalidate>
+        {
+          QUESTIONS.map((q, i) => (
+            <fieldset class="or__step" data-step={i} data-key={q.key} data-multiple={q.multiple ? 'true' : undefined}>
+              <legend class="or__q">
+                <span class="label">Question {i + 1} sur {steps}</span>
+                <span class="or__q-text" tabindex="-1" data-step-title>{q.title}</span>
+              </legend>
+              <p class="or__help">{q.help}</p>
+              <div class="or__options">
+                {q.options.map((o) => (
+                  <label class="or__opt">
+                    <input type={q.multiple ? 'checkbox' : 'radio'} name={q.key} value={o.id} />
+                    <span class="or__opt-body">
+                      <span class="or__opt-label">{o.label}</span>
+                      {'hint' in o && o.hint && <span class="or__opt-hint">{o.hint}</span>}
+                    </span>
+                    <span class="or__opt-mark" aria-hidden="true"><Icon name="check" /></span>
+                  </label>
+                ))}
+              </div>
+              <p class="or__error" role="alert" data-step-error></p>
+            </fieldset>
+          ))
+        }
+
+        <div class="or__nav" data-or-nav hidden>
+          <button type="button" class="btn btn--ghost" data-or-back><Icon name="arrow-left" /> Retour</button>
+          <button type="submit" class="btn btn--or" data-or-next><span data-or-next-label>Continuer</span> <Icon name="arrow" class="btn__arrow" /></button>
+        </div>
+      </form>
+
+      <section class="or__result" data-or-result hidden aria-labelledby="or-result-title">
+        <h2 id="or-result-title" class="or__result-title" tabindex="-1">Votre <em>récapitulatif</em></h2>
+        <div class="or__care notice" role="note" data-or-care hidden>
+          Si votre chien semble souffrir, a changé de comportement brusquement ou si la sécurité de quelqu’un est en jeu, consultez d’abord votre vétérinaire. Une douleur ou un problème de santé peuvent expliquer bien des comportements.
+        </div>
+        <ul class="or__summary" role="list" data-or-summary></ul>
+        <div class="or__cards">
+          <a class="or__card or__card--main" data-or-acc href="/accompagnements/">
+            <span class="label">L’accompagnement le plus proche</span>
+            <strong data-or-acc-label></strong>
+            <span data-or-acc-short></span>
+            <Icon name="arrow" class="or__card-arrow" />
+          </a>
+          <a class="or__card" data-or-exp href="/explorer/">
+            <span class="label">Une expérience à essayer</span>
+            <strong data-or-exp-label></strong>
+            <span data-or-exp-question></span>
+            <Icon name="arrow" class="or__card-arrow" />
+          </a>
+        </div>
+        <div class="or__reads" data-or-reads hidden>
+          <h3>À lire pour commencer</h3>
+          <ul role="list" data-or-reads-list></ul>
+        </div>
+        <div class="or__next">
+          <a class="btn btn--or" data-or-primary href="/parlons-de-votre-chien/" data-magnetic><span data-or-primary-label>En parler</span> <Icon name="arrow" class="btn__arrow" /></a>
+          <button type="button" class="btn btn--ghost" data-or-edit>Modifier mes réponses</button>
+          <button type="button" class="or__restart" data-or-restart>Recommencer</button>
+        </div>
+        <p class="or__privacy">Vos réponses restent dans cette page et disparaissent dès que vous la quittez. Si vous choisissez d’en parler, seul un court récapitulatif est proposé dans le formulaire, que vous pouvez modifier ou effacer.</p>
+      </section>
+
+      <noscript>
+        <p class="or__noscript">Ce parcours a besoin de JavaScript. Vous pouvez aussi parcourir directement <a href="/accompagnements/">les accompagnements</a> ou <a href="/parlons-de-votre-chien/">nous écrire</a>.</p>
+      </noscript>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { initOrientation } from '~/scripts/orientation';
+  initOrientation();
+</script>
+
+<style>
+  .or {
+    min-height: calc(100svh - 4.75rem);
+    padding-block: var(--space-xl);
+  }
+
+  .or__inner {
+    display: grid;
+    gap: var(--space-l);
+    max-width: 62rem;
+  }
+
+  .or__head {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .or__title {
+    font-size: var(--step-5);
+    line-height: 0.95;
+    max-width: 14ch;
+  }
+
+  .or__title em {
+    color: var(--or);
+  }
+
+  .or__intro {
+    max-width: 52ch;
+    color: var(--craie-douce);
+  }
+
+  /* Le sentier : quatre étapes et l'arrivée. */
+  .or__trail {
+    display: none;
+    position: relative;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 0;
+    list-style: none;
+  }
+
+  .is-live .or__trail {
+    display: grid;
+  }
+
+  .or__trail::before,
+  .or__trail::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    top: 50%;
+    height: 2px;
+    border-radius: 2px;
+    background: rgb(255 255 255 / 0.14);
+  }
+
+  .or__trail::after {
+    right: auto;
+    width: calc(80% * var(--trail, 0));
+    background: var(--or);
+    transition: width 700ms var(--ease-out);
+  }
+
+  .or__trail li {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+  }
+
+  .or__trail span {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    background: var(--nuit);
+    border: 1.5px solid rgb(255 255 255 / 0.25);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--craie-douce);
+    transition: background-color 400ms ease, color 400ms ease, border-color 400ms ease, transform 500ms var(--ease-out);
+  }
+
+  .or__trail span :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .or__trail li[data-state='done'] span {
+    background: var(--or);
+    border-color: var(--or);
+    color: var(--nuit);
+  }
+
+  .or__trail li[data-state='current'] span {
+    border-color: var(--or);
+    color: var(--craie);
+    transform: scale(1.18);
+  }
+
+  .or__form {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .or__step {
+    display: grid;
+    gap: var(--space-s);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+  }
+
+  .is-live .or__step:not(.is-current) {
+    display: none;
+  }
+
+  .is-live .or__step.is-current {
+    animation: or-in 600ms var(--ease-out) both;
+  }
+
+  @keyframes or-in {
+    from {
+      opacity: 0;
+      transform: translateY(1.2rem);
+    }
+  }
+
+  .or__q {
+    display: grid;
+    gap: var(--space-xs);
+    padding: 0;
+  }
+
+  .or__q-text {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1;
+    color: var(--craie);
+    outline: none;
+  }
+
+  .or__help {
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  .or__options {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: var(--space-s);
+  }
+
+  @media (min-width: 48rem) {
+    .or__options {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .or__opt {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-s);
+    align-items: center;
+    padding: 1rem 1.1rem;
+    border-radius: var(--radius-m);
+    border: 1.5px solid rgb(255 255 255 / 0.16);
+    background: rgb(255 255 255 / 0.03);
+    cursor: pointer;
+    transition: border-color var(--dur) ease, background-color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .or__opt:hover {
+    border-color: rgb(255 255 255 / 0.4);
+    transform: translateY(-2px);
+  }
+
+  .or__opt input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .or__opt-body {
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .or__opt-label {
+    font-weight: 600;
+    color: var(--craie);
+  }
+
+  .or__opt-hint {
+    font-size: var(--step--1);
+    color: var(--craie-douce);
+  }
+
+  .or__opt-mark {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 50%;
+    border: 1.5px solid rgb(255 255 255 / 0.3);
+    color: transparent;
+    transition: background-color var(--dur) ease, color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .or__opt-mark :global(svg) {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  .or__opt:has(input:checked) {
+    border-color: var(--or);
+    background: color-mix(in oklab, var(--or) 14%, transparent);
+  }
+
+  .or__opt:has(input:checked) .or__opt-mark {
+    background: var(--or);
+    border-color: var(--or);
+    color: var(--nuit);
+    transform: scale(1.1);
+  }
+
+  .or__opt:has(input:focus-visible) {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .or__error {
+    min-height: 1.4em;
+    color: #ffb4a1;
+    font-weight: 600;
+  }
+
+  .or__nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-s);
+  }
+
+  .or__nav[hidden] {
+    display: none;
+  }
+
+  .btn :global(svg:not(.btn__arrow)) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  /* Résultat */
+  .or__result {
+    display: grid;
+    gap: var(--space-m);
+    animation: or-in 700ms var(--ease-out) both;
+  }
+
+  .or__result[hidden] {
+    display: none;
+  }
+
+  .or__result-title {
+    font-size: var(--step-4);
+    outline: none;
+  }
+
+  .or__result-title em {
+    color: var(--lagon);
+  }
+
+  .or__care {
+    background: color-mix(in oklab, var(--argile) 30%, var(--nuit));
+    color: var(--craie);
+    border: 0;
+  }
+
+  .or__summary {
+    display: grid;
+    gap: 0.4rem;
+    padding: 0;
+    list-style: none;
+    font-size: var(--step-1);
+    color: var(--craie-douce);
+  }
+
+  .or__cards {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  @media (min-width: 48rem) {
+    .or__cards {
+      grid-template-columns: 3fr 2fr;
+    }
+  }
+
+  .or__card {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+    padding: var(--space-m) var(--space-l) var(--space-m) var(--space-m);
+    border-radius: var(--radius-l);
+    background: rgb(255 255 255 / 0.06);
+    color: var(--craie) !important;
+    text-decoration: none;
+    transition: transform var(--dur) var(--ease-out), background-color var(--dur) ease;
+  }
+
+  .or__card:hover {
+    transform: translateY(-3px);
+    background: rgb(255 255 255 / 0.1);
+  }
+
+  .or__card--main {
+    background: var(--lagon);
+    color: var(--nuit) !important;
+  }
+
+  .or__card--main:hover {
+    background: color-mix(in oklab, var(--lagon) 88%, white);
+  }
+
+  .or__card strong {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--step-3);
+    line-height: 1.05;
+  }
+
+  .or__card--main .label {
+    color: var(--nuit);
+  }
+
+  .or__card-arrow {
+    position: absolute;
+    right: var(--space-m);
+    bottom: var(--space-m);
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  .or__reads h3 {
+    font-size: var(--step-1);
+    font-family: var(--font-text);
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+  }
+
+  .or__reads ul {
+    display: grid;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid rgb(255 255 255 / 0.14);
+  }
+
+  .or__reads :global(a) {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-s);
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.14);
+    color: var(--craie) !important;
+    text-decoration: none;
+  }
+
+  .or__reads :global(a:hover) {
+    color: var(--or) !important;
+  }
+
+  .or__reads :global(small) {
+    font-family: var(--font-mono);
+    color: var(--craie-douce);
+    white-space: nowrap;
+  }
+
+  .or__next {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+    align-items: center;
+  }
+
+  .or__restart {
+    border: 0;
+    background: none;
+    color: var(--craie-douce);
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0.6rem;
+    font: inherit;
+  }
+
+  .or__privacy,
+  .or__noscript {
+    font-size: var(--step--1);
+    color: var(--craie-douce);
+    max-width: 60ch;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .or__step.is-current,
+    .or__result {
+      animation: none !important;
+    }
+  }
+</style>

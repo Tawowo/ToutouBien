@@ -1,0 +1,224 @@
+---
+/** Sommaire éditorial : un article à la une puis la liste numérotée des autres. */
+import PlateArt from './PlateArt.astro';
+import Icon from './Icon.astro';
+import { categoryLabel, categoryMotif } from '~/lib/categories';
+import { formatDate, isDraftArticle, readingMinutes, type Article } from '~/lib/articles';
+
+interface Props {
+  articles: Article[];
+  lead?: boolean;
+}
+const { articles, lead = true } = Astro.props;
+const FORMATS = { article: 'Article', fiche: 'Fiche pratique', guide: 'Guide' } as const;
+const first = lead ? articles[0] : undefined;
+const rest = lead ? articles.slice(1) : articles;
+const badge = (a: Article) => (a.data.status === 'review' ? 'À relire' : 'Brouillon');
+---
+{
+  first && (
+    <a href={`/blog/${first.id}/`} class="ai-lead">
+      <span class="ai-lead__art" aria-hidden="true"><PlateArt motif={categoryMotif(first.data.category)} /></span>
+      <span class="ai-lead__body">
+        <span class="label">
+          À la une · {FORMATS[first.data.format]} · {categoryLabel(first.data.category)}
+          {isDraftArticle(first) && <span class="draft-badge">{badge(first)}</span>}
+        </span>
+        <span class="ai-lead__title">{first.data.title}</span>
+        <span class="ai-lead__desc">{first.data.description}</span>
+        <span class="ai-lead__foot">
+          {first.data.publishDate && <time datetime={first.data.publishDate.toISOString()}>{formatDate(first.data.publishDate)}</time>}
+          <span>{readingMinutes(first.body)} min de lecture</span>
+          <Icon name="arrow" />
+        </span>
+      </span>
+    </a>
+  )
+}
+{
+  rest.length > 0 && (
+    <ol class="ai-list" role="list">
+      {rest.map((a, i) => (
+        <li class="ai-row">
+          <a href={`/blog/${a.id}/`}>
+            <span class="ai-row__num" aria-hidden="true">{String(i + (lead ? 2 : 1)).padStart(2, '0')}</span>
+            <span class="ai-row__cat">
+              {categoryLabel(a.data.category)}
+              {isDraftArticle(a) && <span class="draft-badge">{badge(a)}</span>}
+            </span>
+            <span class="ai-row__title">{a.data.title}</span>
+            <span class="ai-row__min">{readingMinutes(a.body)} min</span>
+            <Icon name="arrow" class="ai-row__arrow" />
+          </a>
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+<style>
+  .ai-lead {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+    margin-bottom: var(--space-xl);
+    color: var(--encre) !important;
+    text-decoration: none;
+  }
+
+  @media (min-width: 60rem) {
+    .ai-lead {
+      grid-template-columns: 6fr 5fr;
+    }
+  }
+
+  .ai-lead__art {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: var(--radius-arch) var(--radius-arch) var(--radius-l) var(--radius-l);
+    overflow: hidden;
+  }
+
+  .ai-lead__art :global(.plate-art) {
+    position: absolute;
+    inset: 0;
+    transition: transform 1.2s var(--ease-out);
+  }
+
+  .ai-lead:hover .ai-lead__art :global(.plate-art) {
+    transform: scale(1.04);
+  }
+
+  .ai-lead__body {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .ai-lead__title {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1;
+  }
+
+  .ai-lead:hover .ai-lead__title {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.12em;
+  }
+
+  .ai-lead__desc {
+    font-size: var(--step-1);
+    color: var(--encre-douce);
+  }
+
+  .ai-lead__foot {
+    display: flex;
+    gap: var(--space-m);
+    align-items: center;
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+
+  .ai-lead__foot :global(svg) {
+    width: 1.3rem;
+    height: 1.3rem;
+    color: var(--argile);
+  }
+
+  .ai-list {
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid color-mix(in oklab, var(--encre) 16%, transparent);
+  }
+
+  .ai-row a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    grid-template-areas: 'num cat' 'num title' 'num min';
+    gap: 0.2rem var(--space-s);
+    padding: var(--space-m) 2.5rem var(--space-m) 0;
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 16%, transparent);
+    color: var(--encre) !important;
+    text-decoration: none;
+  }
+
+  @media (min-width: 56rem) {
+    .ai-row a {
+      grid-template-columns: 4rem 13rem 1fr 5rem;
+      grid-template-areas: 'num cat title min';
+      align-items: baseline;
+    }
+  }
+
+  .ai-row a::before {
+    content: '';
+    position: absolute;
+    inset: 0 -1rem;
+    z-index: -1;
+    border-radius: var(--radius-m);
+    background: var(--lin);
+    opacity: 0;
+    transition: opacity var(--dur) ease;
+  }
+
+  .ai-row a:hover::before {
+    opacity: 1;
+  }
+
+  .ai-row__num {
+    grid-area: num;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    color: var(--argile);
+  }
+
+  .ai-row__cat {
+    grid-area: cat;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--encre-douce);
+  }
+
+  .ai-row__title {
+    grid-area: title;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.1;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .ai-row a:hover .ai-row__title {
+    transform: translateX(0.4rem);
+  }
+
+  .ai-row__min {
+    grid-area: min;
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .ai-row__arrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 1.3rem;
+    height: 1.3rem;
+    transform: translate(-0.4rem, -50%);
+    opacity: 0;
+    color: var(--argile);
+    transition: opacity var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .ai-row a:hover .ai-row__arrow,
+  .ai-row a:focus-visible .ai-row__arrow {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+</style>

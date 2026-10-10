@@ -499,6 +499,13 @@ a:hover {
   --btn-fill-fg: var(--nuit);
 }
 
+.btn--or {
+  --btn-bg: var(--or);
+  --btn-fg: var(--nuit);
+  --btn-fill: var(--craie);
+  --btn-fill-fg: var(--nuit);
+}
+
 .btn--sm {
   min-height: 2.75rem;
   padding: 0.6em 1.15em;

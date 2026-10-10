@@ -42,6 +42,7 @@ const jsonLd = draft || !d.publishDate
     ];
 ---
 <Base title={d.title} description={d.description} ogType="article" ogImage={cover?.src} noindex={draft} jsonLd={jsonLd}>
+  <div class="read-progress" aria-hidden="true"><span></span></div>
   <article class="article">
     <header class="article__head">
       <Fil variant="traversee" class="article__fil" immediate />
@@ -136,7 +137,59 @@ const jsonLd = draft || !d.publishDate
   }
 </Base>
 
+<script>
+  // Sommaire : met en évidence la section en cours de lecture.
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('.article__toc a'));
+  const targets = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1)))).filter((t): t is HTMLElement => Boolean(t));
+  if (targets.length && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          links.forEach((a) => a.setAttribute('aria-current', String(a.hash.slice(1) === e.target.id)));
+        }
+      },
+      { rootMargin: '0px 0px -70% 0px' },
+    );
+    targets.forEach((t) => io.observe(t));
+  }
+</script>
+
 <style>
+  .read-progress {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    height: 3px;
+    pointer-events: none;
+  }
+
+  .read-progress span {
+    display: block;
+    height: 100%;
+    background: var(--argile);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .read-progress span {
+      animation: read-grow linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+
+  @keyframes read-grow {
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .article__toc a[aria-current='true'] {
+    color: var(--encre);
+    font-weight: 600;
+  }
+
   .article__head {
     position: relative;
     overflow: hidden;

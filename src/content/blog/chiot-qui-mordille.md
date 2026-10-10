@@ -3,6 +3,7 @@ title: "Mon chiot mordille tout : comprendre et accompagner"
 description: "Mains, vêtements, meubles : pourquoi les chiots mordillent, ce qui aggrave souvent la situation et des repères concrets pour l’aider à apprendre."
 status: review
 category: chiot
+stages: [chiot]
 format: article
 searchIntent: "chiot mordille que faire"
 ctaTopic: chiot

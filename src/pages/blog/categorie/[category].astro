@@ -1,8 +1,7 @@
 ---
 import Base from '~/layouts/Base.astro';
-import PageIntro from '~/components/PageIntro.astro';
-import ArticleCard from '~/components/ArticleCard.astro';
-import CtaBand from '~/components/CtaBand.astro';
+import ArticleIndex from '~/components/ArticleIndex.astro';
+import Icon from '~/components/Icon.astro';
 import { CATEGORIES } from '~/lib/categories';
 import { visibleArticles } from '~/lib/articles';
 
@@ -15,21 +14,48 @@ const { category } = Astro.props;
 const articles = (await visibleArticles()).filter((a) => a.data.category === category.id);
 ---
 <Base title={`${category.label} — articles`} description={category.description}>
-  <PageIntro eyebrow="Thème" title={category.label} lede={category.description} fil={false}>
-    <p><a href="/blog/">← Tous les articles</a></p>
-  </PageIntro>
-  <section class="section section--tight">
-    <div class="page list">
-      {articles.map((a) => <ArticleCard article={a} headingLevel="h2" />)}
+  <section class="cat-hero">
+    <div class="page cat-hero__inner">
+      <a class="cat-hero__back" href="/blog/"><Icon name="arrow-left" /> Tout le carnet</a>
+      <p class="eyebrow enter">Thème</p>
+      <h1 class="enter" data-i="1">{category.label}</h1>
+      <p class="lede enter" data-i="2">{category.description}</p>
     </div>
   </section>
-  <CtaBand />
+  <section class="section section--tight">
+    <div class="page">
+      <h2 class="sr-only">Articles</h2>
+      <ArticleIndex articles={articles} lead={articles.length > 2} />
+    </div>
+  </section>
 </Base>
 
 <style>
-  .list {
+  .cat-hero {
+    padding-block: var(--space-xl) var(--space-m);
+  }
+
+  .cat-hero__inner {
     display: grid;
-    gap: var(--space-xl) var(--space-l);
-    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    gap: var(--space-s);
+    justify-items: start;
+  }
+
+  .cat-hero h1 {
+    font-size: var(--step-5);
+  }
+
+  .cat-hero__back {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-bottom: var(--space-s);
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+
+  .cat-hero__back :global(svg) {
+    width: 1rem;
+    height: 1rem;
   }
 </style>

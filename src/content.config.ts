@@ -24,6 +24,8 @@ const blog = defineCollection({
       category: z.enum(CATEGORY_IDS),
       /** Format éditorial. */
       format: z.enum(['article', 'fiche', 'guide']).default('article'),
+      /** Étapes de vie concernées ; vide = tous les âges. */
+      stages: z.array(z.enum(['chiot', 'adulte', 'senior'])).default([]),
       /** Intention de recherche visée (documentation SEO, non affichée). */
       searchIntent: z.string().optional(),
       /** Sujet du parcours de contact à présélectionner dans l'appel à l'action. */

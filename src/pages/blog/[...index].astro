@@ -1,8 +1,8 @@
 ---
 import Base from '~/layouts/Base.astro';
-import PageIntro from '~/components/PageIntro.astro';
-import ArticleCard from '~/components/ArticleCard.astro';
-import CtaBand from '~/components/CtaBand.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import ArticleIndex from '~/components/ArticleIndex.astro';
+import Icon from '~/components/Icon.astro';
 import { CATEGORIES } from '~/lib/categories';
 import { visibleArticles } from '~/lib/articles';
 
@@ -14,59 +14,85 @@ export async function getStaticPaths() {
 const articles = await visibleArticles();
 const used = CATEGORIES.filter((c) => articles.some((a) => a.data.category === c.id));
 ---
-<Base title="Blog" description="Tous les articles de ToutouBien : conseils généraux et repères pour la vie quotidienne avec un chien.">
-  <PageIntro eyebrow="Blog" title="Tous les <em>articles</em>" fil={false} />
-  <section class="section section--tight">
-    <div class="page">
-      {
-        used.length > 1 && (
-          <nav class="filters" aria-label="Thèmes">
-            <ul role="list">
-              <li><a href="/blog/" aria-current="page">Tout</a></li>
-              {used.map((c) => <li><a href={`/blog/categorie/${c.id}/`}>{c.label}</a></li>)}
-            </ul>
-          </nav>
-        )
-      }
-      <div class="list">
-        {articles.map((a) => <ArticleCard article={a} headingLevel="h2" />)}
+<Base title="Blog" description="Le carnet de ToutouBien : des articles, guides et fiches pratiques pour mieux comprendre son chien et vivre un quotidien plus serein.">
+  <section class="bl-hero">
+    <div class="page bl-hero__inner">
+      <p class="eyebrow enter">Le carnet</p>
+      <SplitTitle as="h1" text="Lire, *comprendre*, essayer." now />
+      <div class="bl-hero__row enter" data-i="3">
+        {
+          used.length > 1 && (
+            <nav class="bl-themes" aria-label="Thèmes">
+              <ul role="list">
+                <li><a href="/blog/" aria-current="page">Tout</a></li>
+                {used.map((c) => <li><a href={`/blog/categorie/${c.id}/`}>{c.label}</a></li>)}
+              </ul>
+            </nav>
+          )
+        }
+        <a class="link-arrow" href="/ressources/">Chercher dans la bibliothèque <Icon name="arrow" /></a>
       </div>
     </div>
   </section>
-  <CtaBand />
+  <section class="section section--tight">
+    <div class="page">
+      <h2 class="sr-only">Articles</h2>
+      <ArticleIndex articles={articles} />
+    </div>
+  </section>
 </Base>
 
 <style>
-  .filters ul {
+  .bl-hero {
+    padding-block: var(--space-xl) var(--space-m);
+  }
+
+  .bl-hero__inner {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .bl-hero h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+  }
+
+  .bl-hero h1 :global(em) {
+    color: var(--argile);
+  }
+
+  .bl-hero__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .bl-themes ul {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2xs);
     padding: 0;
-    margin-bottom: var(--space-l);
     list-style: none;
   }
 
-  .filters a {
+  .bl-themes a {
     display: inline-flex;
     align-items: center;
-    min-height: 2.75rem;
-    padding: 0 1.1rem;
-    border: 1.5px solid color-mix(in oklab, var(--encre) 25%, transparent);
+    min-height: 2.6rem;
+    padding: 0 1.05rem;
+    border: 1.5px solid color-mix(in oklab, var(--encre) 22%, transparent);
     border-radius: var(--radius-pill);
+    font-size: var(--step--1);
     color: var(--encre);
     text-decoration: none;
   }
 
-  .filters a:hover,
-  .filters a[aria-current='page'] {
+  .bl-themes a:hover,
+  .bl-themes a[aria-current='page'] {
     background: var(--nuit);
     border-color: var(--nuit);
     color: var(--craie);
-  }
-
-  .list {
-    display: grid;
-    gap: var(--space-xl) var(--space-l);
-    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
   }
 </style>

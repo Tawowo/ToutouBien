@@ -3,6 +3,7 @@ title: "L’arrivée d’un chiot : préparer les premières semaines"
 description: "Préparer la maison, poser un rythme, accompagner les premières découvertes : des repères pour accueillir un chiot sereinement, sans vouloir tout réussir d’un coup."
 status: review
 category: chiot
+stages: [chiot]
 format: guide
 searchIntent: "accueillir un chiot premières semaines conseils — futurs ou nouveaux propriétaires"
 ctaTopic: chiot

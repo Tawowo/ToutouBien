@@ -1,0 +1,373 @@
+---
+/**
+ * « Apprendre à regarder » : une vraie photographie sert de terrain d'observation.
+ * Des étoiles-repères sont posées sur ce qu'il est utile de regarder (regard, oreilles, gueule,
+ * corps, laisse, environnement). Chaque repère découvert s'ajoute à une constellation.
+ * Les textes disent QUOI observer et POURQUOI, jamais ce que ressent ce chien-là.
+ */
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
+import { photo } from '~/lib/library';
+
+const P = photo('observe-prairie');
+const W = P.width;
+const H = P.height;
+const SPOTS = [
+  { id: 'regard', x: 50, y: 37, title: 'Le regard', text: 'Où se porte-t-il, et combien de temps ? Un regard fixe, doux ou qui se détourne ne raconte pas la même chose. On note la direction, pas une intention.' },
+  { id: 'oreilles', x: 42, y: 31, title: 'Les oreilles', text: 'Vers l’avant, sur le côté, en arrière : leur position change vite. Elle se lit avec le reste du corps, jamais seule.' },
+  { id: 'gueule', x: 51, y: 54, title: 'La gueule', text: 'Fermée, entrouverte, détendue ou crispée. Un bâillement ou un coup de langue sur la truffe sont aussi des indices, à replacer dans leur contexte.' },
+  { id: 'corps', x: 13, y: 50, title: 'Le corps', text: 'Souple ou figé, poids vers l’avant ou vers l’arrière : la posture générale donne souvent la tonalité du moment.' },
+  { id: 'laisse', x: 22, y: 73, title: 'La laisse', text: 'Détendue ou tendue ? La laisse se tient à deux : elle renseigne autant sur la personne que sur le chien.' },
+  { id: 'environnement', x: 80, y: 14, title: 'L’environnement', text: 'Odeurs, bruits, autres chiens, passants : un même chien ne se comporte pas de la même façon partout. Le contexte fait partie de l’observation.' },
+];
+---
+<section class="ho" aria-labelledby="ho-title" data-observe>
+  <div class="page ho__grid">
+    <header class="ho__head">
+      <p class="eyebrow">Apprendre à regarder</p>
+      <h2 id="ho-title">Observer, <em>c’est déjà comprendre</em>.</h2>
+      <p class="lede">Touchez les étoiles posées sur la photo&nbsp;: chacune montre un élément qu’il est utile de regarder chez un chien, et pourquoi.</p>
+      <p class="ho__count" aria-live="polite" data-ho-count>0 / {SPOTS.length} repères observés</p>
+    </header>
+
+    <div class="ho__stage">
+      <Photo id={P.id} shape="soft" sizes="(min-width: 60rem) 58vw, 92vw">
+        <Fragment slot="over">
+          <svg class="ho__lines" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false">
+            <polyline points="" class="ho__poly" data-ho-poly />
+          </svg>
+          <div class="ho__spots" role="group" aria-label="Repères d’observation">
+            {SPOTS.map((s, i) => (
+              <button
+                type="button"
+                class:list={['ho__spot', `ho__spot--${s.id}`]}
+                aria-pressed="false"
+                aria-controls="ho-panel"
+                data-ho-spot={i}
+                data-x={(s.x / 100) * W}
+                data-y={(s.y / 100) * H}
+              >
+                <span class="sr-only">{s.title}</span>
+              </button>
+            ))}
+          </div>
+        </Fragment>
+      </Photo>
+    </div>
+
+    <div class="ho__panel" id="ho-panel" aria-live="polite" data-ho-panel>
+      <div class="ho__card" data-ho-card hidden>
+        <span class="label" data-ho-num></span>
+        <h3 data-ho-title></h3>
+        <p data-ho-text></p>
+      </div>
+      <div class="ho__intro" data-ho-intro>
+        <span class="ho__intro-star" aria-hidden="true"></span>
+        <p>Commencez par l’étoile de votre choix.</p>
+      </div>
+      <div class="ho__done" data-ho-done hidden>
+        <p><strong>Six repères, une seule règle&nbsp;:</strong> ils se lisent ensemble, dans leur contexte. À eux seuls, ils ne disent pas ce que ressent un chien.</p>
+        <div class="ho__links">
+          <a class="btn btn--sm" href="/explorer/signaux/">Lire les signaux <Icon name="arrow" class="btn__arrow" /></a>
+          <a class="link-arrow" href="/decodeur/">Le décodeur du quotidien <Icon name="arrow" /></a>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <dl class="ho__list">
+        {SPOTS.map((s) => <><dt>{s.title}</dt><dd>{s.text}</dd></>)}
+      </dl>
+    </noscript>
+  </div>
+  <script type="application/json" data-ho-data set:html={JSON.stringify(SPOTS.map(({ title, text }) => ({ title, text })))} />
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-observe]').forEach((root) => {
+    const data = JSON.parse(root.querySelector('[data-ho-data]')?.textContent ?? '[]') as { title: string; text: string }[];
+    const spots = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-ho-spot]'));
+    const poly = root.querySelector<SVGPolylineElement>('[data-ho-poly]')!;
+    const card = root.querySelector<HTMLElement>('[data-ho-card]')!;
+    const intro = root.querySelector<HTMLElement>('[data-ho-intro]')!;
+    const done = root.querySelector<HTMLElement>('[data-ho-done]')!;
+    const count = root.querySelector<HTMLElement>('[data-ho-count]')!;
+    const order: number[] = [];
+    root.classList.add('is-live');
+    const show = (i: number) => {
+      if (!order.includes(i)) order.push(i);
+      spots.forEach((s, k) => {
+        s.setAttribute('aria-pressed', String(k === i));
+        s.classList.toggle('is-seen', order.includes(k));
+      });
+      poly.setAttribute('points', order.map((k) => `${spots[k]!.dataset.x},${spots[k]!.dataset.y}`).join(' '));
+      card.hidden = false;
+      intro.hidden = true;
+      root.querySelector('[data-ho-num]')!.textContent = `Repère ${order.indexOf(i) + 1}`;
+      root.querySelector('[data-ho-title]')!.textContent = data[i]!.title;
+      root.querySelector('[data-ho-text]')!.textContent = data[i]!.text;
+      card.classList.remove('is-new');
+      void card.offsetWidth;
+      card.classList.add('is-new');
+      count.textContent = `${order.length} / ${spots.length} repères observés`;
+      done.hidden = order.length < spots.length;
+    };
+    spots.forEach((s, i) => s.addEventListener('click', () => show(i)));
+  });
+</script>
+
+<style>
+  .ho {
+    padding-block: var(--space-xl);
+    background: linear-gradient(180deg, var(--papier), var(--feuillage-clair));
+  }
+
+  .ho__grid {
+    display: grid;
+    gap: var(--space-l);
+    align-items: start;
+  }
+
+  @media (min-width: 60rem) {
+    .ho__grid {
+      grid-template-columns: 4fr 7fr;
+      grid-template-areas:
+        'head stage'
+        'panel stage';
+    }
+
+    .ho__head {
+      grid-area: head;
+    }
+
+    .ho__stage {
+      grid-area: stage;
+    }
+
+    .ho__panel {
+      grid-area: panel;
+    }
+  }
+
+  .ho__head {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .ho__head h2 em {
+    color: var(--feuillage);
+  }
+
+  .ho__count {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--feuillage);
+  }
+
+  .ho__stage :global(.ph__frame) {
+    box-shadow: 0 2rem 4rem -2.5rem rgb(30 70 45 / 0.55);
+  }
+
+  .ho__lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .ho__poly {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 3;
+    stroke-linejoin: round;
+    stroke-dasharray: 2 8;
+    filter: drop-shadow(0 0 4px rgb(0 0 0 / 0.35));
+  }
+
+  .ho__spots {
+    position: absolute;
+    inset: 0;
+  }
+
+  .ho__spot {
+    position: absolute;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: -1.375rem 0 0 -1.375rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0 22%, rgb(255 255 255 / 0.35) 23% 48%, transparent 50%);
+    cursor: pointer;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .ho__spot::after {
+    content: '';
+    position: absolute;
+    inset: 0.85rem;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--turquoise);
+  }
+
+  .ho__spot:hover {
+    transform: scale(1.15);
+  }
+
+  .ho__spot:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .ho__spot.is-seen {
+    background: radial-gradient(circle, var(--turquoise) 0 24%, rgb(255 255 255 / 0.6) 25% 48%, transparent 50%);
+  }
+
+  .ho__spot[aria-pressed='true'] {
+    transform: scale(1.25);
+  }
+
+  .ho__spot--regard {
+    left: 50%;
+    top: 37%;
+  }
+
+  .ho__spot--oreilles {
+    left: 42%;
+    top: 31%;
+  }
+
+  .ho__spot--gueule {
+    left: 51%;
+    top: 54%;
+  }
+
+  .ho__spot--corps {
+    left: 13%;
+    top: 50%;
+  }
+
+  .ho__spot--laisse {
+    left: 22%;
+    top: 73%;
+  }
+
+  .ho__spot--environnement {
+    left: 80%;
+    top: 14%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ho__spot:not(.is-seen)::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgb(255 255 255 / 0.7);
+      animation: ho-pulse 2.6s ease-out infinite;
+    }
+
+    .ho__spot--oreilles::before {
+      animation-delay: 0.4s !important;
+    }
+
+    .ho__spot--gueule::before {
+      animation-delay: 0.8s !important;
+    }
+
+    .ho__spot--corps::before {
+      animation-delay: 1.2s !important;
+    }
+
+    .ho__spot--laisse::before {
+      animation-delay: 1.6s !important;
+    }
+
+    .ho__spot--environnement::before {
+      animation-delay: 2s !important;
+    }
+
+    .ho__card.is-new {
+      animation: ho-in 500ms var(--ease-out);
+    }
+  }
+
+  @keyframes ho-pulse {
+    to {
+      box-shadow: 0 0 0 14px rgb(255 255 255 / 0);
+    }
+  }
+
+  @keyframes ho-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.6rem);
+    }
+  }
+
+  .ho__panel {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .ho__card {
+    display: grid;
+    gap: 0.4rem;
+    padding: var(--space-m);
+    border-radius: var(--radius-l);
+    background: var(--blanc);
+    border-left: 3px solid var(--turquoise);
+    box-shadow: 0 1rem 2.5rem -2rem rgb(30 70 45 / 0.5);
+  }
+
+  .ho__card h3 {
+    font-size: var(--step-2);
+  }
+
+  .ho__intro {
+    display: flex;
+    gap: var(--space-s);
+    align-items: center;
+    color: var(--encre-douce);
+    font-style: italic;
+  }
+
+  .ho__intro-star {
+    flex: none;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: var(--turquoise);
+    box-shadow: 0 0 0 5px rgb(17 150 147 / 0.18);
+  }
+
+  .ho__done {
+    display: grid;
+    gap: var(--space-s);
+    padding: var(--space-m);
+    border-radius: var(--radius-l);
+    background: color-mix(in oklab, var(--feuillage) 10%, var(--blanc));
+  }
+
+  .ho__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s) var(--space-m);
+    align-items: center;
+  }
+
+  .ho:not(.is-live) .ho__spots,
+  .ho:not(.is-live) .ho__panel {
+    display: none;
+  }
+
+  .ho__list {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .ho__list dt {
+    font-weight: 600;
+  }
+</style>

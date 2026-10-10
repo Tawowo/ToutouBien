@@ -1,7 +1,8 @@
 ---
 import { Image } from 'astro:assets';
-import PlateArt from './PlateArt.astro';
-import { categoryLabel, categoryMotif } from '~/lib/categories';
+import Photo from './Photo.astro';
+import { categoryLabel } from '~/lib/categories';
+import { coverPhoto } from '~/lib/covers';
 import { formatDate, isDraftArticle, readingMinutes, type Article } from '~/lib/articles';
 
 interface Props {
@@ -15,12 +16,12 @@ const draft = isDraftArticle(article);
 const formatLabel = { article: 'Article', fiche: 'Fiche pratique', guide: 'Guide' }[format];
 ---
 <article class:list={['card', featured && 'card--featured', draft && 'draft', 'reveal']}>
-  <div class="card__visual" aria-hidden={cover ? undefined : 'true'}>
+  <div class="card__visual">
     {
       cover ? (
         <Image src={cover} alt={coverAlt ?? ''} widths={[400, 800]} sizes="(min-width: 60rem) 33vw, 92vw" class="card__img" />
       ) : (
-        <PlateArt motif={categoryMotif(category)} class="card__art" />
+        <Photo id={coverPhoto(article.id, category)} shape="none" ratio="fill" alt="" sizes="(min-width: 60rem) 33vw, 92vw" class="card__photo" />
       )
     }
   </div>
@@ -53,6 +54,21 @@ const formatLabel = { article: 'Article', fiche: 'Fiche pratique', guide: 'Guide
     overflow: hidden;
     border-radius: var(--radius-l);
     background: var(--lin);
+  }
+
+  .card__visual :global(.card__photo),
+  .card__visual :global(.card__photo .ph__frame) {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+  }
+
+  .card__visual :global(.card__photo img) {
+    transition: transform 1s var(--ease-out);
+  }
+
+  .card:hover .card__visual :global(.card__photo img) {
+    transform: scale(1.04);
   }
 
   .card--featured .card__visual {

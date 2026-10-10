@@ -106,13 +106,14 @@ test('le monde par le nez : chaque odeur se trouve, se re-sélectionne et se ré
 test('accueil : aucun élément ne suit le pointeur', async ({ page, isMobile }) => {
   test.skip(isMobile, 'souris uniquement');
   await page.goto('/');
-  const before = await page.locator('[data-cine]').screenshot();
+  const scene = page.locator('[data-hh-scene]');
+  const box = async () => scene.locator('.hh__main').boundingBox();
+  const before = await box();
   await page.mouse.move(900, 400);
   await page.mouse.move(1000, 450, { steps: 5 });
-  // Aucune propriété liée au pointeur n'est exposée par la scène.
-  const html = await page.content();
-  expect(html).not.toContain('uPointer');
-  expect(before.length).toBeGreaterThan(0);
+  // La photo principale ne bouge pas avec la souris.
+  expect(await box()).toEqual(before);
+  expect(await page.content()).not.toContain('uPointer');
 });
 
 test('décodeur : situation, étapes, carnet transmis et retour arrière', async ({ page }) => {
@@ -129,20 +130,6 @@ test('décodeur : situation, étapes, carnet transmis et retour arrière', async
   await expect(read.locator('[data-dc-send]')).toHaveAttribute('href', /sujet=rappel&note=/);
   await page.goBack();
   await expect(page.locator('[data-dc-choices]')).toBeVisible();
-});
-
-test('accueil : une perte du contexte WebGL ne fait pas sauter la page', async ({ page }) => {
-  await page.goto('/?quality=low');
-  const section = page.locator('[data-cine]');
-  await expect(section).toHaveAttribute('data-ready', 'true', { timeout: 15000 });
-  const before = await section.evaluate((el) => (el as HTMLElement).offsetHeight);
-  await page.evaluate(() => {
-    const c = document.querySelector<HTMLCanvasElement>('[data-cine] canvas')!;
-    c.getContext('webgl2')?.getExtension('WEBGL_lose_context')?.loseContext();
-  });
-  await expect(section).toHaveAttribute('data-lite', 'true');
-  expect(await section.evaluate((el) => (el as HTMLElement).offsetHeight)).toBe(before);
-  await expect(page.locator('#cine-title')).toBeVisible();
 });
 
 test('accueil : le sélecteur de chemin répond au clic et au clavier', async ({ page }) => {

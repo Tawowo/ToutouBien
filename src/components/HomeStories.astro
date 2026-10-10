@@ -6,7 +6,10 @@
  * Survoler ou parcourir une piste au clavier allume l'étoile correspondante.
  */
 import Icon from './Icon.astro';
+import Photo from './Photo.astro';
 import { SITUATIONS } from '~/lib/decodeur';
+import { situationPhoto } from '~/lib/situation-photos';
+import { photo } from '~/lib/library';
 
 const C = 260;
 const R = 175;
@@ -34,6 +37,7 @@ const pos = (i: number, n: number) => {
     </div>
 
     <div class="st__body">
+      <div class="st__skywrap">
       <svg class="st__sky" viewBox="0 0 520 520" aria-hidden="true" focusable="false">
         <defs>
           <radialGradient id="st-glow">
@@ -66,6 +70,14 @@ const pos = (i: number, n: number) => {
         <circle cx={C} cy={C} r="54" fill="url(#st-glow)" />
         <circle cx={C} cy={C} r="9" class="st__center" />
       </svg>
+        <div class="st__photos" aria-hidden="true">
+          {SITUATIONS.map((sit, k) => (
+            <div class:list={['st__photo', k === 0 && 'is-on']} data-st-photo={sit.id}>
+              <Photo id={situationPhoto(sit.id)} shape="round" credit="none" sizes="(min-width: 60rem) 12rem, 36vw" />
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div class="st__panels">
         {
@@ -84,6 +96,7 @@ const pos = (i: number, n: number) => {
                 <a class="btn btn--sm" href={`/decodeur/#${s.id}`}>Décoder cette situation <Icon name="arrow" class="btn__arrow" /></a>
                 <a class="link-arrow" href={`/dossiers/${s.id}/`}>Lire le dossier <Icon name="arrow" /></a>
               </div>
+              <p class="st__credit">Photo d’illustration : <a href={photo(situationPhoto(s.id)).sourceUrl} rel="noopener">{photo(situationPhoto(s.id)).author}</a>, <a href={photo(situationPhoto(s.id)).licenceUrl} rel="license noopener">CC BY 2.0</a></p>
             </div>
           ))
         }
@@ -105,6 +118,7 @@ const pos = (i: number, n: number) => {
       });
       root.querySelectorAll<SVGElement>('[data-st-set]').forEach((g) => g.classList.toggle('is-on', g.dataset.stSet === id));
       root.querySelectorAll<HTMLElement>('[data-st-panel]').forEach((p) => p.classList.toggle('is-on', p.dataset.stPanel === id));
+      root.querySelectorAll<HTMLElement>('[data-st-photo]').forEach((p) => p.classList.toggle('is-on', p.dataset.stPhoto === id));
     };
     tabs.forEach((t, i) => {
       t.addEventListener('click', () => show(t.dataset.stTab!));
@@ -200,10 +214,56 @@ const pos = (i: number, n: number) => {
     }
   }
 
-  .st__sky {
+  .st__credit {
+    font-size: 0.72rem;
+    color: var(--encre-douce);
+  }
+
+  .st__credit a {
+    color: inherit;
+  }
+
+  .st__skywrap {
+    position: relative;
     width: min(100%, 30rem);
     justify-self: center;
+  }
+
+  .st__sky {
+    display: block;
+    width: 100%;
     overflow: visible;
+  }
+
+  /* La situation au centre de sa constellation : une photo. */
+  .st__photos {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 38%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  .st__photo {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 500ms var(--ease-out), transform 700ms var(--ease-out);
+  }
+
+  .st:not(.is-live) .st__photo:first-child,
+  .st__photo.is-on {
+    opacity: 1;
+    transform: none;
+  }
+
+  .st__photo :global(.ph) {
+    padding: 0.35rem;
+    border-radius: 50%;
+    background: var(--blanc);
+    box-shadow: 0 0 0 2px var(--turquoise), 0 1.2rem 2.4rem -1.4rem rgb(20 60 55 / 0.6);
   }
 
   .st__orbit {

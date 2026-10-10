@@ -6,13 +6,13 @@
  */
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
-import Plate from '~/components/Plate.astro';
 import Icon from '~/components/Icon.astro';
 import Draft from '~/components/Draft.astro';
 import { Image } from 'astro:assets';
 import { CATEGORIES, categoryLabel } from '~/lib/categories';
 import { isDraftArticle, readingMinutes, formatDate, visibleArticles } from '~/lib/articles';
-import { coverSlot } from '~/lib/covers';
+import { coverPhoto } from '~/lib/covers';
+import Photo from '~/components/Photo.astro';
 
 export async function getStaticPaths() {
   return [{ params: { index: undefined } }];
@@ -63,7 +63,7 @@ const hasDemo = articles.some(isDraftArticle);
           {lead && (
             <a class:list={['bl-lead', 'reveal']} href={`/blog/${lead.id}/`} data-post data-cat={lead.data.category} data-text={fold(`${lead.data.title} ${lead.data.description}`)}>
               <span class="bl-lead__cover">
-                {lead.data.cover ? <Image src={lead.data.cover} alt={lead.data.coverAlt ?? ''} widths={[600, 1000]} sizes="(min-width: 60rem) 55vw, 92vw" /> : <Plate id={coverSlot(lead.data.category)} ratio={4 / 3} shape="rect" reveal={false} sizes="(min-width: 60rem) 55vw, 92vw" />}
+                {lead.data.cover ? <Image src={lead.data.cover} alt={lead.data.coverAlt ?? ''} widths={[600, 1000]} sizes="(min-width: 60rem) 55vw, 92vw" /> : <Photo id={coverPhoto(lead.id, lead.data.category)} ratio="4-3" shape="none" alt="" credit="none" priority sizes="(min-width: 60rem) 55vw, 92vw" />}
               </span>
               <span class="bl-lead__body">
                 <span class="label">
@@ -100,7 +100,7 @@ const hasDemo = articles.some(isDraftArticle);
               <li class:list={['bl-card', i === 0 && 'bl-card--wide', 'reveal']} data-post data-cat={a.data.category} data-text={fold(`${a.data.title} ${a.data.description} ${categoryLabel(a.data.category)}`)}>
                 <a href={`/blog/${a.id}/`}>
                   <span class="bl-card__cover">
-                    {a.data.cover ? <Image src={a.data.cover} alt={a.data.coverAlt ?? ''} widths={[400, 800]} sizes="(min-width: 60rem) 33vw, 92vw" /> : <Plate id={coverSlot(a.data.category)} ratio={i === 0 ? 3 / 2 : 4 / 3} shape="rect" reveal={false} sizes="(min-width: 60rem) 33vw, 92vw" />}
+                    {a.data.cover ? <Image src={a.data.cover} alt={a.data.coverAlt ?? ''} widths={[400, 800]} sizes="(min-width: 60rem) 33vw, 92vw" /> : <Photo id={coverPhoto(a.id, a.data.category)} ratio={i === 0 ? '3-2' : '4-3'} shape="none" alt="" credit="none" sizes="(min-width: 60rem) 33vw, 92vw" />}
                   </span>
                   <span class="label">
                     {FORMATS[a.data.format]} · {categoryLabel(a.data.category)}
@@ -234,14 +234,13 @@ const hasDemo = articles.some(isDraftArticle);
     border-radius: 12rem var(--radius-l) var(--radius-l) var(--radius-l);
   }
 
-  .bl-lead__cover :global(.plate),
-  .bl-card__cover :global(.plate) {
-    border-radius: 0;
+  .bl-lead__cover :global(img),
+  .bl-card__cover :global(img) {
     transition: transform 1.2s var(--ease-out);
   }
 
-  .bl-lead:hover .bl-lead__cover :global(.plate),
-  .bl-card a:hover .bl-card__cover :global(.plate) {
+  .bl-lead:hover .bl-lead__cover :global(img),
+  .bl-card a:hover .bl-card__cover :global(img) {
     transform: scale(1.04);
   }
 

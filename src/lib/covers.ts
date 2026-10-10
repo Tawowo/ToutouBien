@@ -1,15 +1,25 @@
-import type { PhotoSlotId } from '~/content/photos';
-
 /**
- * Visuel de couverture par défaut d'un article selon sa catégorie : un emplacement photo
- * d'illustration (photo libre vérifiée si disponible, composition graphique sinon).
- * Un article peut définir sa propre couverture (`cover` dans le frontmatter).
+ * Couverture photographique des articles : une photo de la photothèque choisie pour son sujet.
+ * Un article peut définir sa propre image (`cover` dans le frontmatter), prioritaire.
+ * Sans correspondance, la catégorie donne une photo par défaut.
  */
-const BY_CATEGORY: Record<string, PhotoSlotId> = {
-  'au-quotidien': 'illus-maison',
-  'en-promenade': 'illus-balade',
-  chiot: 'illus-chiot',
-  comprendre: 'illus-flair',
+const BY_ARTICLE: Record<string, string> = {
+  'apprendre-la-solitude': 'attente-rebord',
+  'arrivee-chiot-premieres-semaines': 'chiot-portee',
+  'chien-qui-tire-en-laisse': 'balade-duo-laisses',
+  'chiot-qui-mordille': 'chiot-jouet',
+  'fiche-observer-son-chien': 'observe-rocher',
+  'le-rappel': 'rappel-balle',
+  'les-besoins-du-chien': 'nature-soleil',
+  'lire-les-signaux': 'observe-profil',
+  'preparer-un-accompagnement': 'lien-laisse-golden',
 };
 
-export const coverSlot = (category: string): PhotoSlotId => BY_CATEGORY[category] ?? 'illus-balade';
+const BY_CATEGORY: Record<string, string> = {
+  'au-quotidien': 'maison-golden',
+  'en-promenade': 'balade-golden-soleil',
+  chiot: 'chiot-exploration',
+  comprendre: 'observe-duo',
+};
+
+export const coverPhoto = (articleId: string, category: string): string => BY_ARTICLE[articleId] ?? BY_CATEGORY[category] ?? 'balade-golden-soleil';

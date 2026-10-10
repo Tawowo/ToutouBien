@@ -1,0 +1,122 @@
+---
+/**
+ * Crédits photographiques : chaque photo d'illustration, son auteur, sa page d'origine et sa licence.
+ * Licence CC BY 2.0 : l'attribution est obligatoire ; elle figure aussi sur chaque image du site.
+ */
+import Base from '~/layouts/Base.astro';
+import Photo from '~/components/Photo.astro';
+import { LIBRARY } from '~/lib/library';
+
+const THEMES: Record<string, string> = {
+  lien: 'Le lien',
+  balade: 'La balade',
+  flair: 'Le flair',
+  jeu: 'Le jeu',
+  rencontre: 'Les rencontres',
+  rappel: 'Le rappel',
+  chiot: 'Les chiots',
+  attente: 'L’attente',
+  maison: 'À la maison',
+  senior: 'Les chiens âgés',
+  nature: 'Dans la nature',
+  observe: 'Observer',
+  portrait: 'Portraits',
+};
+const groups = Object.entries(THEMES)
+  .map(([id, label]) => ({ id, label, items: LIBRARY.filter((p) => p.theme === id) }))
+  .filter((g) => g.items.length);
+---
+<Base title="Crédits photographiques" description="Les photographies d’illustration du site ToutouBien : auteurs, sources et licences.">
+  <section class="section cr">
+    <div class="page">
+      <p class="eyebrow">Crédits</p>
+      <h1>Crédits <em>photographiques</em></h1>
+      <div class="cr__intro">
+        <p class="lede">Les photographies de chiens présentes sur ce site sont des <strong>photos d’illustration</strong>. Elles ne montrent ni Mme Petitgand, ni des personnes ou des chiens qu’elle accompagne.</p>
+        <p>Elles proviennent de Flickr et ont été sélectionnées dans le jeu de données public <a href="https://storage.googleapis.com/openimages/web/index.html" rel="noopener">Google Open Images</a>, qui recense pour chacune la licence <a href="https://creativecommons.org/licenses/by/2.0/deed.fr" rel="license noopener">Creative Commons Attribution 2.0 (CC BY 2.0)</a>. Cette licence autorise la réutilisation, y compris commerciale, à condition de créditer l’auteur et d’indiquer la licence. Certaines images ont été recadrées ; aucune n’a été retouchée.</p>
+        <p>Vous êtes l’auteur d’une de ces photos et souhaitez une modification du crédit ou son retrait&nbsp;? <a href="/contact/">Écrivez-nous</a>.</p>
+      </div>
+      <p class="cr__count">{LIBRARY.length} photographies</p>
+
+      {
+        groups.map((g) => (
+          <section class="cr__group" aria-labelledby={`cr-${g.id}`}>
+            <h2 id={`cr-${g.id}`}>{g.label}</h2>
+            <ul class="cr__grid" role="list">
+              {g.items.map((p) => (
+                <li id={p.id}>
+                  <Photo id={p.id} shape="soft" ratio="4-3" credit="none" sizes="(min-width: 60rem) 16vw, 45vw" />
+                  <p class="cr__cap">{p.caption}</p>
+                  <p class="cr__meta">
+                    <a href={p.authorUrl} rel="noopener">{p.author}</a> · <a href={p.sourceUrl} rel="noopener">page d’origine</a> · <a href={p.licenceUrl} rel="license noopener">{p.licence}</a>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </section>
+</Base>
+
+<style>
+  .cr h1 em {
+    color: var(--sarcelle);
+  }
+
+  .cr__intro {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 62ch;
+    margin-block: var(--space-m) var(--space-l);
+  }
+
+  .cr__count {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--sarcelle);
+  }
+
+  .cr__group {
+    margin-top: var(--space-l);
+  }
+
+  .cr__group h2 {
+    font-size: var(--step-2);
+    margin-bottom: var(--space-s);
+  }
+
+  .cr__grid {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .cr__grid li {
+    display: grid;
+    gap: 0.3rem;
+    align-content: start;
+    scroll-margin-top: 6rem;
+  }
+
+  .cr__grid li:target :global(.ph__frame) {
+    outline: 3px solid var(--turquoise);
+    outline-offset: 3px;
+  }
+
+  .cr__cap {
+    font-size: var(--step--1);
+  }
+
+  .cr__meta {
+    font-size: 0.75rem;
+    color: var(--encre-douce);
+  }
+
+  .cr__meta a {
+    color: inherit;
+  }
+</style>

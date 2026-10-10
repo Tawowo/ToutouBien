@@ -1,0 +1,146 @@
+---
+/**
+ * « Chaque chien a sa façon d'être au monde » : deux rubans de photographies qui défilent
+ * lentement en sens opposés (animation autonome), avec une étoile-repère entre les images.
+ * Pause au survol et au focus ; défilement manuel horizontal en mouvement réduit.
+ */
+import Photo from './Photo.astro';
+
+const ROW_A = ['portrait-berger-australien', 'jeu-dalmatien', 'chiot-mordille', 'observe-rocher', 'nature-fleurs', 'portrait-shiba', 'rencontre-terriers', 'balade-prairie'];
+const ROW_B = ['senior-setter', 'flair-bord-du-chemin', 'jeu-plage', 'portrait-colley', 'maison-canape', 'observe-duo', 'nature-colline', 'chiot-husky'];
+---
+<section class="hb" aria-labelledby="hb-title">
+  <div class="page">
+    <div class="hb__head">
+      <p class="eyebrow">Des chiens, des histoires</p>
+      <h2 id="hb-title">Chaque chien a <em>sa façon d’être au monde</em>.</h2>
+      <p class="lede">Grand ou petit, jeune ou âgé, joueur ou contemplatif : comprendre un chien commence par le regarder tel qu’il est.</p>
+    </div>
+  </div>
+  {
+    [ROW_A, ROW_B].map((row, r) => (
+      <div class:list={['hb__row', r === 1 && 'hb__row--rev']} tabindex="0" role="group" aria-label={r === 0 ? 'Photographies de chiens, première rangée' : 'Photographies de chiens, deuxième rangée'}>
+        <ul class="hb__track" role="list">
+          {[...row, ...row].map((id, i) => (
+            <li class="hb__item" aria-hidden={i >= row.length ? 'true' : undefined}>
+              <Photo id={id} shape="soft" ratio={i % 3 === 1 ? '3-4' : '4-3'} credit={i >= row.length ? 'none' : 'overlay'} sizes="(min-width: 60rem) 22vw, 60vw" />
+              <span class="hb__star" aria-hidden="true"></span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+  <div class="page hb__foot">
+    <a class="link-arrow" href="/galerie/">Toute la galerie <span aria-hidden="true">→</span></a>
+    <p class="hb__note">Photos d’illustration sous licence libre, auteurs crédités sur chaque image.</p>
+  </div>
+</section>
+
+<style>
+  .hb {
+    padding-block: var(--space-xl);
+    background: linear-gradient(180deg, var(--papier), var(--ciel) 55%, var(--papier));
+    overflow: hidden;
+  }
+
+  .hb__head {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 48rem;
+    margin-bottom: var(--space-l);
+  }
+
+  .hb__head h2 em {
+    color: var(--sarcelle);
+  }
+
+  .hb__row {
+    overflow-x: hidden;
+    padding-block: var(--space-xs);
+    outline-offset: -3px;
+  }
+
+  .hb__track {
+    display: flex;
+    gap: var(--space-m);
+    align-items: center;
+    width: max-content;
+    padding: 0;
+    list-style: none;
+  }
+
+  .hb__item {
+    position: relative;
+    flex: none;
+    width: clamp(13rem, 22vw, 20rem);
+  }
+
+  .hb__item:nth-child(3n + 2) {
+    width: clamp(10rem, 16vw, 15rem);
+  }
+
+  .hb__item :global(.ph__frame) {
+    box-shadow: 0 1.2rem 2.4rem -1.6rem rgb(20 60 55 / 0.45);
+  }
+
+  .hb__star {
+    position: absolute;
+    right: calc(var(--space-m) / -2 - 0.25rem);
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--turquoise);
+    box-shadow: 0 0 0 4px rgb(17 150 147 / 0.15), 0 0 12px rgb(17 150 147 / 0.5);
+    transform: translateY(-50%);
+  }
+
+  .hb__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s) var(--space-l);
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-l);
+  }
+
+  .hb__note {
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hb__track {
+      animation: hb-scroll 80s linear infinite;
+    }
+
+    .hb__row--rev .hb__track {
+      animation-direction: reverse;
+      animation-duration: 95s;
+    }
+
+    .hb__row:hover .hb__track,
+    .hb__row:focus-within .hb__track,
+    .hb__row:focus .hb__track {
+      animation-play-state: paused;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hb__row {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+    }
+
+    .hb__item {
+      scroll-snap-align: start;
+    }
+  }
+
+  @keyframes hb-scroll {
+    to {
+      transform: translateX(calc(-50% - var(--space-m) / 2));
+    }
+  }
+</style>

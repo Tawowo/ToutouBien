@@ -16,6 +16,19 @@ import emblemRaw from '~/assets/brand/emblem.svg?raw';
 import { site } from '~/config/site';
 import { MILESTONES } from '~/scripts/flair/timeline';
 
+interface Props {
+  /** Ouverture de page (h1) ou chapitre au fil de l'accueil (h2). */
+  as?: 'h1' | 'h2';
+  eyebrow?: string;
+  title?: string;
+  lede?: string;
+}
+const {
+  as = 'h1',
+  eyebrow = 'Éducation canine · accompagnement des familles',
+  title = 'Comprendre son chien, *se sentir bien* ensemble.',
+  lede = 'ToutouBien accompagne les propriétaires et leur chien pour que le quotidien redevienne plus simple, à la maison comme en balade.',
+} = Astro.props;
 const d = emblemRaw.match(/ d="([^"]+)"/)?.[1] ?? '';
 const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
 
@@ -36,17 +49,27 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
     </svg>
 
     <div class="cine__block cine__intro page" data-block="intro">
-      <p class="eyebrow enter">Éducation canine · accompagnement des familles</p>
-      <SplitTitle as="h1" id="cine-title" class="cine__title" text="Comprendre son chien, *se sentir bien* ensemble." now />
-      <p class="lede cine__lede enter" data-i="4">
-        ToutouBien accompagne les propriétaires et leur chien pour que le quotidien redevienne plus simple, à la maison comme en balade.
-      </p>
+      <p class="eyebrow enter">{eyebrow}</p>
+      <SplitTitle as={as} id="cine-title" class="cine__title" text={title} now={as === 'h1'} />
+      <p class="lede cine__lede enter" data-i="4">{lede}</p>
       <div class="cine__actions enter" data-i="5">
-        <a class="btn btn--lagon" href="/parlons-de-votre-chien/">
-          Parlons de votre chien
-          <Icon name="arrow" class="btn__arrow" />
-        </a>
-        <a class="cine__secondary" href="/orientation/">Par où commencer&nbsp;?</a>
+        {as === 'h1' ? (
+          <>
+            <a class="btn btn--lagon" href="/parlons-de-votre-chien/">
+              Parlons de votre chien
+              <Icon name="arrow" class="btn__arrow" />
+            </a>
+            <a class="cine__secondary" href="/orientation/">Par où commencer&nbsp;?</a>
+          </>
+        ) : (
+          <>
+            <a class="btn btn--lagon" href="/explorer/flair/">
+              Le monde par le nez
+              <Icon name="arrow" class="btn__arrow" />
+            </a>
+            <a class="cine__secondary" href="/approche/">L’approche</a>
+          </>
+        )}
       </div>
     </div>
 

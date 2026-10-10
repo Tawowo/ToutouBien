@@ -5,7 +5,8 @@
  * Jamais de fausse photo, jamais de mention « image à venir » en public.
  */
 import { Picture } from 'astro:assets';
-import { PHOTO_SLOTS, creditFor, photoFor, type PhotoSlotId, type PlateMotif } from '~/content/photos';
+import { PHOTO_SLOTS, altFor, creditFor, focusFor, photoFor, type PhotoSlotId, type PlateMotif } from '~/content/photos';
+import { focusClass } from '~/lib/library';
 import PlateArt from './PlateArt.astro';
 
 interface Props {
@@ -28,10 +29,11 @@ const photo = photoFor(id);
 const RATIOS: Record<string, number> = { '4-5': 4 / 5, '3-4': 3 / 4, '4-3': 4 / 3, '3-2': 3 / 2, '1-1': 1 };
 const ratioKey = Object.entries(RATIOS).reduce((best, [key, value]) => (Math.abs(value - ratio) < Math.abs(RATIOS[best]! - ratio) ? key : best), '4-5');
 const credit = creditFor(id);
+const focus = focusFor(id);
 const motif: PlateMotif = slot.motif;
 ---
 <figure
-  class:list={['plate', `plate--${shape}`, `plate--${motif}`, reveal && 'reveal-mask reveal-scale', className]}
+  class:list={['plate', `plate--${shape}`, `plate--${motif}`, reveal && 'reveal-mask reveal-scale', focus && focusClass({ focus }), className]}
   data-ratio={ratioKey}
   data-photo-slot={id}
   data-has-photo={photo ? 'true' : 'false'}
@@ -40,7 +42,7 @@ const motif: PlateMotif = slot.motif;
     photo ? (
       <Picture
         src={photo}
-        alt={slot.alt}
+        alt={altFor(id)}
         formats={['avif', 'webp']}
         widths={[480, 800, 1200, 1600]}
         sizes={sizes}
@@ -55,7 +57,7 @@ const motif: PlateMotif = slot.motif;
   {
     photo && credit && !credit.authentic && (
       <figcaption class="plate__credit">
-        Photo d’illustration : <a href={credit.sourceUrl} rel="noopener">{credit.author}</a>, {credit.licence}
+        Photo d’illustration : <a href={credit.sourceUrl} rel="noopener">{credit.author}</a>, {credit.licenceUrl ? <a href={credit.licenceUrl} rel="license noopener">{credit.licence}</a> : credit.licence}
       </figcaption>
     )
   }
@@ -109,6 +111,7 @@ const motif: PlateMotif = slot.motif;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: var(--fx, 50%) var(--fy, 50%);
   }
 
 

@@ -7,8 +7,8 @@
 import Base from '~/layouts/Base.astro';
 import Icon from '~/components/Icon.astro';
 import Draft from '~/components/Draft.astro';
-import Plate from '~/components/Plate.astro';
-import type { PhotoSlotId } from '~/content/photos';
+import Photo from '~/components/Photo.astro';
+import { situationPhoto } from '~/lib/situation-photos';
 import { SITUATIONS, STEPS, type Situation } from '~/lib/decodeur';
 import { accompagnement } from '~/content/accompagnements';
 import { EXPERIENCES } from '~/content/explorer';
@@ -41,8 +41,6 @@ const pos = (i: number, n: number) => {
   const r = R * (JITTER[i % JITTER.length] ?? 1);
   return { x: C + Math.cos(a) * r, y: C + Math.sin(a) * r };
 };
-// Photo d'illustration (ou composition graphique) associée à chaque dossier.
-const PLATE: Record<string, PhotoSlotId> = { laisse: 'illus-balade', rappel: 'illus-flair', solitude: 'illus-maison', visites: 'illus-maison', chiens: 'illus-rencontre-chiens', chiot: 'illus-chiot' };
 const ids = STEPS.map((st) => `d-${st.id}`);
 ---
 <Base
@@ -87,7 +85,7 @@ const ids = STEPS.map((st) => `d-${st.id}`);
         <h2 id={`${ids[0]}-t`}>Une situation <em>fréquente</em>.</h2>
         <div class="dd-intro">
           <p class="lede">{s.voice.replace(/[«»]/g, '').trim()} Beaucoup de familles vivent cette situation. Elle a rarement une seule explication&nbsp;: la regarder calmement aide déjà à y voir plus clair.</p>
-          <Plate id={PLATE[s.id] ?? 'illus-balade'} ratio={1} shape="round" class="dd-intro__plate" sizes="(min-width: 62rem) 20rem, 70vw" />
+          <Photo id={situationPhoto(s.id)} shape="soft" ratio="4-5" credit="below" class="dd-intro__plate" sizes="(min-width: 62rem) 20rem, 70vw" />
         </div>
       </section>
 

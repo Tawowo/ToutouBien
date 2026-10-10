@@ -3,6 +3,9 @@ import { render } from 'astro:content';
 import { Image, getImage } from 'astro:assets';
 import Base from '~/layouts/Base.astro';
 import ArticleCard from '~/components/ArticleCard.astro';
+import Photo from '~/components/Photo.astro';
+import { coverPhoto } from '~/lib/covers';
+import { photo as libraryPhoto } from '~/lib/library';
 import Fil from '~/components/Fil.astro';
 import Icon from '~/components/Icon.astro';
 import Draft from '~/components/Draft.astro';
@@ -26,14 +29,14 @@ const d = article.data;
 const draft = isDraftArticle(article);
 const base = Astro.site ?? new URL('https://toutoubien.example');
 const path = `/blog/${article.id}/`;
-const cover = d.cover ? await getImage({ src: d.cover, width: 1200, format: 'jpg' }) : undefined;
+const cover = await getImage({ src: d.cover ?? libraryPhoto(coverPhoto(article.id, d.category)).img, width: 1200, format: 'jpg' });
 const topic = TOPICS.find((t) => t.value === d.ctaTopic);
 const related = relatedArticles(article, all);
 const toc = headings.filter((h) => h.depth === 2);
 const jsonLd = draft || !d.publishDate
   ? []
   : [
-      articleLd({ base, path, title: d.title, description: d.description, published: d.publishDate, updated: d.updatedDate, image: cover ? new URL(cover.src, base).toString() : undefined }),
+      articleLd({ base, path, title: d.title, description: d.description, published: d.publishDate, updated: d.updatedDate, image: new URL(cover.src, base).toString() }),
       breadcrumbLd(base, [
         { name: 'Accueil', path: '/' },
         { name: 'Blog', path: '/blog/' },
@@ -41,7 +44,7 @@ const jsonLd = draft || !d.publishDate
       ]),
     ];
 ---
-<Base title={d.title} description={d.description} ogType="article" ogImage={cover?.src} noindex={draft} jsonLd={jsonLd}>
+<Base title={d.title} description={d.description} ogType="article" ogImage={cover.src} noindex={draft} jsonLd={jsonLd}>
   <div class="read-progress" aria-hidden="true"><span></span></div>
   <article class="article">
     <header class="article__head">
@@ -80,6 +83,13 @@ const jsonLd = draft || !d.publishDate
             </figcaption>
           )}
         </figure>
+      )
+    }
+    {
+      !d.cover && (
+        <div class="page article__cover">
+          <Photo id={coverPhoto(article.id, d.category)} shape="soft" ratio="2-1" credit="below" priority sizes="(min-width: 84rem) 84rem, 100vw" />
+        </div>
       )
     }
 
@@ -254,7 +264,7 @@ const jsonLd = draft || !d.publishDate
     margin-bottom: var(--space-xl);
   }
 
-  .article__cover :global(img) {
+  .article__cover > :global(img) {
     width: 100%;
     max-height: 70vh;
     object-fit: cover;

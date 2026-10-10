@@ -1,18 +1,19 @@
 ---
 import Base from '~/layouts/Base.astro';
-import FlairHero from '~/components/FlairHero.astro';
+import HomeHero from '~/components/HomeHero.astro';
+import HomeBand from '~/components/HomeBand.astro';
+import HomeObserve from '~/components/HomeObserve.astro';
 import HomeChooser from '~/components/HomeChooser.astro';
 import HomeStories from '~/components/HomeStories.astro';
 import HomeThread from '~/components/HomeThread.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
 import Plate from '~/components/Plate.astro';
-import DogFigure from '~/components/DogFigure.astro';
+import Photo from '~/components/Photo.astro';
 import Fil from '~/components/Fil.astro';
 import Icon from '~/components/Icon.astro';
 import Faq from '~/components/Faq.astro';
 import ArticleCard from '~/components/ArticleCard.astro';
 import Draft from '~/components/Draft.astro';
-import { EXPERIENCES } from '~/content/explorer';
 import { site } from '~/config/site';
 import { resolve } from '~/lib/fields';
 import { visibleArticles } from '~/lib/articles';
@@ -20,19 +21,12 @@ import { visibleArticles } from '~/lib/articles';
 const name = resolve(site.educator.displayName);
 const intro = resolve(site.educator.intro);
 const articles = (await visibleArticles()).slice(0, 3);
-const signals = [
-  { id: 'detendu', label: 'Détendu', state: { body: 'soft', ears: 'relaxed', tail: 'neutral', wag: 'none', head: 'neutral', mouth: 'relaxed', gaze: 'soft' }, text: 'Corps souple, gueule entrouverte, regard doux.' },
-  { id: 'attentif', label: 'Attentif', state: { body: 'frozen', ears: 'forward', tail: 'high', wag: 'stiff', head: 'up', mouth: 'closed', gaze: 'fixed' }, text: 'Il se fige et fixe : quelque chose capte toute son attention.' },
-  { id: 'gene', label: 'Mal à l’aise', state: { body: 'lowered', ears: 'back', tail: 'low', wag: 'none', head: 'turned', mouth: 'lick', gaze: 'away' }, text: 'Il se fait petit, détourne la tête, se lèche la truffe.' },
-  { id: 'joueur', label: 'Joueur', state: { body: 'bow', ears: 'forward', tail: 'high', wag: 'loose', head: 'neutral', mouth: 'relaxed', gaze: 'soft' }, text: 'L’avant baissé, l’arrière levé : une invitation au jeu.' },
-];
 ---
 <Base
   title="ToutouBien"
   description="Éducation canine pour toute la famille : ToutouBien vous aide à comprendre ce qui se passe avec votre chien avant de chercher à le changer. Décodeur du quotidien, expériences interactives, ressources et premier échange."
-  headerTheme="dark"
 >
-  <FlairHero />
+  <HomeHero />
 
   <!-- Manifeste -->
   <section class="section manifesto" aria-labelledby="manifesto-title">
@@ -48,39 +42,17 @@ const signals = [
     </div>
   </section>
 
+  <!-- Des chiens, des histoires : rubans de photographies -->
+  <HomeBand />
+
   <!-- Où en êtes-vous : sélecteur en constellation -->
   <HomeChooser />
 
+  <!-- Apprendre à regarder : scène photographique -->
+  <HomeObserve />
+
   <!-- Plusieurs histoires possibles : constellations du décodeur -->
   <HomeStories />
-
-  <!-- Mini-laboratoire : lire son chien -->
-  <section class="section lab on-dark grain-dark" aria-labelledby="lab-title" data-mini-lab>
-    <div class="page lab__grid">
-      <div class="lab__text">
-        <p class="eyebrow">Explorer</p>
-        <SplitTitle id="lab-title" text="Son corps vous *parle*. Essayez." />
-        <p class="lede">Choisissez une attitude et observez ce qui change : posture, oreilles, queue, regard. Ce n’est qu’un aperçu des expériences interactives.</p>
-        <div class="lab__choices" role="radiogroup" aria-label="Attitude du chien">
-          {
-            signals.map((s, i) => (
-              <button type="button" class="lab__choice" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-signal={s.id} data-state={JSON.stringify(s.state)} data-text={s.text}>
-                {s.label}
-              </button>
-            ))
-          }
-        </div>
-        <p class="lab__caption" aria-live="polite" data-lab-caption>{signals[0]!.text}</p>
-        <a class="btn btn--lagon" href="/explorer/">Voir les trois expériences <Icon name="arrow" class="btn__arrow" /></a>
-      </div>
-      <div class="lab__stage">
-        <DogFigure class="lab__dog" label="Chien illustré : sa posture change selon l’attitude choisie" />
-        <ul class="lab__xps" role="list">
-          {EXPERIENCES.map((e) => <li><a href={e.href}><span class="label">{e.num}</span> {e.title}</a></li>)}
-        </ul>
-      </div>
-    </div>
-  </section>
 
   <!-- Le fil d'un accompagnement -->
   <HomeThread />
@@ -88,7 +60,7 @@ const signals = [
   <!-- Qui -->
   <section class="section who on-lin" aria-labelledby="who-title">
     <div class="page who__grid">
-      <Plate id="educatrice-portrait" class="who__plate" shape="arch" sizes="(min-width: 60rem) 30vw, 80vw" />
+      <Photo id="lien-pelouse" class="who__plate" shape="arch" ratio="4-5" credit="below" sizes="(min-width: 60rem) 30vw, 80vw" />
       <div class="who__text">
         <p class="eyebrow">Qui vous accompagne</p>
         <h2 id="who-title" class="who__title">
@@ -139,33 +111,6 @@ const signals = [
 
   <Faq scope="accueil" limit={4} />
 </Base>
-
-<script>
-  const lab = document.querySelector<HTMLElement>('[data-mini-lab]');
-  const dog = lab?.querySelector<SVGSVGElement>('.dog');
-  const caption = lab?.querySelector<HTMLElement>('[data-lab-caption]');
-  const choices = Array.from(lab?.querySelectorAll<HTMLButtonElement>('[data-signal]') ?? []);
-  const select = (btn: HTMLButtonElement) => {
-    choices.forEach((b) => b.setAttribute('aria-checked', String(b === btn)));
-    const state = JSON.parse(btn.dataset.state ?? '{}') as Record<string, string>;
-    if (dog) for (const [k, v] of Object.entries(state)) dog.dataset[k] = v;
-    if (caption) caption.textContent = btn.dataset.text ?? '';
-  };
-  choices.forEach((btn, i) => {
-    btn.addEventListener('click', () => select(btn));
-    btn.addEventListener('pointerenter', () => matchMedia('(pointer: fine)').matches && select(btn));
-    // Navigation au clavier dans le groupe (flèches).
-    btn.addEventListener('keydown', (e) => {
-      const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
-      if (!d) return;
-      e.preventDefault();
-      const next = choices[(i + d + choices.length) % choices.length]!;
-      next.focus();
-      select(next);
-    });
-    btn.tabIndex = i === 0 ? 0 : -1;
-  });
-</script>
 
 <style>
   /* ---------- Manifeste ---------- */
@@ -222,98 +167,6 @@ const signals = [
     .manifesto__grid > :global(.manifesto__statement) { grid-area: statement; }
     .manifesto__aside { grid-area: aside; }
     .manifesto__grid > :global(.manifesto__plate) { grid-area: plate; align-self: center; }
-  }
-
-  /* ---------- Mini-laboratoire ---------- */
-  .lab__grid {
-    display: grid;
-    gap: var(--space-xl);
-    align-items: center;
-  }
-
-  @media (min-width: 60rem) {
-    .lab__grid {
-      grid-template-columns: 5fr 6fr;
-    }
-  }
-
-  .lab__text {
-    display: grid;
-    gap: var(--space-m);
-    justify-items: start;
-  }
-
-  .lab__text :global(h2 em) {
-    color: var(--lueur);
-  }
-
-  .lab__choices {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .lab__choice {
-    min-height: 2.9rem;
-    padding: 0.5rem 1.1rem;
-    border: 1px solid rgb(255 255 255 / 0.25);
-    border-radius: var(--radius-pill);
-    background: transparent;
-    color: var(--craie);
-    cursor: pointer;
-    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
-  }
-
-  .lab__choice:hover {
-    border-color: var(--lagon);
-  }
-
-  .lab__choice[aria-checked='true'] {
-    background: var(--lagon);
-    border-color: var(--lagon);
-    color: var(--nuit);
-  }
-
-  .lab__caption {
-    min-height: 3em;
-    font-family: var(--font-display);
-    font-style: italic;
-    font-size: var(--step-1);
-    color: var(--craie-douce);
-  }
-
-  .lab__stage {
-    position: relative;
-    padding: var(--space-l);
-    border-radius: var(--radius-l);
-    background: radial-gradient(70% 70% at 50% 35%, var(--sous-bois), var(--nuit-2));
-    border: 1px solid rgb(255 255 255 / 0.08);
-  }
-
-  .lab__dog {
-    width: 100%;
-    max-width: 34rem;
-    margin: var(--space-m) auto;
-  }
-
-  .lab__xps {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-m);
-    padding: var(--space-s) 0 0;
-    margin: 0;
-    list-style: none;
-    border-top: 1px solid rgb(255 255 255 / 0.1);
-  }
-
-  .lab__xps a {
-    color: var(--craie) !important;
-    text-decoration: none;
-    font-size: var(--step--1);
-  }
-
-  .lab__xps a:hover {
-    color: var(--lueur) !important;
   }
 
   /* ---------- Premier pas ---------- */

@@ -64,4 +64,5 @@ export const LEGAL_NAV: NavItem[] = [
   { href: '/mentions-legales/', label: 'Mentions légales' },
   { href: '/confidentialite/', label: 'Confidentialité' },
   { href: '/accessibilite/', label: 'Accessibilité' },
+  { href: '/credits-photos/', label: 'Crédits photos' },
 ];

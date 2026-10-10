@@ -11,6 +11,7 @@
  */
 import type { ImageMetadata } from 'astro';
 import verifiedCredits from './photo-credits.json';
+import { hasPhoto, photo as libraryPhoto } from '~/lib/library';
 
 export type PlateMotif = 'chemin' | 'rencontre' | 'herbes' | 'horizon' | 'portrait';
 
@@ -182,14 +183,55 @@ export type PhotoSlotId = keyof typeof PHOTO_SLOTS;
 
 const files = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/*.{jpg,jpeg,png,webp,avif}', { eager: true });
 
-/** Crédit d'un emplacement : saisi à la main dans le registre, ou vérifié par le script de téléchargement. */
+/**
+ * Photo d'illustration de la photothèque associée à chaque emplacement non authentique.
+ * Une photo déposée dans src/assets/photos/<id>.* (photo authentique de l'activité) reste prioritaire.
+ * Les emplacements de Mme Petitgand (portrait, avec son chien, atelier) n'ont volontairement aucune photo d'illustration.
+ */
+export const SLOT_LIBRARY: Partial<Record<string, string>> = {
+  'accueil-balade': 'attention-regard',
+  'accueil-rencontre': 'lien-laisse-golden',
+  'accompagnement-domicile': 'maison-golden',
+  'accompagnement-exterieur': 'balade-duo-laisses',
+  'illus-balade': 'balade-golden-soleil',
+  'illus-flair': 'flair-levriers',
+  'illus-rencontre-chiens': 'rencontre-epagneuls',
+  'illus-maison': 'maison-parquet',
+  'illus-chiot': 'chiot-exploration',
+};
+
+const fileFor = (id: string) => Object.entries(files).find(([path]) => path.split('/').pop()?.replace(/\.[^.]+$/, '') === id)?.[1].default;
+const libraryFor = (id: string) => {
+  const lib = SLOT_LIBRARY[id];
+  return lib && hasPhoto(lib) ? libraryPhoto(lib) : undefined;
+};
+
+/** Crédit d'un emplacement : saisi à la main, vérifié par le script Commons, ou celui de la photothèque. */
 export function creditFor(id: string): PhotoCredit | undefined {
   const manual = (PHOTO_SLOTS as Record<string, PhotoSlot>)[id]?.credit;
-  return manual ?? (verifiedCredits as Record<string, PhotoCredit>)[id];
+  const verified = (verifiedCredits as Record<string, PhotoCredit>)[id];
+  if (manual ?? verified) return manual ?? verified;
+  if (fileFor(id)) return undefined;
+  const lib = libraryFor(id);
+  return lib ? { author: lib.author, sourceUrl: lib.sourceUrl, licence: lib.licence, licenceUrl: lib.licenceUrl, attributionRequired: true, authentic: false } : undefined;
 }
 
-/** Renvoie le fichier photo déposé pour un emplacement, s'il existe. */
+/** Renvoie la photo d'un emplacement : fichier déposé (prioritaire) ou photo de la photothèque. */
 export function photoFor(id: string): ImageMetadata | undefined {
-  const match = Object.entries(files).find(([path]) => path.split('/').pop()?.replace(/\.[^.]+$/, '') === id);
-  return match?.[1].default;
+  return fileFor(id) ?? libraryFor(id)?.img;
+}
+
+/** Texte alternatif : celui de la photo de la photothèque si c'est elle qui s'affiche. */
+export function altFor(id: string): string {
+  const slot = (PHOTO_SLOTS as Record<string, PhotoSlot>)[id];
+  if (!fileFor(id)) {
+    const lib = libraryFor(id);
+    if (lib) return lib.alt;
+  }
+  return slot?.alt ?? '';
+}
+
+/** Point d'intérêt de la photo de la photothèque (classe CSS), vide sinon. */
+export function focusFor(id: string): { x: number; y: number } | undefined {
+  return fileFor(id) ? undefined : libraryFor(id)?.focus;
 }

@@ -1,0 +1,212 @@
+---
+/**
+ * Photographie de la photothèque (src/lib/library.ts), avec son crédit (licence CC BY : attribution
+ * obligatoire), son point d'intérêt (le chien reste visible quel que soit le recadrage) et un
+ * chargement différé par défaut. Formats AVIF/WebP générés au build.
+ */
+import { Picture } from 'astro:assets';
+import { creditLine, focusClass, photo } from '~/lib/library';
+
+interface Props {
+  id: string;
+  class?: string;
+  sizes?: string;
+  /** Forme du cadre. */
+  shape?: 'rect' | 'arch' | 'round' | 'soft' | 'none';
+  /** Ratio imposé (classe CSS). Sans ratio, l'image garde ses proportions. */
+  ratio?: '1' | '4-5' | '3-4' | '4-3' | '3-2' | '16-9' | '2-1' | 'fill';
+  priority?: boolean;
+  /** Affichage du crédit : discret sur l'image, sous l'image, ou dans un bouton d'information. */
+  credit?: 'overlay' | 'below' | 'none';
+  /** Légende éditoriale affichée sous la photo. */
+  caption?: string | boolean;
+  alt?: string;
+}
+
+const { id, class: className, sizes = '(min-width: 64rem) 45vw, 92vw', shape = 'soft', ratio, priority = false, credit = 'overlay', caption, alt } = Astro.props;
+const p = photo(id);
+const legend = caption === true ? p.caption : caption || '';
+---
+<figure class:list={['ph', `ph--${shape}`, ratio && `ph--r${ratio}`, focusClass(p), className]} data-photo={p.id}>
+  <span class="ph__frame">
+    <Picture
+      src={p.img}
+      alt={alt ?? p.alt}
+      formats={['avif', 'webp']}
+      widths={[400, 640, 1024].filter((w) => w <= p.width)}
+      sizes={sizes}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      decoding="async"
+      class="ph__img"
+    />
+    {
+      credit === 'overlay' && (
+        <small class="ph__credit">
+          <a href={p.sourceUrl} rel="noopener">{p.author}</a> · <a href={p.licenceUrl} rel="license noopener">{p.licence}</a>
+        </small>
+      )
+    }
+    <slot name="over" />
+  </span>
+  {
+    (legend || credit === 'below') && (
+      <figcaption class="ph__caption">
+        {legend && <span class="ph__legend">{legend}</span>}
+        {credit === 'below' && (
+          <small class="ph__credit-below">
+            Photo d’illustration : <a href={p.sourceUrl} rel="noopener">{creditLine(p).split(' · ')[0]}</a>, <a href={p.licenceUrl} rel="license noopener">{p.licence}</a>
+          </small>
+        )}
+      </figcaption>
+    )
+  }
+  <slot />
+</figure>
+
+<style>
+  .ph {
+    position: relative;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .ph__frame {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--lin);
+    isolation: isolate;
+  }
+
+  .ph--soft .ph__frame {
+    border-radius: var(--radius-l);
+  }
+
+  .ph--rect .ph__frame {
+    border-radius: var(--radius-s);
+  }
+
+  .ph--arch .ph__frame {
+    border-radius: 999px 999px var(--radius-l) var(--radius-l);
+  }
+
+  .ph--round .ph__frame {
+    border-radius: 50%;
+    aspect-ratio: 1;
+  }
+
+  .ph__frame :global(picture),
+  .ph__frame :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .ph[class*='ph--r'] .ph__frame :global(picture),
+  .ph[class*='ph--r'] .ph__frame :global(img),
+  .ph--round .ph__frame :global(picture),
+  .ph--round .ph__frame :global(img) {
+    height: 100%;
+  }
+
+  .ph__frame :global(img) {
+    object-fit: cover;
+    object-position: var(--fx, 50%) var(--fy, 50%);
+  }
+
+  .ph--r1 .ph__frame {
+    aspect-ratio: 1;
+  }
+
+  .ph--r4-5 .ph__frame {
+    aspect-ratio: 4 / 5;
+  }
+
+  .ph--r3-4 .ph__frame {
+    aspect-ratio: 3 / 4;
+  }
+
+  .ph--r4-3 .ph__frame {
+    aspect-ratio: 4 / 3;
+  }
+
+  .ph--r3-2 .ph__frame {
+    aspect-ratio: 3 / 2;
+  }
+
+  .ph--r16-9 .ph__frame {
+    aspect-ratio: 16 / 9;
+  }
+
+  .ph--r2-1 .ph__frame {
+    aspect-ratio: 2 / 1;
+  }
+
+  .ph--rfill,
+  .ph--rfill .ph__frame {
+    height: 100%;
+  }
+
+  .ph__credit {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.45rem;
+    z-index: 2;
+    max-width: calc(100% - 1rem);
+    padding: 0.12rem 0.5rem;
+    border-radius: var(--radius-pill);
+    background: rgb(10 30 28 / 0.55);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    font-size: 0.66rem;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.85;
+    transition: opacity var(--dur) ease;
+  }
+
+  .ph--round .ph__credit {
+    right: 50%;
+    transform: translateX(50%);
+    bottom: 0.8rem;
+  }
+
+  .ph__credit a {
+    color: inherit !important;
+    text-decoration: none;
+  }
+
+  .ph__credit a:hover,
+  .ph__credit a:focus-visible {
+    text-decoration: underline;
+  }
+
+  .ph:hover .ph__credit {
+    opacity: 1;
+  }
+
+  .ph__caption {
+    display: grid;
+    gap: 0.2rem;
+    margin-top: 0.6rem;
+  }
+
+  .ph__legend {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-0);
+    color: var(--encre-douce);
+  }
+
+  .ph__credit-below {
+    font-size: 0.72rem;
+    color: var(--encre-douce);
+  }
+
+  .ph__credit-below a {
+    color: inherit;
+  }
+</style>

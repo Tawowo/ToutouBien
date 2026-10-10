@@ -1,0 +1,221 @@
+---
+/**
+ * Récit en étapes : un panneau visuel collant change de scène quand chaque étape
+ * de texte passe au centre de l'écran. Sans JavaScript ou en mouvement réduit,
+ * toutes les étapes restent lisibles et chaque scène s'affiche avec son texte.
+ */
+import StoryScene from './StoryScene.astro';
+import type { StoryStep } from '~/lib/story';
+
+interface Props {
+  steps: StoryStep[];
+  id?: string;
+}
+const { steps, id = 'story' } = Astro.props;
+---
+<div class="story" data-story id={id} data-active="0">
+  <div class="story__stage" aria-hidden="true">
+    <div class="story__frame">
+      {steps.map((s, i) => <StoryScene scene={s.scene} index={i} />)}
+      <div class="story__counter">
+        <span class="story__current" data-story-current>01</span>
+        <span>/ {String(steps.length).padStart(2, '0')}</span>
+      </div>
+      <div class="story__dots">
+        {steps.map((_, i) => <span data-dot={i} />)}
+      </div>
+    </div>
+  </div>
+  <ol class="story__steps" role="list">
+    {
+      steps.map((s, i) => (
+        <li class="story__step" data-step={i}>
+          <span class="label">Étape {String(i + 1).padStart(2, '0')}</span>
+          <h3>{s.title}</h3>
+          <p class="story__text">{s.text}</p>
+          {s.detail && <p class="story__detail">{s.detail}</p>}
+          {s.note && <p class="story__note">{s.note}</p>}
+          <div class="story__inline" aria-hidden="true"><StoryScene scene={s.scene} index={i} inline /></div>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-story]').forEach((story) => {
+    const steps = Array.from(story.querySelectorAll<HTMLElement>('[data-step]'));
+    const current = story.querySelector<HTMLElement>('[data-story-current]');
+    story.classList.add('is-enhanced');
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          const i = Number((e.target as HTMLElement).dataset.step);
+          story.dataset.active = String(i);
+          steps.forEach((s, k) => s.classList.toggle('is-active', k === i));
+          if (current) current.textContent = String(i + 1).padStart(2, '0');
+        }
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    steps.forEach((s) => io.observe(s));
+  });
+</script>
+
+<style>
+  .story {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .story__stage {
+    display: none;
+  }
+
+  .story__steps {
+    display: grid;
+    gap: var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  .story__step {
+    display: grid;
+    gap: var(--space-xs);
+    max-width: 38rem;
+  }
+
+  .story__step h3 {
+    font-size: var(--step-4);
+    line-height: 0.95;
+  }
+
+  .story__text {
+    font-size: var(--step-1);
+    color: var(--encre-douce);
+  }
+
+  .story__detail {
+    color: var(--encre-douce);
+  }
+
+  .story__note {
+    padding-left: var(--space-s);
+    border-left: 2px solid var(--argile);
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .story__inline {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    margin-top: var(--space-s);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+  }
+
+  @media (min-width: 60rem) {
+    .story {
+      grid-template-columns: 6fr 5fr;
+      gap: var(--space-xl);
+      align-items: start;
+    }
+
+    .story__stage {
+      display: block;
+      position: sticky;
+      top: 12vh;
+      height: 76vh;
+    }
+
+    .story__frame {
+      position: relative;
+      height: 100%;
+      border-radius: var(--radius-l);
+      overflow: hidden;
+      background: var(--nuit);
+    }
+
+    .story__steps {
+      gap: 0;
+      padding-block: 12vh 30vh;
+    }
+
+    .story__step {
+      min-height: 76vh;
+      align-content: center;
+      opacity: 0.35;
+      transition: opacity 500ms ease;
+    }
+
+    .story:not(.is-enhanced) .story__step,
+    .story__step.is-active {
+      opacity: 1;
+    }
+
+    .story__inline {
+      display: none;
+    }
+  }
+
+  .story__counter {
+    position: absolute;
+    left: var(--space-l);
+    bottom: var(--space-l);
+    z-index: 3;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    color: var(--craie-douce);
+  }
+
+  .story__current {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    color: var(--or);
+  }
+
+  .story__dots {
+    position: absolute;
+    right: var(--space-l);
+    bottom: var(--space-l);
+    z-index: 3;
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .story__dots span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.25);
+    transition: background-color 300ms ease, transform 300ms ease;
+  }
+
+  .story[data-active='0'] [data-dot='0'],
+  .story[data-active='1'] [data-dot='1'],
+  .story[data-active='2'] [data-dot='2'],
+  .story[data-active='3'] [data-dot='3'],
+  .story[data-active='4'] [data-dot='4'] {
+    background: var(--or);
+    transform: scale(1.4);
+  }
+
+  /* Scènes du panneau collant : seule la scène active est visible. */
+  .story__frame :global(.scene) {
+    opacity: 0;
+    transform: scale(1.06);
+    transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out);
+  }
+
+  .story[data-active='0'] .story__frame :global(.scene[data-index='0']),
+  .story[data-active='1'] .story__frame :global(.scene[data-index='1']),
+  .story[data-active='2'] .story__frame :global(.scene[data-index='2']),
+  .story[data-active='3'] .story__frame :global(.scene[data-index='3']),
+  .story[data-active='4'] .story__frame :global(.scene[data-index='4']) {
+    opacity: 1;
+    transform: none;
+  }
+</style>

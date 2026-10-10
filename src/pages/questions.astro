@@ -1,0 +1,304 @@
+---
+import Base from '~/layouts/Base.astro';
+import Icon from '~/components/Icon.astro';
+
+/** Réponses éditoriales à relire avec l'éducatrice (docs/CONTENT-VALIDATION.md). */
+const items = [
+  {
+    q: 'Est-ce que c’est de ma faute ?',
+    a: 'Les difficultés d’un chien ont rarement une seule cause : son histoire, sa sensibilité, son environnement, sa santé et les habitudes de la maison jouent ensemble. Chercher un coupable aide rarement. Le simple fait de vouloir comprendre est déjà un pas important.',
+  },
+  {
+    q: 'Vais-je être jugé·e sur ma façon de faire ?',
+    a: 'Non. Beaucoup de familles se posent les mêmes questions et ont essayé plein de choses avant de demander de l’aide. On part de là où vous en êtes, sans reproche.',
+  },
+  {
+    q: 'Et si mon chien était « irrécupérable » ?',
+    a: 'Ce mot n’aide personne. Chaque chien évolue à son rythme, et il existe souvent des pistes pour rendre le quotidien plus serein. Personne ne peut promettre un résultat, et certaines situations demandent l’avis de plusieurs professionnels, dont un vétérinaire.',
+  },
+  {
+    q: 'Je n’ai pas beaucoup de temps. Est-ce que ça vaut la peine ?',
+    a: 'Un accompagnement utile tient compte de votre vraie vie. Quelques ajustements bien choisis, intégrés aux balades et aux moments du quotidien, valent mieux qu’un programme impossible à suivre.',
+  },
+  {
+    q: 'Mon chien a mordu. J’ai honte d’en parler.',
+    a: 'En parler est une démarche responsable. La priorité est la sécurité de chacun : en France, une morsure sur une personne doit être déclarée en mairie et entraîne un suivi vétérinaire. Un professionnel peut ensuite vous aider à comprendre ce qui s’est passé.',
+  },
+  {
+    q: 'Est-ce que ça va me coûter cher ?',
+    a: 'Le coût dépend de la situation et de l’accompagnement choisi. Vous avez le droit de demander les tarifs, ce qu’ils comprennent et les conditions avant de vous engager.',
+    link: { href: '/tarifs/', label: 'Voir la page Tarifs' },
+  },
+  {
+    q: 'J’ai déjà été conseillé·e, et ça n’a pas marché.',
+    a: 'Ce n’est pas un échec. Un conseil peut être juste mais mal adapté à votre chien, au mauvais moment ou difficile à appliquer chez vous. Raconter ce que vous avez déjà essayé est précieux.',
+  },
+  {
+    q: 'Mon chien est âgé. Est-il trop tard ?',
+    a: 'Non. Un chien adulte ou âgé peut apprendre et s’adapter. On tient simplement compte de son âge, de sa condition physique et de son rythme.',
+    link: { href: '/accompagnements/chien-adulte/', label: 'Le chien adulte' },
+  },
+  {
+    q: 'Faut-il que toute la famille soit d’accord ?',
+    a: 'C’est plus simple quand chacun réagit de la même façon, parce qu’un chien comprend mieux des règles cohérentes. Les personnes qui vivent avec lui sont les bienvenues lors des échanges.',
+  },
+  {
+    q: 'Et si mon chien ne fait « rien » pendant le rendez-vous ?',
+    a: 'C’est très fréquent. Vos descriptions, et éventuellement une courte vidéo, permettent de comprendre ce qui se passe en dehors de ce moment.',
+    link: { href: '/premier-rendez-vous/', label: 'Préparer le rendez-vous' },
+  },
+];
+---
+<Base
+  title="Les questions que l’on n’ose pas poser"
+  description="Culpabilité, peur du jugement, morsure, coût, manque de temps : les réponses honnêtes et bienveillantes aux questions que l’on n’ose pas toujours poser avant de demander de l’aide."
+  headerTheme="dark"
+>
+  <section class="qs on-dark grain-dark" aria-labelledby="qs-title" data-deck>
+    <div class="page qs__inner">
+      <header class="qs__head">
+        <p class="eyebrow">Entre nous</p>
+        <h1 id="qs-title" class="qs__title">Les questions <em>que l’on n’ose pas poser</em></h1>
+        <p class="qs__count" aria-live="polite"><span data-deck-current>1</span> / {items.length}</p>
+      </header>
+
+      <ol class="qs__deck" role="list">
+        {
+          items.map((item, i) => (
+            <li class="qs__card" data-card={i} aria-roledescription="question" aria-label={`Question ${i + 1} sur ${items.length}`}>
+              <h2 class="qs__q">{item.q}</h2>
+              <p class="qs__a">{item.a}</p>
+              {item.link && <a class="link-arrow" href={item.link.href}>{item.link.label} <Icon name="arrow" /></a>}
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="qs__nav">
+        <button type="button" class="qs__btn" data-deck-prev aria-label="Question précédente"><Icon name="arrow-left" /></button>
+        <div class="qs__bar" aria-hidden="true"><span></span></div>
+        <button type="button" class="qs__btn" data-deck-next aria-label="Question suivante"><Icon name="arrow" /></button>
+      </div>
+      <p class="qs__help">Flèches du clavier, glissement du doigt ou boutons pour naviguer.</p>
+    </div>
+  </section>
+
+  <section class="section page qs-after" aria-labelledby="after-title">
+    <h2 id="after-title">Une autre question <em>vous trotte dans la tête</em>&nbsp;?</h2>
+    <p class="lede">Il n’y a pas de question bête. Posez-la, simplement.</p>
+    <div class="qs-after__actions">
+      <a class="btn" href="/contact/" data-magnetic>Écrire un message <Icon name="arrow" class="btn__arrow" /></a>
+      <a class="link-arrow" href="/faq/">Toutes les questions fréquentes <Icon name="arrow" /></a>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const deck = document.querySelector<HTMLElement>('[data-deck]');
+  if (deck) {
+    const cards = Array.from(deck.querySelectorAll<HTMLElement>('[data-card]'));
+    const current = deck.querySelector<HTMLElement>('[data-deck-current]');
+    let i = 0;
+    deck.classList.add('is-deck');
+    const show = (n: number) => {
+      i = (n + cards.length) % cards.length;
+      cards.forEach((c, k) => {
+        c.dataset.pos = k === i ? 'current' : k < i ? 'past' : 'next';
+        c.setAttribute('aria-hidden', String(k !== i));
+        c.querySelectorAll('a').forEach((a) => (a.tabIndex = k === i ? 0 : -1));
+      });
+      if (current) current.textContent = String(i + 1);
+      deck.style.setProperty('--progress', ((i + 1) / cards.length).toFixed(3));
+    };
+    deck.querySelector('[data-deck-prev]')?.addEventListener('click', () => show(i - 1));
+    deck.querySelector('[data-deck-next]')?.addEventListener('click', () => show(i + 1));
+    deck.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') show(i + 1);
+      if (e.key === 'ArrowLeft') show(i - 1);
+    });
+    let startX: number | null = null;
+    deck.addEventListener('pointerdown', (e) => (startX = e.pointerType === 'touch' ? e.clientX : null));
+    deck.addEventListener('pointerup', (e) => {
+      if (startX === null) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1));
+      startX = null;
+    });
+    show(0);
+  }
+</script>
+
+<style>
+  .qs {
+    min-height: calc(100svh - 4.75rem);
+    display: grid;
+    padding-block: var(--space-xl);
+    overflow: hidden;
+  }
+
+  .qs__inner {
+    display: grid;
+    gap: var(--space-l);
+    align-content: center;
+  }
+
+  .qs__head {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .qs__title {
+    font-size: var(--step-3);
+    max-width: 20ch;
+  }
+
+  .qs__title em {
+    color: var(--lagon);
+  }
+
+  .qs__count {
+    display: none;
+    font-family: var(--font-mono);
+    color: var(--craie-douce);
+  }
+
+  .qs__deck {
+    display: grid;
+    gap: var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  .qs__card {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .qs__q {
+    font-size: var(--step-5);
+    line-height: 0.95;
+    max-width: 16ch;
+    color: var(--craie);
+  }
+
+  .qs__a {
+    max-width: 52ch;
+    font-size: var(--step-1);
+    color: var(--craie-douce);
+  }
+
+  .qs__nav,
+  .qs__help {
+    display: none;
+  }
+
+  /* Mode « une question à la fois » (avec JavaScript). */
+  .is-deck .qs__count,
+  .is-deck .qs__help {
+    display: block;
+  }
+
+  .is-deck .qs__help {
+    font-size: var(--step--1);
+    color: var(--craie-douce);
+  }
+
+  .is-deck .qs__deck {
+    display: grid;
+    grid-template-areas: 'stack';
+    min-height: 26rem;
+  }
+
+  .is-deck .qs__card {
+    grid-area: stack;
+    align-content: center;
+    transition: opacity 600ms var(--ease-out), transform 700ms var(--ease-out), filter 600ms ease;
+  }
+
+  .is-deck .qs__card[data-pos='past'] {
+    opacity: 0;
+    transform: translateX(-6%) rotate(-2deg);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+
+  .is-deck .qs__card[data-pos='next'] {
+    opacity: 0;
+    transform: translateX(8%) rotate(2deg);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+
+  .is-deck .qs__nav {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  .qs__btn {
+    display: grid;
+    place-items: center;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    border: 1.5px solid rgb(255 255 255 / 0.3);
+    background: transparent;
+    color: var(--craie);
+    cursor: pointer;
+    transition: background-color var(--dur) ease, color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .qs__btn:hover {
+    background: var(--or);
+    border-color: var(--or);
+    color: var(--nuit);
+    transform: scale(1.06);
+  }
+
+  .qs__btn :global(svg) {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+
+  .qs__bar {
+    height: 2px;
+    background: rgb(255 255 255 / 0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .qs__bar span {
+    display: block;
+    height: 100%;
+    width: calc(var(--progress, 0) * 100%);
+    background: var(--or);
+    transition: width 500ms var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .is-deck .qs__card {
+      transition: none;
+      filter: none !important;
+      transform: none !important;
+    }
+  }
+
+  .qs-after {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .qs-after h2 em {
+    color: var(--argile);
+  }
+
+  .qs-after__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-l);
+    align-items: center;
+  }
+</style>

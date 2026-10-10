@@ -1,0 +1,449 @@
+---
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import Draft from '~/components/Draft.astro';
+import Icon from '~/components/Icon.astro';
+import Fil from '~/components/Fil.astro';
+import Emblem from '~/assets/brand/emblem.svg';
+import { PRINCIPLES } from '~/content/approche';
+import { site } from '~/config/site';
+import { resolve } from '~/lib/fields';
+
+const methods = resolve(site.educator.methods);
+const vision = resolve(site.educator.vision);
+const nots = [
+  { title: 'Pas de jugement', text: 'Beaucoup de familles se posent les mêmes questions. En parler, c’est déjà prendre soin de son chien.' },
+  { title: 'Pas de promesse miracle', text: 'Personne ne peut garantir un résultat en un nombre fixe de séances : chaque chien progresse à son rythme.' },
+  { title: 'Pas de diagnostic à distance', text: 'Les outils du site servent à préparer un échange, jamais à évaluer votre chien.' },
+  { title: 'Pas de contrainte inutile', text: 'Ce qui fait peur ou mal n’aide pas un chien à comprendre ce qu’on attend de lui.' },
+];
+---
+<Base
+  title="L’approche"
+  description="Les principes qui guident l’accompagnement ToutouBien : observer avant d’agir, comprendre le contexte, respecter le rythme du chien, expliquer simplement, ajuster à votre quotidien."
+>
+  <section class="ap-hero">
+    <Fil variant="traversee" class="ap-hero__fil" immediate />
+    <div class="page ap-hero__grid">
+      <div class="ap-hero__text">
+        <p class="eyebrow enter">L’approche</p>
+        <SplitTitle as="h1" text="Une relation se construit *dans les deux sens*." now />
+        <p class="lede enter" data-i="3">Le logo de ToutouBien montre une femme et un chien face à face, à la même hauteur. C’est l’idée qui guide l’accompagnement : comprendre votre chien autant que l’aider à vous comprendre.</p>
+      </div>
+      <div class="ap-hero__emblem" aria-hidden="true"><Emblem /></div>
+    </div>
+  </section>
+
+  <section class="section ap-principles" aria-labelledby="pr-title">
+    <div class="page">
+      <p class="eyebrow">Six principes</p>
+      <h2 id="pr-title" class="ap-principles__title">Ce qui guide <em>chaque rencontre</em></h2>
+      <div class="pr" data-tabs>
+        <div class="pr__list" role="tablist" aria-label="Principes" aria-orientation="vertical">
+          {
+            PRINCIPLES.map((p, i) => (
+              <button class="pr__tab" role="tab" id={`tab-${p.id}`} aria-controls={`panel-${p.id}`} aria-selected={i === 0 ? 'true' : 'false'} type="button">
+                <span class="pr__num">{String(i + 1).padStart(2, '0')}</span>
+                <span class="pr__word">{p.word}</span>
+                <span class="pr__tagline">{p.tagline}</span>
+              </button>
+            ))
+          }
+        </div>
+        <div class="pr__panels">
+          {
+            PRINCIPLES.map((p, i) => (
+              <section class="pr__panel" role="tabpanel" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} tabindex="0">
+                <p class="pr__big" aria-hidden="true">{String(i + 1).padStart(2, '0')}</p>
+                <h3>
+                  {p.word} <em>{p.tagline}</em>
+                </h3>
+                <p class="lede">{p.text}</p>
+                <p class="label">Concrètement</p>
+                <ul role="list">
+                  {p.concretely.map((c) => (
+                    <li>
+                      <Icon name="check" /> {c}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section on-dark grain-dark ap-not" aria-labelledby="not-title">
+    <div class="page">
+      <p class="eyebrow">Ce que l’approche n’est pas</p>
+      <SplitTitle id="not-title" text="Quatre *engagements*" />
+      <ul class="ap-not__list" role="list">
+        {
+          nots.map((n) => (
+            <li class="reveal">
+              <span class="ap-not__x" aria-hidden="true">×</span>
+              <h3>{n.title}</h3>
+              <p>{n.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  {
+    (methods || vision) && !methods?.draft && !vision?.draft && (
+      <section class="section page ap-methods" aria-labelledby="methods-title">
+        <h2 id="methods-title">Méthodes et outils</h2>
+        {vision && <p class="lede">{vision.value}</p>}
+        {methods && <p>{methods.value}</p>}
+      </section>
+    )
+  }
+  <Draft label="Méthodes à fournir">
+    <div class="page">
+      <p>Section « Méthodes et outils » : affichée dès que l’éducatrice aura décrit sa vision, ses méthodes et le matériel qu’elle utilise (ou refuse) dans src/config/site.ts. Les six principes ci-dessus sont des textes éditoriaux à valider.</p>
+    </div>
+  </Draft>
+
+  <section class="section section--tight page ap-next" aria-label="Pour continuer">
+    <a class="ap-next__card" href="/deroulement/">
+      <span class="label">Concrètement</span>
+      <span class="ap-next__title">Comment se déroule un accompagnement</span>
+      <Icon name="arrow" />
+    </a>
+    <a class="ap-next__card" href="/explorer/signaux/">
+      <span class="label">Expérience</span>
+      <span class="ap-next__title">S’entraîner à lire les signaux</span>
+      <Icon name="arrow" />
+    </a>
+    <a class="ap-next__card" href="/a-propos/">
+      <span class="label">Rencontre</span>
+      <span class="ap-next__title">Qui vous accompagne</span>
+      <Icon name="arrow" />
+    </a>
+  </section>
+</Base>
+
+<script>
+  import { initTabs } from '~/scripts/tabs';
+  initTabs();
+</script>
+
+<style>
+  .ap-hero {
+    position: relative;
+    padding-block: var(--space-xl);
+    overflow: hidden;
+  }
+
+  .ap-hero__fil {
+    position: absolute;
+    inset: auto 0 6% 0;
+    width: 100%;
+    height: 6rem;
+    color: var(--argile);
+    opacity: 0.45;
+  }
+
+  .ap-hero__grid {
+    position: relative;
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .ap-hero__grid {
+      grid-template-columns: 8fr 4fr;
+    }
+  }
+
+  .ap-hero__text {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .ap-hero h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+    max-width: 14ch;
+  }
+
+  .ap-hero h1 :global(em) {
+    color: var(--sarcelle);
+  }
+
+  .ap-hero .lede {
+    max-width: 54ch;
+  }
+
+  .ap-hero__emblem {
+    width: min(100%, 18rem);
+    justify-self: center;
+    color: var(--sarcelle);
+  }
+
+  .ap-hero__emblem :global(svg) {
+    width: 100%;
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ap-hero__emblem {
+      animation: breathe 6s ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes breathe {
+    to {
+      transform: scale(1.04) rotate(-2deg);
+    }
+  }
+
+  .ap-principles__title {
+    margin-block: var(--space-s) var(--space-l);
+  }
+
+  .ap-principles__title em {
+    color: var(--argile);
+  }
+
+  .pr {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .pr__list {
+    display: none;
+  }
+
+  .pr__panels {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  :global(.is-tabbed).pr .pr__list {
+    display: grid;
+  }
+
+  @media (min-width: 60rem) {
+    :global(.is-tabbed).pr {
+      grid-template-columns: 5fr 7fr;
+      align-items: start;
+    }
+  }
+
+  @media (max-width: 59.99rem) {
+    :global(.is-tabbed).pr .pr__list {
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      overflow-x: auto;
+      gap: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+  }
+
+  .pr__tab {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    grid-template-areas: 'num word' '. tag';
+    align-items: baseline;
+    gap: 0 var(--space-s);
+    padding: var(--space-s) var(--space-m);
+    border: 0;
+    border-radius: var(--radius-m);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--dur) ease;
+  }
+
+  .pr__tab:hover {
+    background: var(--lin);
+  }
+
+  .pr__tab[aria-selected='true'] {
+    background: var(--nuit);
+    color: var(--craie);
+  }
+
+  .pr__num {
+    grid-area: num;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--argile);
+  }
+
+  .pr__tab[aria-selected='true'] .pr__num {
+    color: var(--or);
+  }
+
+  .pr__word {
+    grid-area: word;
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1;
+  }
+
+  .pr__tagline {
+    grid-area: tag;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-0);
+    color: var(--encre-douce);
+  }
+
+  .pr__tab[aria-selected='true'] .pr__tagline {
+    color: var(--lagon);
+  }
+
+  .pr__panel {
+    position: relative;
+    display: grid;
+    gap: var(--space-s);
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: #fffdf8;
+    border: 1px solid color-mix(in oklab, var(--encre) 10%, transparent);
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.is-tabbed) .pr__panel:not([hidden]) {
+      animation: enter 500ms var(--ease-out) both;
+    }
+  }
+
+  .pr__big {
+    position: absolute;
+    right: var(--space-m);
+    top: -1rem;
+    font-family: var(--font-display);
+    font-size: 10rem;
+    line-height: 1;
+    color: color-mix(in oklab, var(--argile) 12%, transparent);
+  }
+
+  .pr__panel h3 {
+    position: relative;
+    font-size: var(--step-4);
+  }
+
+  .pr__panel h3 em {
+    color: var(--argile);
+  }
+
+  .pr__panel ul {
+    display: grid;
+    gap: var(--space-2xs);
+    padding: 0;
+    list-style: none;
+  }
+
+  .pr__panel li {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+  }
+
+  .pr__panel li :global(svg) {
+    flex: none;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-top: 0.25rem;
+    color: var(--sarcelle);
+  }
+
+  .ap-not :global(h2 em) {
+    color: var(--or);
+  }
+
+  .ap-not__list {
+    display: grid;
+    gap: var(--space-l);
+    margin-top: var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 48rem) {
+    .ap-not__list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .ap-not__list {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .ap-not__list li {
+    display: grid;
+    gap: var(--space-2xs);
+    align-content: start;
+    padding-top: var(--space-m);
+    border-top: 1px solid rgb(255 255 255 / 0.15);
+  }
+
+  .ap-not__x {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 0.8;
+    color: var(--argile-claire);
+  }
+
+  .ap-not__list p {
+    color: var(--craie-douce);
+  }
+
+  .ap-methods {
+    display: grid;
+    gap: var(--space-m);
+    max-width: 56rem;
+  }
+
+  .ap-next {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  }
+
+  .ap-next__card {
+    position: relative;
+    display: grid;
+    gap: var(--space-2xs);
+    padding: var(--space-l) var(--space-xl) var(--space-l) var(--space-l);
+    border-radius: var(--radius-l);
+    background: var(--lin);
+    color: var(--encre);
+    text-decoration: none;
+    transition: background-color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .ap-next__card:hover {
+    background: var(--sable);
+    color: var(--encre);
+    transform: translateY(-3px);
+  }
+
+  .ap-next__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.05;
+  }
+
+  .ap-next__card :global(svg) {
+    position: absolute;
+    right: var(--space-l);
+    top: 50%;
+    width: 1.4rem;
+    height: 1.4rem;
+    transform: translateY(-50%);
+    color: var(--argile);
+  }
+</style>

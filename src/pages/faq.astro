@@ -1,0 +1,204 @@
+---
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import Icon from '~/components/Icon.astro';
+import { buildFaq } from '~/content/faq';
+import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
+
+interface Q {
+  q: string;
+  a: string;
+  theme: string;
+  draft: boolean;
+  link?: { href: string; label: string };
+}
+const general: Q[] = buildFaq().map((f) => ({ q: f.q, a: f.a, theme: 'Premier contact', draft: f.draft }));
+const byPath: Q[] = ACCOMPAGNEMENTS.flatMap((a) => a.faq.map((f) => ({ q: f.q, a: f.a, theme: a.label, draft: false, link: { href: `/accompagnements/${a.slug}/`, label: a.label } })));
+const practical: Q[] = [
+  { q: 'Les outils du site peuvent-ils évaluer mon chien ?', a: 'Non. Les expériences interactives et le questionnaire d’orientation sont des aides à la compréhension et à la préparation d’un échange. Ils ne posent aucun diagnostic.', theme: 'Le site et vos données', draft: false, link: { href: '/explorer/', label: 'Explorer' } },
+  { q: 'Que deviennent les informations que je saisis ?', a: 'Elles servent uniquement à répondre à votre demande. Les outils de préparation et d’orientation ne conservent rien : vos réponses disparaissent quand vous quittez la page.', theme: 'Le site et vos données', draft: false, link: { href: '/confidentialite/', label: 'Confidentialité' } },
+  { q: 'Où trouver les tarifs ?', a: 'Sur la page Tarifs, qui explique aussi les bonnes questions à poser avant de vous engager.', theme: 'Pratique', draft: false, link: { href: '/tarifs/', label: 'Tarifs' } },
+];
+const all = [...general, ...byPath, ...practical];
+const themes = [...new Set(all.map((q) => q.theme))];
+---
+<Base title="Questions fréquentes" description="Toutes les réponses aux questions fréquentes sur l’accompagnement ToutouBien : premier contact, chiot, chien adulte, quotidien, tarifs et données personnelles.">
+  <section class="fq-hero">
+    <div class="page fq-hero__inner">
+      <p class="eyebrow enter">Questions fréquentes</p>
+      <SplitTitle as="h1" text="Une question ? *Cherchons ensemble.*" now />
+      <p class="lede enter" data-i="3">Tapez un mot, choisissez un thème. Et si votre question n’y est pas, <a href="/questions/">celles que l’on n’ose pas poser</a> sont peut-être là.</p>
+    </div>
+  </section>
+
+  <section class="section section--tight page fq" data-faq-search>
+    <div class="fq__tools">
+      <label class="fq__search">
+        <span class="sr-only">Rechercher dans les questions</span>
+        <Icon name="chat" />
+        <input type="search" class="input" placeholder="Ex. chiot, solitude, tarif…" data-faq-input autocomplete="off" />
+      </label>
+      <div class="fq__chips" role="group" aria-label="Filtrer par thème">
+        <button type="button" class="fq__chip" aria-pressed="true" data-theme="">Tout</button>
+        {themes.map((t) => <button type="button" class="fq__chip" aria-pressed="false" data-theme={t}>{t}</button>)}
+      </div>
+      <p class="fq__count" aria-live="polite" data-faq-count>{all.length} questions</p>
+    </div>
+
+    <div class="accordion fq__list">
+      {
+        all.map((item) => (
+          <details class:list={[item.draft && 'draft']} data-faq-item data-theme={item.theme}>
+            <summary>
+              <span>
+                <span class="fq__theme label">{item.theme}</span>
+                {item.q}
+                {item.draft && <span class="draft-badge">À valider</span>}
+              </span>
+            </summary>
+            <div class="accordion__body">
+              <p>{item.a}</p>
+              {item.link && <p><a class="link-arrow" href={item.link.href}>{item.link.label} <Icon name="arrow" /></a></p>}
+            </div>
+          </details>
+        ))
+      }
+    </div>
+    <div class="fq__empty" data-faq-empty hidden>
+      <p>Aucune question ne correspond. Posez-la directement&nbsp;: <a href="/contact/">écrire un message</a>.</p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const wrap = document.querySelector<HTMLElement>('[data-faq-search]');
+  if (wrap) {
+    const input = wrap.querySelector<HTMLInputElement>('[data-faq-input]')!;
+    const items = Array.from(wrap.querySelectorAll<HTMLDetailsElement>('[data-faq-item]'));
+    const chips = Array.from(wrap.querySelectorAll<HTMLButtonElement>('[data-theme]')).filter((b) => b.tagName === 'BUTTON');
+    const count = wrap.querySelector<HTMLElement>('[data-faq-count]')!;
+    const empty = wrap.querySelector<HTMLElement>('[data-faq-empty]')!;
+    const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    let theme = '';
+    const apply = () => {
+      const q = norm(input.value.trim());
+      let n = 0;
+      for (const item of items) {
+        const ok = (!theme || item.dataset.theme === theme) && (!q || norm(item.textContent ?? '').includes(q));
+        item.hidden = !ok;
+        if (ok) n++;
+        if (q && ok) item.open = true;
+      }
+      count.textContent = `${n} question${n > 1 ? 's' : ''}`;
+      empty.hidden = n > 0;
+    };
+    input.addEventListener('input', apply);
+    chips.forEach((chip) =>
+      chip.addEventListener('click', () => {
+        theme = chip.dataset.theme ?? '';
+        chips.forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+        apply();
+      }),
+    );
+  }
+</script>
+
+<style>
+  .fq-hero {
+    padding-block: var(--space-xl) var(--space-m);
+  }
+
+  .fq-hero__inner {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .fq-hero h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+    max-width: 13ch;
+  }
+
+  .fq-hero h1 :global(em) {
+    color: var(--sarcelle);
+  }
+
+  .fq__tools {
+    position: sticky;
+    top: 5rem;
+    z-index: 5;
+    display: grid;
+    gap: var(--space-s);
+    padding: var(--space-m) 0;
+    background: var(--papier);
+  }
+
+  .fq__search {
+    position: relative;
+    display: block;
+    max-width: 36rem;
+  }
+
+  .fq__search :global(svg) {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    width: 1.2rem;
+    height: 1.2rem;
+    transform: translateY(-50%);
+    color: var(--encre-douce);
+  }
+
+  .fq__search input {
+    padding-left: 2.8rem;
+    border-radius: var(--radius-pill);
+    font-size: var(--step-1);
+  }
+
+  .fq__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .fq__chip {
+    min-height: 2.6rem;
+    padding: 0.4rem 1rem;
+    border: 1.5px solid color-mix(in oklab, var(--encre) 22%, transparent);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-size: var(--step--1);
+    cursor: pointer;
+  }
+
+  .fq__chip:hover {
+    border-color: var(--encre);
+  }
+
+  .fq__chip[aria-pressed='true'] {
+    background: var(--nuit);
+    border-color: var(--nuit);
+    color: var(--craie);
+  }
+
+  .fq__count {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--encre-douce);
+  }
+
+  .fq__list summary > span {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .fq__theme {
+    font-size: 0.68rem;
+  }
+
+  .fq__empty {
+    padding: var(--space-l) 0;
+  }
+</style>

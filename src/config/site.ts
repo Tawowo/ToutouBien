@@ -18,6 +18,25 @@ export interface ContactChannel {
   hours: Field<string>;
 }
 
+/** Une formule / prestation, telle qu'elle apparaîtra sur la page Tarifs. */
+export interface Service {
+  id: string;
+  title: string;
+  /** Pour qui. */
+  audience: string;
+  summary: string;
+  /** Prix tel qu'affiché (ex. « 60 € »), uniquement s'il est confirmé. */
+  price?: string;
+  /** Précision sur le prix (ex. « par séance », « frais de déplacement inclus »). */
+  priceNote?: string;
+  duration?: string;
+  includes: string[];
+  conditions?: string;
+  /** Accompagnements concernés (slugs de src/content/accompagnements.ts). */
+  forPaths?: string[];
+  highlight?: boolean;
+}
+
 export interface SocialProfile {
   label: string;
   url: string;
@@ -81,7 +100,7 @@ export const site = {
   },
 
   /** Prestations détaillées : aucune n'est confirmée à ce jour. */
-  services: missing<{ title: string; summary: string; price?: string }[]>(
+  services: missing<Service[]>(
     'Liste des prestations réellement proposées (séances individuelles, suivi, ateliers…), avec tarifs si elle souhaite les afficher.',
   ),
 

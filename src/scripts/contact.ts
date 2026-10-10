@@ -15,6 +15,11 @@ export function initContactForm(root: ParentNode = document): void {
   const startedAt = Date.now();
   let sending = false;
   form.noValidate = true;
+  // Préremplissage contextuel depuis la page Tarifs (?objet=tarifs).
+  const message = form.querySelector<HTMLTextAreaElement>('textarea[name="message"]');
+  if (message && !message.value && new URLSearchParams(location.search).get('objet') === 'tarifs') {
+    message.value = 'Bonjour, je souhaiterais connaître vos tarifs et ce qu’ils comprennent.';
+  }
 
   const read = (): ContactAnswers => {
     const d = new FormData(form);

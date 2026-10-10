@@ -1,0 +1,399 @@
+---
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import Draft from '~/components/Draft.astro';
+import Icon from '~/components/Icon.astro';
+import PlateArt from '~/components/PlateArt.astro';
+import { site } from '~/config/site';
+import { resolve } from '~/lib/fields';
+import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
+
+const services = resolve(site.services);
+const published = services && !services.draft ? services.value : [];
+const free = resolve(site.firstMeeting.free);
+const askUrl = '/contact/?objet=tarifs';
+const questions = [
+  { q: 'Qu’est-ce qui est compris dans le tarif ?', a: 'Durée de la séance, déplacement, documents ou exercices remis, échanges entre deux séances.' },
+  { q: 'Y a-t-il des frais de déplacement ?', a: 'Selon la distance, certains professionnels les incluent, d’autres les facturent à part.' },
+  { q: 'Combien de séances faut-il prévoir ?', a: 'Personne ne peut le garantir à l’avance : c’est une estimation qui se discute selon la situation.' },
+  { q: 'Que se passe-t-il en cas d’annulation ?', a: 'Les conditions d’annulation ou de report sont utiles à connaître dès le départ.' },
+  { q: 'Peut-on faire une pause ?', a: 'Savoir si l’accompagnement peut être interrompu puis repris aide à s’organiser.' },
+];
+---
+<Base
+  title="Tarifs"
+  description="Les tarifs de l’accompagnement ToutouBien : ce qui est compris, comment choisir l’accompagnement adapté et les bonnes questions à poser avant de vous engager."
+>
+  <section class="tf-hero">
+    <div class="page tf-hero__inner">
+      <p class="eyebrow enter">Tarifs</p>
+      <SplitTitle as="h1" text="Savoir *à quoi s’attendre*." now />
+      <p class="lede enter" data-i="3">Un accompagnement est un engagement de temps et de budget. Cette page rassemble ce qu’il faut savoir pour choisir sereinement.</p>
+    </div>
+  </section>
+
+  {
+    published.length > 0 ? (
+      <section class="section section--tight tf-grid-wrap" aria-labelledby="formules-title">
+        <div class="page">
+          <h2 id="formules-title" class="tf-sec-title">Les <em>formules</em></h2>
+          <div class="tf-grid" data-compare>
+            {published.map((s) => (
+              <article class:list={['tf-card', s.highlight && 'tf-card--highlight']}>
+                <p class="label">{s.audience}</p>
+                <h3>{s.title}</h3>
+                <p class="tf-card__summary">{s.summary}</p>
+                {s.price && (
+                  <p class="tf-card__price">
+                    {s.price}
+                    {s.priceNote && <span>{s.priceNote}</span>}
+                  </p>
+                )}
+                {s.duration && <p class="tf-card__duration"><Icon name="check" /> {s.duration}</p>}
+                <ul role="list">{s.includes.map((i) => <li><Icon name="check" /> {i}</li>)}</ul>
+                {s.conditions && <p class="tf-card__conditions">{s.conditions}</p>}
+                <a class="btn btn--ghost" href={`/parlons-de-votre-chien/?note=${encodeURIComponent(`Formule envisagée : ${s.title}`)}`}>Demander cette formule</a>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    ) : (
+      <section class="section section--tight" aria-labelledby="unpublished-title">
+        <div class="page tf-pending">
+          <div class="tf-pending__art" aria-hidden="true"><PlateArt motif="chemin" /></div>
+          <div class="tf-pending__text">
+            <p class="eyebrow">Les formules</p>
+            <h2 id="unpublished-title">Les tarifs ne sont pas encore <em>publiés en ligne</em>.</h2>
+            <p class="lede">Ils vous sont communiqués directement sur simple demande, avec ce qu’ils comprennent.</p>
+            {free && !free.draft && <p class="tf-pending__free"><Icon name="check" /> La première rencontre est offerte.</p>}
+            <div class="tf-pending__actions">
+              <a class="btn" href={askUrl} data-magnetic>Demander les tarifs <Icon name="arrow" class="btn__arrow" /></a>
+              <a class="link-arrow" href="/premier-rendez-vous/">Le premier rendez-vous <Icon name="arrow" /></a>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <Draft label="Structure prévue (non publiée)">
+    <div class="page">
+      <p>Dès que les formules sont renseignées dans <code>site.services</code> (src/config/site.ts) avec le statut « confirmé », cette page affiche automatiquement une grille comparative : public, contenu, durée, ce qui est inclus, conditions et prix. Aucun prix n’est affiché tant qu’il n’est pas confirmé.</p>
+    </div>
+  </Draft>
+
+  <section class="section tf-choose on-dark grain-dark" aria-labelledby="choose-title">
+    <div class="page">
+      <p class="eyebrow">Choisir</p>
+      <SplitTitle id="choose-title" text="Quel accompagnement *pour votre situation* ?" />
+      <ul class="tf-choose__list" role="list">
+        {
+          ACCOMPAGNEMENTS.map((a) => (
+            <li>
+              <a href={`/accompagnements/${a.slug}/`} class="tf-choose__item">
+                <span class="label">{a.num}</span>
+                <span class="tf-choose__name">{a.label}</span>
+                <span class="tf-choose__short">{a.short}</span>
+                <Icon name="arrow" class="tf-choose__arrow" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="tf-choose__more">Vous ne savez pas&nbsp;? <a href="/orientation/">Le questionnaire d’orientation</a> vous aide à y voir clair en trois questions.</p>
+    </div>
+  </section>
+
+  <section class="section tf-questions" aria-labelledby="tq-title">
+    <div class="page tf-questions__grid">
+      <div>
+        <p class="eyebrow">Avant de vous engager</p>
+        <h2 id="tq-title">Les bonnes questions <em>à poser</em></h2>
+        <p class="lede">Que vous fassiez appel à ToutouBien ou à un autre professionnel, ces questions vous aident à comparer et à décider en connaissance de cause.</p>
+      </div>
+      <ol class="tf-q" role="list">
+        {
+          questions.map((item, i) => (
+            <li class="reveal">
+              <span class="tf-q__num">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h3>{item.q}</h3>
+                <p>{item.a}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .tf-hero {
+    padding-block: var(--space-xl) var(--space-l);
+  }
+
+  .tf-hero__inner {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .tf-hero h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+    max-width: 12ch;
+  }
+
+  .tf-hero h1 :global(em) {
+    color: var(--argile);
+  }
+
+  .tf-hero .lede {
+    max-width: 52ch;
+  }
+
+  .tf-sec-title {
+    margin-bottom: var(--space-l);
+  }
+
+  .tf-sec-title em {
+    color: var(--argile);
+  }
+
+  .tf-grid {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    align-items: stretch;
+  }
+
+  .tf-card {
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: #fffdf8;
+    border: 1px solid color-mix(in oklab, var(--encre) 12%, transparent);
+  }
+
+  .tf-card--highlight {
+    background: var(--nuit);
+    color: var(--craie);
+  }
+
+  .tf-card__price {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1;
+  }
+
+  .tf-card__price span {
+    display: block;
+    font-family: var(--font-text);
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .tf-card ul {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tf-card li,
+  .tf-card__duration {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .tf-card :global(svg) {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.25rem;
+    color: var(--sarcelle);
+  }
+
+  .tf-pending {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: var(--lin);
+  }
+
+  @media (min-width: 60rem) {
+    .tf-pending {
+      grid-template-columns: 4fr 7fr;
+      padding: var(--space-xl);
+    }
+  }
+
+  .tf-pending__art {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-arch);
+    overflow: hidden;
+    width: min(100%, 18rem);
+    justify-self: center;
+  }
+
+  .tf-pending__art :global(.plate-art) {
+    position: absolute;
+    inset: 0;
+  }
+
+  .tf-pending__text {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .tf-pending__text h2 {
+    font-size: var(--step-4);
+  }
+
+  .tf-pending__text h2 em {
+    color: var(--argile);
+  }
+
+  .tf-pending__free {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .tf-pending__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  .tf-choose :global(h2 em) {
+    color: var(--or);
+  }
+
+  .tf-choose__list {
+    display: grid;
+    margin-top: var(--space-l);
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid rgb(255 255 255 / 0.15);
+  }
+
+  .tf-choose__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    grid-template-areas: 'num name' '. short';
+    gap: 0.2rem var(--space-s);
+    padding: var(--space-m) 3rem var(--space-m) 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.15);
+    color: var(--craie) !important;
+    text-decoration: none;
+  }
+
+  @media (min-width: 56rem) {
+    .tf-choose__item {
+      grid-template-columns: 4rem 1fr 1fr;
+      grid-template-areas: 'num name short';
+      align-items: baseline;
+    }
+  }
+
+  .tf-choose__item .label {
+    grid-area: num;
+  }
+
+  .tf-choose__name {
+    grid-area: name;
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1.05;
+    transition: color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .tf-choose__short {
+    grid-area: short;
+    color: var(--craie-douce);
+  }
+
+  .tf-choose__arrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 1.5rem;
+    height: 1.5rem;
+    transform: translateY(-50%);
+    color: var(--or);
+  }
+
+  .tf-choose__item:hover .tf-choose__name {
+    color: var(--or);
+    transform: translateX(0.5rem);
+  }
+
+  .tf-choose__more {
+    margin-top: var(--space-l);
+    color: var(--craie-douce);
+  }
+
+  .tf-questions__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .tf-questions__grid {
+      grid-template-columns: 5fr 7fr;
+    }
+  }
+
+  .tf-questions__grid > div {
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
+  }
+
+  .tf-questions h2 em {
+    color: var(--sarcelle);
+  }
+
+  .tf-q {
+    display: grid;
+    gap: var(--space-m);
+    padding: 0;
+    list-style: none;
+  }
+
+  .tf-q li {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    gap: var(--space-s);
+    padding-bottom: var(--space-m);
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+  }
+
+  .tf-q__num {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1;
+    color: var(--argile);
+  }
+
+  .tf-q h3 {
+    font-size: var(--step-2);
+    margin-bottom: 0.3rem;
+  }
+
+  .tf-q p {
+    color: var(--encre-douce);
+  }
+</style>

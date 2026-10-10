@@ -5,6 +5,7 @@
 import { formConfig } from '~/config/forms';
 import { submitForm } from '~/lib/submit';
 import {
+  LIMITS,
   STEPS,
   rephrase,
   summaryFields,
@@ -52,7 +53,7 @@ export function initWizard(root: ParentNode = document): void {
   // Situations sélectionnées sur une page d'accompagnement (texte simple, longueur bornée).
   const note = params.get('note');
   const message = form.querySelector<HTMLTextAreaElement>('textarea[name="message"]');
-  if (note && message && !message.value) message.value = note.replace(/[<>]/g, '').slice(0, 300);
+  if (note && message && !message.value) message.value = note.replace(/[<>]/g, '').slice(0, LIMITS.message);
 
   const read = (): WizardAnswers => {
     const data = new FormData(form);

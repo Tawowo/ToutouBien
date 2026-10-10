@@ -1,10 +1,11 @@
 ---
 import Base from '~/layouts/Base.astro';
-import PageIntro from '~/components/PageIntro.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import StoryScroller from '~/components/StoryScroller.astro';
+import type { StoryStep } from '~/lib/story';
 import Plate from '~/components/Plate.astro';
 import Fil from '~/components/Fil.astro';
 import Faq from '~/components/Faq.astro';
-import CtaBand from '~/components/CtaBand.astro';
 import FirstMeeting from '~/components/FirstMeeting.astro';
 import Draft from '~/components/Draft.astro';
 import Icon from '~/components/Icon.astro';
@@ -17,26 +18,34 @@ const places = resolve(site.firstMeeting.places);
 const phone = resolve(site.contact.phone);
 const services = resolve(site.services);
 
-const steps = [
+const steps: StoryStep[] = [
   {
-    title: 'La prise de contact',
-    text: `Vous décrivez la situation en quelques mots, via le formulaire${phone && !phone.draft ? ' ou par téléphone' : ''}. Pas besoin d’avoir les bons termes : vos mots suffisent.`,
+    scene: 'demande',
+    title: 'Préparer sa demande',
+    text: `Quelques questions à choix, via le parcours « Parlons de votre chien »${phone && !phone.draft ? ', ou un simple appel' : ''}. Pas besoin d’avoir les bons mots : décrire ce que vous vivez suffit.`,
+    detail: 'Si vous le souhaitez, le centre de préparation vous aide à rassembler les informations utiles.',
   },
   {
-    title: 'La rencontre',
-    text: `${purpose?.value ?? 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}${places && !places.draft ? ` Elle peut se dérouler ${joinFr(places.value, 'ou')}.` : ''}`,
+    scene: 'echange',
+    title: 'Le premier échange',
+    text: `${purpose?.value ?? 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}${places && !places.draft ? ` Il peut se dérouler ${joinFr(places.value, 'ou')}.` : ''}`,
+    detail: 'C’est aussi le moment de poser toutes vos questions : méthodes, organisation, matériel.',
   },
   {
-    title: 'Comprendre la situation',
-    text: 'Observer votre chien dans son environnement aide à comprendre ce qui se passe pour lui, et pour vous. On regarde aussi ce qui fonctionne déjà.',
+    scene: 'clarifier',
+    title: 'Clarifier les besoins',
+    text: 'Observer votre chien dans son environnement aide à comprendre ce qui se passe pour lui, et pour vous. On distingue ce qui fonctionne déjà de ce que vous aimeriez voir évoluer.',
+    detail: 'Si une cause médicale est possible (douleur, changement brutal), un avis vétérinaire passe en premier.',
   },
   {
-    title: 'Des pistes à votre mesure',
-    text: 'Des pistes adaptées à votre quotidien, expliquées simplement, que vous pouvez réellement mettre en place, à votre rythme.',
+    scene: 'organiser',
+    title: 'Organiser l’accompagnement',
+    text: 'Des pistes adaptées à votre quotidien, expliquées simplement et réellement applicables, avec un rythme qui tient compte de votre temps disponible.',
   },
   {
-    title: 'La suite, si vous le souhaitez',
-    text: 'Vous décidez librement de la suite. Les modalités vous sont présentées clairement, sans engagement caché.',
+    scene: 'suite',
+    title: 'Envisager la suite',
+    text: 'Vous faites le point régulièrement sur ce qui évolue. Vous restez libre de continuer, de faire une pause ou de vous arrêter.',
   },
 ];
 
@@ -48,39 +57,20 @@ const commitments = [
 ];
 ---
 <Base
-  title="L’accompagnement"
-  description="Comment se déroule l’accompagnement ToutouBien : une prise de contact simple, une rencontre chez vous ou en extérieur, puis des pistes adaptées à votre quotidien et à votre chien."
+  title="Le déroulement d’un accompagnement"
+  description="Comment se déroule un accompagnement ToutouBien, étape par étape : préparer sa demande, le premier échange, clarifier les besoins, organiser la suite."
 >
-  <PageIntro
-    eyebrow="L’accompagnement"
-    title="Avancer <em>à votre rythme</em>, avec votre chien."
-    lede="Chaque chien, chaque famille a son histoire. L’accompagnement part de la vôtre : ce que vous vivez au quotidien, ce que vous aimeriez voir évoluer, et ce qui est réaliste pour vous."
-  />
+  <section class="dr-hero">
+    <div class="page dr-hero__inner">
+      <p class="eyebrow enter">Le déroulement</p>
+      <SplitTitle as="h1" text="De la première question *à la suite du chemin*." now />
+      <p class="lede enter" data-i="3">Chaque chien, chaque famille a son histoire. Voici, étape par étape, comment un accompagnement se construit à partir de la vôtre. Le déroulement s’adapte toujours à la situation.</p>
+    </div>
+  </section>
 
-  <!-- Le parcours -->
-  <section class="section journey" aria-labelledby="journey-title">
-    <div class="page journey__grid">
-      <div class="journey__head">
-        <p class="eyebrow reveal">Le parcours</p>
-        <h2 id="journey-title" class="reveal">Les grandes <em>étapes</em></h2>
-        <p class="lede reveal">Elles donnent une idée du déroulement&nbsp;: dans la réalité, chaque accompagnement s’adapte à la situation.</p>
-      </div>
-      <div class="journey__path">
-        <Fil variant="colonne" class="journey__fil" />
-        <ol class="journey__list" role="list">
-          {
-            steps.map((step, i) => (
-              <li class="journey__step reveal">
-                <span class="journey__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </div>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
+  <section class="section dr-story" aria-label="Les étapes de l’accompagnement">
+    <div class="page">
+      <StoryScroller steps={steps} />
     </div>
   </section>
 
@@ -167,83 +157,30 @@ const commitments = [
   </section>
 
   <Faq scope="accompagnement" />
-  <CtaBand title="Votre situation <em>mérite qu’on en parle.</em>" />
 </Base>
 
 <style>
-  .journey__grid {
+  .dr-hero {
+    padding-block: var(--space-xl) 0;
+  }
+
+  .dr-hero__inner {
     display: grid;
-    gap: var(--space-xl);
-  }
-
-  .journey__head {
-    display: grid;
-    gap: var(--space-s);
-    align-content: start;
-  }
-
-  @media (min-width: 60rem) {
-    .journey__grid {
-      grid-template-columns: 4fr 7fr;
-    }
-
-    .journey__head {
-      position: sticky;
-      top: 7rem;
-    }
-  }
-
-  .journey__path {
-    position: relative;
-  }
-
-  .journey__fil {
-    position: absolute;
-    left: 1.6rem;
-    top: 0;
-    width: 3rem;
-    height: 100%;
-    transform: translateX(-50%);
-    color: var(--argile);
-    opacity: 0.55;
-  }
-
-  .journey__list {
-    display: grid;
-    gap: var(--space-xl);
-    padding: 0;
-    list-style: none;
-  }
-
-  .journey__step {
-    display: grid;
-    grid-template-columns: 3.2rem 1fr;
     gap: var(--space-m);
-    align-items: start;
   }
 
-  .journey__num {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 3.2rem;
-    height: 3.2rem;
-    border-radius: 50%;
-    background: var(--ivoire);
-    border: 1.5px solid var(--argile);
+  .dr-hero h1 {
+    max-width: 15ch;
+    font-size: var(--step-6);
+    line-height: 0.9;
+  }
+
+  .dr-hero h1 :global(em) {
     color: var(--argile);
-    font-family: var(--font-display);
-    font-size: var(--step-0);
   }
 
-  .journey__step h3 {
-    font-size: var(--step-3);
-    margin-bottom: var(--space-2xs);
-  }
-
-  .journey__step p {
-    max-width: 50ch;
-    color: var(--encre-douce);
+  .dr-hero .lede {
+    max-width: 56ch;
   }
 
   .places__head {

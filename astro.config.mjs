@@ -39,6 +39,10 @@ export default defineConfig({
   image: {
     responsiveStyles: true,
   },
+  // Anciennes adresses conservées par redirection (aucun lien cassé).
+  redirects: {
+    '/accompagnement/': '/deroulement/',
+  },
   devToolbar: { enabled: false },
   // Politique de sécurité du contenu : empreintes générées pour les scripts et styles
   // intégrés, aucune ressource tierce hormis le service de formulaire.

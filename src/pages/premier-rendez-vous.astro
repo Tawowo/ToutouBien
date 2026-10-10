@@ -1,0 +1,406 @@
+---
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import FirstMeeting from '~/components/FirstMeeting.astro';
+import Plate from '~/components/Plate.astro';
+import Icon from '~/components/Icon.astro';
+import Faq from '~/components/Faq.astro';
+
+const sections = [
+  {
+    id: 'chien',
+    title: 'Votre chien',
+    items: [
+      { id: 'age', label: 'Son âge (même approximatif)' },
+      { id: 'histoire', label: 'Ce que vous savez de son histoire (origine, adoption, changements récents)' },
+      { id: 'sante', label: 'Sa santé : traitements, douleurs connues, dernière visite vétérinaire' },
+      { id: 'rythme', label: 'Le rythme de ses journées : repas, sorties, temps seul' },
+    ],
+  },
+  {
+    id: 'situation',
+    title: 'La situation',
+    items: [
+      { id: 'exemples', label: 'Deux ou trois situations précises qui vous questionnent' },
+      { id: 'contexte', label: 'Pour chacune : où, quand, avec qui, ce qui s’est passé avant et après' },
+      { id: 'video', label: 'Une courte vidéo, si c’est possible sans risque' },
+    ],
+  },
+  {
+    id: 'objectifs',
+    title: 'Vos objectifs',
+    items: [
+      { id: 'reussite', label: 'À quoi ressemblerait, pour vous, une balade ou une journée réussie ?' },
+      { id: 'temps', label: 'Le temps que vous pouvez y consacrer, réalistement' },
+      { id: 'famille', label: 'Les personnes de la famille qui pourront être présentes' },
+    ],
+  },
+];
+const questions = [
+  'Comment se déroulerait la suite, si je souhaite continuer ?',
+  'À quoi ressemble une séance type ?',
+  'Qu’est-ce que je peux mettre en place dès maintenant ?',
+  'Quelles méthodes et quel matériel utilisez-vous ?',
+  'Dans quels cas faut-il plutôt consulter un vétérinaire ?',
+];
+const total = sections.reduce((n, s) => n + s.items.length, 0);
+---
+<Base
+  title="Le premier rendez-vous"
+  description="À quoi sert le premier rendez-vous et comment le préparer : une checklist interactive, des notes à imprimer et les questions à poser pour arriver serein."
+>
+  <section class="pr-hero">
+    <div class="page pr-hero__grid">
+      <div class="pr-hero__text">
+        <p class="eyebrow enter">Le premier rendez-vous</p>
+        <SplitTitle as="h1" text="Rien à *réussir*. Tout à se dire." now />
+        <p class="lede enter" data-i="3">Le premier rendez-vous est un moment d’échange : votre chien n’a pas besoin d’être sage, et vous n’avez pas besoin d’avoir les bons mots. Quelques préparatifs simples permettent simplement d’en tirer le meilleur.</p>
+        <a class="btn enter" data-i="4" href="#preparer" data-magnetic>Préparer mon rendez-vous <Icon name="arrow" class="btn__arrow" /></a>
+      </div>
+      <Plate id="accueil-rencontre" class="pr-hero__plate" shape="arch" priority sizes="(min-width: 60rem) 30vw, 80vw" />
+    </div>
+  </section>
+
+  <FirstMeeting />
+
+  <section class="section prep on-lin" id="preparer" aria-labelledby="prep-title" data-prep>
+    <div class="page">
+      <div class="prep__head">
+        <div>
+          <p class="eyebrow">Centre de préparation</p>
+          <SplitTitle id="prep-title" text="Préparer *en dix minutes*." />
+          <p class="lede">Cochez ce que vous avez en tête et notez ce qui vous semble utile. Rien n’est enregistré&nbsp;: vous pouvez imprimer votre récapitulatif ou l’ajouter à votre demande.</p>
+        </div>
+        <div class="prep__ring" aria-hidden="true">
+          <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="prep__ring-bg" /><circle cx="60" cy="60" r="52" class="prep__ring-fg" pathLength="1" /></svg>
+          <span class="prep__ring-text"><span data-prep-count>0</span>/{total}</span>
+        </div>
+      </div>
+
+      <form class="prep__grid" data-prep-form>
+        {
+          sections.map((s, si) => (
+            <fieldset class="prep__card">
+              <legend>
+                <span class="label">{String(si + 1).padStart(2, '0')}</span>
+                {s.title}
+              </legend>
+              <ul role="list">
+                {s.items.map((item) => (
+                  <li>
+                    <label class="prep__item">
+                      <input type="checkbox" name="check" value={item.label} data-prep-check />
+                      <span class="prep__box" aria-hidden="true"><Icon name="check" /></span>
+                      <span>{item.label}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              <label class="prep__note">
+                <span class="field__hint">Vos notes (facultatif)</span>
+                <textarea class="textarea" name={`note-${s.id}`} rows="3" maxlength="400" data-prep-note={s.title}></textarea>
+              </label>
+            </fieldset>
+          ))
+        }
+        <fieldset class="prep__card prep__card--questions">
+          <legend>
+            <span class="label">04</span>
+            Vos questions
+          </legend>
+          <ul role="list">
+            {questions.map((q) => (
+              <li>
+                <label class="prep__item">
+                  <input type="checkbox" name="question" value={q} data-prep-question />
+                  <span class="prep__box" aria-hidden="true"><Icon name="check" /></span>
+                  <span>{q}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </fieldset>
+      </form>
+
+      <div class="prep__actions">
+        <button type="button" class="btn" data-prep-print>Imprimer mon récapitulatif <Icon name="arrow" class="btn__arrow" /></button>
+        <a class="btn btn--ghost" href="/parlons-de-votre-chien/" data-prep-send>Ajouter à ma demande</a>
+        <p class="prep__privacy">Vos notes restent dans votre navigateur et disparaissent quand vous quittez la page.</p>
+      </div>
+
+      <section class="prep__print" aria-label="Récapitulatif" data-prep-recap>
+        <h2>Mon récapitulatif · premier rendez-vous ToutouBien</h2>
+        <div data-prep-recap-body><p>Cochez des éléments ou ajoutez des notes pour composer votre récapitulatif.</p></div>
+      </section>
+    </div>
+  </section>
+
+  <Faq scope="accompagnement" title="Questions sur le premier rendez-vous" />
+</Base>
+
+<script>
+  import { initPrep } from '~/scripts/prep';
+  initPrep();
+</script>
+
+<style>
+  .pr-hero {
+    padding-block: var(--space-xl);
+  }
+
+  .pr-hero__grid {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .pr-hero__grid {
+      grid-template-columns: 7fr 4fr;
+    }
+  }
+
+  .pr-hero__text {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .pr-hero h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+  }
+
+  .pr-hero h1 :global(em) {
+    color: var(--argile);
+  }
+
+  .pr-hero .lede {
+    max-width: 52ch;
+  }
+
+  .pr-hero__plate {
+    width: min(100%, 24rem);
+    justify-self: center;
+  }
+
+  .prep__head {
+    display: grid;
+    gap: var(--space-l);
+    align-items: end;
+    margin-bottom: var(--space-l);
+  }
+
+  @media (min-width: 48rem) {
+    .prep__head {
+      grid-template-columns: 1fr auto;
+    }
+  }
+
+  .prep__head > div {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 44rem;
+  }
+
+  .prep__head :global(h2 em) {
+    color: var(--sarcelle);
+  }
+
+  .prep__ring {
+    position: relative;
+    width: 8.5rem;
+    height: 8.5rem;
+  }
+
+  .prep__ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .prep__ring circle {
+    fill: none;
+    stroke-width: 8;
+  }
+
+  .prep__ring-bg {
+    stroke: color-mix(in oklab, var(--encre) 10%, transparent);
+  }
+
+  .prep__ring-fg {
+    stroke: var(--sarcelle);
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: calc(1 - var(--prep, 0));
+    transition: stroke-dashoffset 500ms var(--ease-out);
+  }
+
+  .prep__ring-text {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+  }
+
+  .prep__grid {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  @media (min-width: 60rem) {
+    .prep__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .prep__card {
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
+    margin: 0;
+    padding: var(--space-l);
+    border: 0;
+    border-radius: var(--radius-l);
+    background: var(--papier);
+    min-width: 0;
+  }
+
+  .prep__card legend {
+    float: left;
+    display: flex;
+    gap: var(--space-s);
+    align-items: baseline;
+    width: 100%;
+    margin-bottom: var(--space-xs);
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+  }
+
+  .prep__card ul {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .prep__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.6rem 1fr;
+    gap: var(--space-s);
+    align-items: start;
+    padding: 0.55rem 0.4rem;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) ease;
+  }
+
+  .prep__item:hover {
+    background: var(--lin);
+  }
+
+  .prep__item input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .prep__box {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0.05rem;
+    border-radius: 0.4rem;
+    border: 1.5px solid color-mix(in oklab, var(--encre) 40%, transparent);
+    color: transparent;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .prep__box :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .prep__item input:checked + .prep__box {
+    background: var(--sarcelle);
+    border-color: var(--sarcelle);
+    color: #fff;
+    transform: scale(1.08);
+  }
+
+  .prep__item input:checked ~ span:last-child {
+    color: var(--encre-douce);
+    text-decoration: line-through;
+    text-decoration-color: color-mix(in oklab, var(--sarcelle) 60%, transparent);
+  }
+
+  .prep__item input:focus-visible + .prep__box {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .prep__note {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .prep__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+    margin-top: var(--space-l);
+  }
+
+  .prep__privacy {
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .prep__print {
+    display: none;
+  }
+
+  @media print {
+    :global(.site-header),
+    :global(.site-footer),
+    :global(.skip-link),
+    :global(main > *:not(#preparer)),
+    .prep__head,
+    .prep__grid,
+    .prep__actions {
+      display: none !important;
+    }
+
+    :global(body::after) {
+      display: none;
+    }
+
+    .prep {
+      background: #fff !important;
+      padding: 0 !important;
+    }
+
+    .prep__print {
+      display: block;
+      font-size: 11pt;
+      color: #000;
+    }
+
+    .prep__print h2 {
+      font-size: 20pt;
+      margin-bottom: 12pt;
+    }
+
+    .prep__print :global(h3) {
+      font-size: 13pt;
+      margin: 12pt 0 4pt;
+    }
+  }
+</style>

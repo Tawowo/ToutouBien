@@ -49,6 +49,13 @@ export function initFlairField(root: ParentNode = document): void {
   const hint = $<HTMLElement>('[data-hint]');
   const listButtons = Array.from(wrap.querySelectorAll<HTMLButtonElement>('[data-scent]'));
   const markers = Array.from(wrap.querySelectorAll<HTMLButtonElement>('[data-marker]'));
+  // Positions et couleurs appliquées par script (la CSP interdit les attributs style en ligne).
+  for (const el of [...listButtons, ...markers]) {
+    const d = el.dataset;
+    if (d.c) el.style.setProperty('--c', d.c);
+    if (d.x) el.style.setProperty('--x', d.x);
+    if (d.y) el.style.setProperty('--y', d.y);
+  }
   const intro = { status: noteStatus.textContent ?? '', title: noteTitle.textContent ?? '', text: noteText.textContent ?? '' };
 
   const bg = document.createElement('canvas');

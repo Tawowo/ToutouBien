@@ -54,7 +54,7 @@ const nots = [
           {
             PRINCIPLES.map((p, i) => (
               <section class="pr__panel" role="tabpanel" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} tabindex="0">
-                <p class="pr__big" aria-hidden="true">{String(i + 1).padStart(2, '0')}</p>
+                <span class="pr__big" aria-hidden="true" data-num={String(i + 1).padStart(2, '0')}></span>
                 <h3>
                   {p.word} <em>{p.tagline}</em>
                 </h3>
@@ -323,9 +323,15 @@ const nots = [
     right: var(--space-m);
     top: -1rem;
     font-family: var(--font-display);
-    font-size: 10rem;
+    font-size: clamp(4rem, 3rem + 3vw, 6.5rem);
     line-height: 1;
     color: color-mix(in oklab, var(--accent) 12%, transparent);
+    pointer-events: none;
+  }
+
+  /* Numéro décoratif : généré en CSS, hors du texte de la page. */
+  .pr__big::before {
+    content: attr(data-num);
   }
 
   .pr__panel h3 {

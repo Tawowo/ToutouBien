@@ -142,16 +142,37 @@ const { steps, id = 'story' } = Astro.props;
       padding-block: 12vh 30vh;
     }
 
+    /* L'étape active est marquée par un filet et un léger décalage ; les autres restent lisibles (contraste conservé). */
     .story__step {
+      position: relative;
       min-height: 76vh;
       align-content: center;
-      opacity: 0.35;
-      transition: opacity 500ms ease;
+      padding-left: var(--space-m);
+      transition: transform 500ms var(--ease-out);
     }
 
-    .story:not(.is-enhanced) .story__step,
+    .story__step::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 2px;
+      height: 0;
+      background: var(--turquoise);
+      transform: translateY(-50%);
+      transition: height 600ms var(--ease-out);
+    }
+
+    .story.is-enhanced .story__step:not(.is-active) :global(h3) {
+      color: var(--encre-douce);
+    }
+
     .story__step.is-active {
-      opacity: 1;
+      transform: translateX(0.4rem);
+    }
+
+    .story__step.is-active::before {
+      height: 60%;
     }
 
     .story__inline {

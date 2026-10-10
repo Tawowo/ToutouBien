@@ -29,6 +29,8 @@ const {
   gaze = 'soft',
   label,
 } = Astro.props;
+// Identifiant unique : plusieurs chiens peuvent coexister sur une page.
+const uid = `dog-${Math.random().toString(36).slice(2, 8)}`;
 ---
 <svg
   class:list={['dog', className]}
@@ -46,23 +48,47 @@ const {
   aria-hidden={label ? undefined : 'true'}
   focusable="false"
 >
-  <ellipse class="dog__shadow" cx="205" cy="268" rx="130" ry="9" />
+  <defs>
+    <linearGradient id={`${uid}-fill`} gradientUnits="userSpaceOnUse" x1="0" y1="50" x2="0" y2="265">
+      <stop offset="0%" stop-color="#245250" />
+      <stop offset="100%" stop-color="#10292a" />
+    </linearGradient>
+    <linearGradient id={`${uid}-far`} gradientUnits="userSpaceOnUse" x1="0" y1="170" x2="0" y2="265">
+      <stop offset="0%" stop-color="#0f2524" />
+      <stop offset="100%" stop-color="#0a1a1a" />
+    </linearGradient>
+    <filter id={`${uid}-edge`} x="-5%" y="-5%" width="110%" height="110%">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="1.6" result="grown" />
+      <feFlood flood-color="#9ad3cd" result="line" />
+      <feComposite in="line" in2="grown" operator="in" result="outline" />
+      <feMerge>
+        <feMergeNode in="outline" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <radialGradient id={`${uid}-shadow`} cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#000" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <ellipse class="dog__shadow" cx="205" cy="268" rx="140" ry="12" fill={`url(#${uid}-shadow)`} />
+  <g class="dog__figure" filter={`url(#${uid}-edge)`}>
   <g class="dog__legs-back">
-    <path class="dog__leg dog__leg--far" d="M150 178 C 168 184 170 206 162 226 L 160 262 Q 152 266 145 262 L 146 226 C 140 210 140 192 150 178 Z" />
-    <path class="dog__leg" d="M128 160 C 156 164 166 192 154 218 L 150 262 Q 140 267 132 262 L 136 218 C 122 200 116 178 128 160 Z" />
+    <path class="dog__leg dog__leg--far" fill={`url(#${uid}-far)`} d="M150 178 C 168 184 170 206 162 226 L 160 262 Q 152 266 145 262 L 146 226 C 140 210 140 192 150 178 Z" />
+    <path class="dog__leg" fill={`url(#${uid}-fill)`} d="M128 160 C 156 164 166 192 154 218 L 150 262 Q 140 267 132 262 L 136 218 C 122 200 116 178 128 160 Z" />
   </g>
   <g class="dog__legs-front">
-    <path class="dog__leg dog__leg--far" d="M266 176 C 276 174 284 178 284 186 L 283 256 C 284 262 287 263 292 264 Q 284 268 270 264 L 270 186 Z" />
-    <path class="dog__leg" d="M242 176 C 252 172 264 176 264 186 L 263 255 C 264 261 268 262 273 263 Q 264 268 250 264 L 248 188 Z" />
+    <path class="dog__leg dog__leg--far" fill={`url(#${uid}-far)`} d="M266 176 C 276 174 284 178 284 186 L 283 256 C 284 262 287 263 292 264 Q 284 268 270 264 L 270 186 Z" />
+    <path class="dog__leg" fill={`url(#${uid}-fill)`} d="M242 176 C 252 172 264 176 264 186 L 263 255 C 264 261 268 262 273 263 Q 264 268 250 264 L 248 188 Z" />
   </g>
   <g class="dog__upper">
     <g class="dog__tail">
-      <path d="M118 142 C 96 134 82 116 74 94 C 72 87 79 84 83 90 C 92 108 104 122 122 132 Z" />
+      <path fill={`url(#${uid}-fill)`} d="M118 142 C 96 134 82 116 74 94 C 72 87 79 84 83 90 C 92 108 104 122 122 132 Z" />
     </g>
-    <path class="dog__body" d="M116 150 C 110 122 136 108 172 111 C 206 114 232 105 264 107 C 293 109 308 128 306 153 C 304 178 291 195 268 198 C 249 200 237 187 218 185 C 192 183 172 192 150 191 C 128 190 119 172 116 150 Z" />
+    <path class="dog__body" fill={`url(#${uid}-fill)`} d="M116 150 C 110 122 136 108 172 111 C 206 114 232 105 264 107 C 293 109 308 128 306 153 C 304 178 291 195 268 198 C 249 200 237 187 218 185 C 192 183 172 192 150 191 C 128 190 119 172 116 150 Z" />
     <g class="dog__head">
-      <path class="dog__neck" d="M252 124 C 268 101 288 85 306 82 C 316 92 322 106 326 118 C 314 136 292 150 258 154 Z" />
-      <path class="dog__skull" d="M298 62 C 308 48 334 46 346 60 L 366 72 C 374 77 372 92 362 94 L 342 98 C 332 106 312 106 302 98 C 290 88 289 72 298 62 Z" />
+      <path class="dog__neck" fill={`url(#${uid}-fill)`} d="M252 124 C 268 101 288 85 306 82 C 316 92 322 106 326 118 C 314 136 292 150 258 154 Z" />
+      <path class="dog__skull" fill={`url(#${uid}-fill)`} d="M298 62 C 308 48 334 46 346 60 L 366 72 C 374 77 372 92 362 94 L 342 98 C 332 106 312 106 302 98 C 290 88 289 72 298 62 Z" />
       <circle class="dog__nose" cx="368" cy="80" r="6" />
       <g class="dog__eye">
         <circle class="dog__eye-white" cx="331" cy="70" r="4.6" />
@@ -75,17 +101,18 @@ const {
         <ellipse class="dog__yawn" cx="352" cy="96" rx="11" ry="7" />
       </g>
       <g class="dog__ear">
-        <path d="M314 56 C 300 52 291 62 293 82 C 295 95 306 99 312 90 C 317 80 320 66 314 56 Z" />
+        <path fill={`url(#${uid}-fill)`} d="M314 56 C 300 52 291 62 293 82 C 295 95 306 99 312 90 C 317 80 320 66 314 56 Z" />
       </g>
     </g>
+  </g>
   </g>
 </svg>
 
 <style>
+  /* Étude au trait : volume sombre, contour fin turquoise, pas d'aplats « cartoon ». */
   .dog {
-    --dog-fill: var(--lagon);
-    --dog-far: color-mix(in oklab, var(--lagon) 62%, var(--nuit));
-    --dog-ink: var(--nuit);
+    --dog-line: var(--lagon);
+    --dog-ink: var(--lagon);
     --t: 520ms;
     overflow: visible;
   }
@@ -96,56 +123,47 @@ const {
     transition: transform var(--t) var(--ease-out), opacity var(--t) ease, d var(--t) var(--ease-out);
   }
 
-  .dog__shadow {
-    fill: rgb(0 0 0 / 0.25);
-  }
-
-  .dog__leg,
-  .dog__body,
-  .dog__neck,
-  .dog__skull,
-  .dog__tail path,
+  /* Le contour est produit par un filtre de dilatation sur la silhouette entière : aucune couture interne. */
   .dog__ear path {
-    fill: var(--dog-fill);
+    stroke: color-mix(in oklab, var(--dog-line) 70%, transparent);
+    stroke-width: 1.2;
+    vector-effect: non-scaling-stroke;
   }
 
-  .dog__leg--far {
-    fill: var(--dog-far);
-  }
-
-  .dog__ear path {
-    fill: color-mix(in oklab, var(--dog-fill) 78%, var(--nuit));
-  }
-
-  .dog__nose,
-  .dog__pupil {
+  .dog__nose {
     fill: var(--dog-ink);
   }
 
+  .dog__pupil {
+    fill: var(--lueur);
+  }
+
   .dog__eye-white {
-    fill: var(--craie);
+    fill: none;
+    stroke: var(--dog-line);
+    stroke-width: 1.2;
     opacity: 0;
   }
 
   .dog__mouth-line {
     fill: none;
-    stroke: var(--dog-ink);
-    stroke-width: 2.4;
+    stroke: var(--dog-line);
+    stroke-width: 1.6;
     stroke-linecap: round;
   }
 
-  .dog__tongue {
-    fill: #e58f86;
-    opacity: 0;
-  }
-
+  .dog__tongue,
   .dog__lick {
-    fill: #e58f86;
+    fill: none;
+    stroke: var(--lueur);
+    stroke-width: 1.4;
     opacity: 0;
   }
 
   .dog__yawn {
-    fill: var(--dog-ink);
+    fill: #081110;
+    stroke: var(--dog-line);
+    stroke-width: 1.2;
     opacity: 0;
   }
 

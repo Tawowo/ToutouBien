@@ -55,7 +55,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
           <h2 id="paths-title" class="lib-sec">Parcours <em>de lecture</em></h2>
           <ol class="lib-paths__list" role="list">
             {paths.map((p, i) => (
-              <li class="lib-path reveal" style={`--i:${i}`}>
+              <li class="lib-path reveal" data-i={i}>
                 <div class="lib-path__head">
                   <span class="label">{String(i + 1).padStart(2, '0')} · {p.list.length} étapes</span>
                   <h3>{p.title}</h3>

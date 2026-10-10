@@ -38,7 +38,8 @@ test('FAQ : recherche insensible aux accents et état vide', async ({ page }) =>
   const input = page.locator('[data-faq-input]');
   await input.fill('zzzzqq');
   await expect(page.locator('[data-faq-item]:visible')).toHaveCount(0);
-  await expect(page.getByRole('link', { name: /questions que l’on n’ose pas poser/i }).first()).toBeVisible();
+  await expect(page.locator('[data-faq-empty]')).toBeVisible();
+  await expect(page.locator('[data-faq-empty]').getByRole('link', { name: /questions que l’on n’ose pas poser/i })).toBeVisible();
   await input.fill('');
   expect(await page.locator('[data-faq-item]:visible').count()).toBeGreaterThan(3);
 });
@@ -81,4 +82,35 @@ test('premier rendez-vous : la checklist alimente le récapitulatif', async ({ p
   await expect(page.locator('[data-prep-count]')).toHaveText('1');
   await page.locator('textarea[data-prep-note]').first().fill('Il a trois ans.');
   await expect(page.locator('[data-prep-send]')).toHaveAttribute('href', /note=/);
+});
+
+test('le monde par le nez : chaque odeur se trouve, se re-sélectionne et se réinitialise', async ({ page }) => {
+  await page.goto('/explorer/flair/');
+  const ids = await page.locator('[data-scent]').evaluateAll((els) => els.map((e) => (e as HTMLElement).dataset.scent!));
+  expect(ids.length).toBe(6);
+  for (const id of ids) {
+    await page.locator(`[data-scent="${id}"]`).click();
+    await expect(page.locator(`[data-scent="${id}"]`)).toHaveClass(/is-found/, { timeout: 6000 });
+    await expect(page.locator(`[data-scent="${id}"]`)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator(`[data-marker="${id}"]`)).toHaveClass(/is-visible/);
+  }
+  await expect(page.locator('[data-count]')).toHaveText('6 / 6');
+  // Une odeur déjà trouvée se rouvre dans le carnet.
+  await page.locator(`[data-marker="${ids[0]}"]`).click();
+  await expect(page.locator('[data-note-status]')).toContainText('Trouvé');
+  await page.getByRole('button', { name: 'Recommencer' }).click();
+  await expect(page.locator('[data-count]')).toHaveText('0 / 6');
+  await expect(page.locator('.fx__marker.is-visible')).toHaveCount(0);
+});
+
+test('accueil : aucun élément ne suit le pointeur', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'souris uniquement');
+  await page.goto('/');
+  const before = await page.locator('[data-cine]').screenshot();
+  await page.mouse.move(900, 400);
+  await page.mouse.move(1000, 450, { steps: 5 });
+  // Aucune propriété liée au pointeur n'est exposée par la scène.
+  const html = await page.content();
+  expect(html).not.toContain('uPointer');
+  expect(before.length).toBeGreaterThan(0);
 });

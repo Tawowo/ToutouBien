@@ -1,0 +1,10 @@
+{
+  "_doc": "Photos illustratives libres (Wikimedia Commons). Chaque entrée associe un emplacement (src/content/photos.ts) à un fichier Commons candidat. La licence, l'auteur et les dimensions sont VÉRIFIÉS automatiquement par fetch-photos.mjs via l'API Commons au moment du téléchargement : un fichier dont la licence n'est pas compatible est refusé. Rien n'est considéré comme vérifié tant que le script n'a pas réussi. Les photos de Mme Petitgand remplacent ces images dès qu'elles sont disponibles.",
+  "slots": {
+    "illus-balade": ["File:2008-07-15 Woman with dog on path at Duke Gardens.jpg", "File:Girl Walking Dog in New Albany, Ohio.jpg"],
+    "illus-flair": ["File:Random white dog.JPG"],
+    "illus-rencontre-chiens": ["File:Shiba inu Boston Terrier greetings.jpg"],
+    "illus-maison": ["File:Black dog lying on the floor.jpg"],
+    "illus-chiot": ["File:Beagle puppy sleeping.jpg"]
+  }
+}

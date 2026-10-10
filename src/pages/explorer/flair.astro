@@ -4,6 +4,9 @@ import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
 import ExplorerNext from '~/components/ExplorerNext.astro';
 import { SCENTS } from '~/lib/flair-field';
+import Plate from '~/components/Plate.astro';
+import { photoFor } from '~/content/photos';
+const flairPhoto = Boolean(photoFor('illus-flair'));
 const readMore = (await visibleArticles()).some((a) => a.id === 'les-besoins-du-chien');
 ---
 <Base
@@ -29,7 +32,7 @@ const readMore = (await visibleArticles()).some((a) => a.id === 'les-besoins-du-
         <div class="fx__markers">
           {
             SCENTS.map((s, i) => (
-              <button type="button" class="fx__marker" data-marker={s.id} style={`--x:${s.x};--y:${s.y};--c:${s.color}`} tabindex="-1" aria-hidden="true">
+              <button type="button" class="fx__marker" data-marker={s.id} data-x={s.x} data-y={s.y} data-c={s.color} data-side={s.x > 0.6 ? 'left' : 'right'} tabindex="-1" aria-hidden="true">
                 <span class="fx__marker-dot" aria-hidden="true"></span>
                 <span class="fx__marker-label">{String(i + 1).padStart(2, '0')} · {s.label}</span>
               </button>
@@ -59,7 +62,7 @@ const readMore = (await visibleArticles()).some((a) => a.id === 'les-besoins-du-
             {
               SCENTS.map((s, i) => (
                 <li>
-                  <button type="button" data-scent={s.id} aria-pressed="false" style={`--c:${s.color}`}>
+                  <button type="button" data-scent={s.id} aria-pressed="false" data-c={s.color}>
                     <span class="fx__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                     <span class="fx__scent-name">{s.label}</span>
                     <span class="fx__state" data-state>À trouver</span>
@@ -103,9 +106,10 @@ const readMore = (await visibleArticles()).some((a) => a.id === 'les-besoins-du-
 
   <section class="section learn" aria-labelledby="learn-title">
     <div class="page learn__grid">
-      <div>
+      <div class="learn__intro">
         <p class="eyebrow">Ce qu’il faut retenir</p>
         <h2 id="learn-title">Flairer, c’est <em>lire</em>.</h2>
+        {flairPhoto && <Plate id="illus-flair" ratio={4 / 3} sizes="(min-width: 60rem) 30vw, 90vw" />}
       </div>
       <div class="learn__points">
         <article>
@@ -338,17 +342,13 @@ const readMore = (await visibleArticles()).some((a) => a.id === 'les-besoins-du-
   }
 
   /* Le libellé passe à gauche pour les sources proches du bord droit. */
-  .fx__marker[style*='--x:0.8'],
-  .fx__marker[style*='--x:0.7'],
-  .fx__marker[style*='--x:0.6'] {
+  .fx__marker[data-side='left'] {
     flex-direction: row-reverse;
     padding: 0 0.4rem 0 0.85rem;
     transform: translate(calc(-100% + 1.35rem), -50%) scale(0.92);
   }
 
-  .fx__marker.is-visible[style*='--x:0.8'],
-  .fx__marker.is-visible[style*='--x:0.7'],
-  .fx__marker.is-visible[style*='--x:0.6'] {
+  .fx__marker.is-visible[data-side='left'] {
     transform: translate(calc(-100% + 1.35rem), -50%);
   }
 
@@ -358,17 +358,13 @@ const readMore = (await visibleArticles()).some((a) => a.id === 'les-besoins-du-
     }
 
     .fx__marker,
-    .fx__marker[style*='--x:0.8'],
-    .fx__marker[style*='--x:0.7'],
-    .fx__marker[style*='--x:0.6'] {
+    .fx__marker[data-side='left'] {
       padding: 0.2rem;
       transform: translate(-50%, -50%) scale(0.92);
     }
 
     .fx__marker.is-visible,
-    .fx__marker.is-visible[style*='--x:0.8'],
-    .fx__marker.is-visible[style*='--x:0.7'],
-    .fx__marker.is-visible[style*='--x:0.6'] {
+    .fx__marker.is-visible[data-side='left'] {
       transform: translate(-50%, -50%);
     }
   }
@@ -580,6 +576,12 @@ const readMore = (await visibleArticles()).some((a) => a.id === 'les-besoins-du-
     .learn__grid {
       grid-template-columns: 4fr 8fr;
     }
+  }
+
+  .learn__intro {
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
   }
 
   .learn__grid h2 {

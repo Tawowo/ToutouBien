@@ -5,7 +5,7 @@
  * Jamais de fausse photo, jamais de mention « image à venir » en public.
  */
 import { Picture } from 'astro:assets';
-import { PHOTO_SLOTS, photoFor, type PhotoSlotId, type PlateMotif } from '~/content/photos';
+import { PHOTO_SLOTS, creditFor, photoFor, type PhotoSlotId, type PlateMotif } from '~/content/photos';
 import PlateArt from './PlateArt.astro';
 
 interface Props {
@@ -27,7 +27,7 @@ const photo = photoFor(id);
 // Ratio exprimé en attribut (et non en style inline) pour rester compatible avec la CSP.
 const RATIOS: Record<string, number> = { '4-5': 4 / 5, '3-4': 3 / 4, '4-3': 4 / 3, '3-2': 3 / 2, '1-1': 1 };
 const ratioKey = Object.entries(RATIOS).reduce((best, [key, value]) => (Math.abs(value - ratio) < Math.abs(RATIOS[best]! - ratio) ? key : best), '4-5');
-const credit = 'credit' in slot ? (slot.credit as import('~/content/photos').PhotoCredit | undefined) : undefined;
+const credit = creditFor(id);
 const motif: PlateMotif = slot.motif;
 ---
 <figure
@@ -52,7 +52,13 @@ const motif: PlateMotif = slot.motif;
       <PlateArt motif={motif} class="plate__art" />
     )
   }
-  {photo && credit?.attributionRequired && <figcaption class="plate__credit">Photo : {credit.author}</figcaption>}
+  {
+    photo && credit && !credit.authentic && (
+      <figcaption class="plate__credit">
+        Photo d’illustration : <a href={credit.sourceUrl} rel="noopener">{credit.author}</a>, {credit.licence}
+      </figcaption>
+    )
+  }
   <slot />
 </figure>
 
@@ -115,5 +121,10 @@ const motif: PlateMotif = slot.motif;
     background: rgb(11 21 20 / 0.7);
     color: var(--craie);
     font-size: 0.72rem;
+    max-width: calc(100% - 2 * var(--space-xs));
+  }
+
+  .plate__credit a {
+    color: inherit;
   }
 </style>

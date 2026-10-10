@@ -1,5 +1,6 @@
 ---
 import Base from '~/layouts/Base.astro';
+import Gallery from '~/components/Gallery.astro';
 import Plate from '~/components/Plate.astro';
 import Fil from '~/components/Fil.astro';
 import Draft from '~/components/Draft.astro';
@@ -151,6 +152,7 @@ const publicName = name && !name.draft ? name.value : undefined;
     </div>
   </section>
 
+  <Gallery title="ToutouBien en images" />
 </Base>
 
 <style>

@@ -2,6 +2,8 @@
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
 import PlateArt from '~/components/PlateArt.astro';
+import Plate from '~/components/Plate.astro';
+import { photoFor, type PhotoSlotId } from '~/content/photos';
 import Fil from '~/components/Fil.astro';
 import Icon from '~/components/Icon.astro';
 import ArticleCard from '~/components/ArticleCard.astro';
@@ -25,6 +27,10 @@ const { a, next } = Astro.props;
 const articles = (await visibleArticles()).filter((art) => a.articles.includes(art.id));
 const base = Astro.site ?? new URL('https://toutoubien.example');
 const topic = a.topics[0];
+// Photo d'illustration associée (affichée seulement si une photo vérifiée a été déposée).
+const ILLUS: Record<Accompagnement['slug'], PhotoSlotId> = { chiot: 'illus-chiot', 'chien-adulte': 'illus-rencontre-chiens', quotidien: 'illus-maison', comprendre: 'illus-balade' };
+const illus = ILLUS[a.slug];
+const hasPhoto = Boolean(photoFor(illus));
 const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompagnements', path: '/accompagnements/' }, { name: a.label, path: `/accompagnements/${a.slug}/` }])];
 ---
 <Base title={a.title} description={a.seoDescription} jsonLd={ld}>
@@ -43,9 +49,15 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
             <a class="acc__jump" href="#situations">Vous reconnaissez-vous&nbsp;?</a>
           </div>
         </div>
-        <div class="acc__hero-art reveal-mask" aria-hidden="true">
-          <PlateArt motif={a.motif} />
-        </div>
+        {
+          hasPhoto ? (
+            <Plate id={illus} class="acc__hero-photo" ratio={4 / 5} shape="arch" priority reveal={false} sizes="(min-width: 60rem) 36vw, 90vw" />
+          ) : (
+            <div class="acc__hero-art reveal-mask" aria-hidden="true">
+              <PlateArt motif={a.motif} />
+            </div>
+          )
+        }
       </div>
     </header>
 
@@ -264,6 +276,11 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
   .acc__jump {
     font-weight: 600;
     color: var(--tone);
+  }
+
+  .acc__hero-grid :global(.acc__hero-photo) {
+    width: min(100%, 28rem);
+    justify-self: center;
   }
 
   .acc__hero-art {

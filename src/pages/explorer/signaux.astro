@@ -1,4 +1,5 @@
 ---
+import { visibleArticles } from '~/lib/articles';
 import Base from '~/layouts/Base.astro';
 import DogFigure from '~/components/DogFigure.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
@@ -14,6 +15,7 @@ const axes = [
   { key: 'inconfort', label: 'Inconfort' },
   { key: 'excitation', label: 'Excitation' },
 ] as const;
+const readMore = (await visibleArticles()).some((a) => a.id === 'lire-les-signaux');
 ---
 <Base
   title="Lire les signaux de son chien"
@@ -134,7 +136,7 @@ const axes = [
         })
       }
     </div>
-    <p class="fallback-list__more">Pour aller plus loin : <a href="/blog/lire-les-signaux/">le guide « Lire les signaux de son chien »</a>.</p>
+    {readMore && <p class="fallback-list__more">Pour aller plus loin : <a href="/blog/lire-les-signaux/">le guide « Lire les signaux de son chien »</a>.</p>}
   </section>
 
   <ExplorerNext current="signaux" />
@@ -206,8 +208,8 @@ const axes = [
     transition: background 700ms ease;
   }
 
-  .xp__stage[data-context='inconnu'] .xp__stage-bg { background: radial-gradient(50% 60% at 95% 30%, rgb(233 180 156 / 0.18), transparent 70%); }
-  .xp__stage[data-context='congenere'] .xp__stage-bg { background: radial-gradient(50% 60% at 100% 60%, rgb(242 192 138 / 0.2), transparent 70%); }
+  .xp__stage[data-context='inconnu'] .xp__stage-bg { background: radial-gradient(50% 60% at 95% 30%, rgb(154 211 205 / 0.18), transparent 70%); }
+  .xp__stage[data-context='congenere'] .xp__stage-bg { background: radial-gradient(50% 60% at 100% 60%, rgb(223 243 239 / 0.2), transparent 70%); }
   .xp__stage[data-context='jeu'] .xp__stage-bg { background: radial-gradient(60% 60% at 50% 20%, rgb(154 211 205 / 0.22), transparent 70%); }
   .xp__stage[data-context='bruit'] .xp__stage-bg { background: radial-gradient(60% 50% at 50% 0%, rgb(255 255 255 / 0.12), transparent 70%); }
 
@@ -232,7 +234,7 @@ const axes = [
 
   .xp__reading-title {
     font-size: var(--step-3);
-    color: var(--or);
+    color: var(--lueur);
   }
 
   .xp__bars {
@@ -269,9 +271,9 @@ const axes = [
     transition: width 600ms var(--ease-out);
   }
 
-  .xp__bar[data-axis='inconfort'] .xp__bar-fill { background: var(--argile-claire); }
-  .xp__bar[data-axis='attention'] .xp__bar-fill { background: var(--or); }
-  .xp__bar[data-axis='excitation'] .xp__bar-fill { background: #c9e78f; }
+  .xp__bar[data-axis='inconfort'] .xp__bar-fill { background: var(--lagon-clair); }
+  .xp__bar[data-axis='attention'] .xp__bar-fill { background: var(--lueur); }
+  .xp__bar[data-axis='excitation'] .xp__bar-fill { background: #b9d9c9; }
 
   .xp__reading p {
     color: var(--craie-douce);
@@ -422,7 +424,7 @@ const axes = [
   }
 
   .seg input:checked + span {
-    background: var(--or);
+    background: var(--lueur);
     color: var(--nuit);
   }
 
@@ -456,7 +458,7 @@ const axes = [
   }
 
   .xp__quiz-feedback {
-    color: var(--or);
+    color: var(--lueur);
     font-weight: 600;
   }
 

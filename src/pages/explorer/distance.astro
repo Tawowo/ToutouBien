@@ -199,13 +199,13 @@ import { DAYS, STIMULI, ZONE_TEXT } from '~/lib/distance';
 
   .dx__zone--deborde {
     flex: 0 0 calc(var(--alert) * 94.3%);
-    background: linear-gradient(to top, rgb(233 180 156 / 0.28), transparent);
+    background: linear-gradient(to top, rgb(154 211 205 / 0.28), transparent);
   }
 
   .dx__zone--vigilant {
     flex: 0 0 calc((var(--comfort) - var(--alert)) * 94.3%);
-    background: linear-gradient(to top, rgb(242 192 138 / 0.18), transparent);
-    border-left: 1px dashed rgb(242 192 138 / 0.5);
+    background: linear-gradient(to top, rgb(223 243 239 / 0.18), transparent);
+    border-left: 1px dashed rgb(223 243 239 / 0.5);
   }
 
   .dx__zone--aise {
@@ -225,7 +225,7 @@ import { DAYS, STIMULI, ZONE_TEXT } from '~/lib/distance';
 
   .dx__arc path {
     fill: none;
-    stroke: var(--or);
+    stroke: var(--lueur);
     stroke-width: 2;
     stroke-dasharray: 8 8;
     vector-effect: non-scaling-stroke;
@@ -267,14 +267,14 @@ import { DAYS, STIMULI, ZONE_TEXT } from '~/lib/distance';
 
   .dx__icon :is(path, circle) {
     fill: none;
-    stroke: var(--or);
+    stroke: var(--lueur);
     stroke-width: 6;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
   .dx__icon--chien path:first-child {
-    fill: var(--or);
+    fill: var(--lueur);
     stroke-width: 3;
   }
 
@@ -301,8 +301,8 @@ import { DAYS, STIMULI, ZONE_TEXT } from '~/lib/distance';
   }
 
   [data-zone='aise'] .dx__zone-title { color: var(--lagon); }
-  [data-zone='vigilant'] .dx__zone-title { color: var(--or); }
-  [data-zone='deborde'] .dx__zone-title { color: var(--argile-claire); }
+  [data-zone='vigilant'] .dx__zone-title { color: var(--lueur); }
+  [data-zone='deborde'] .dx__zone-title { color: var(--lagon-clair); }
 
   .dx__reading p {
     color: var(--craie-douce);
@@ -338,7 +338,7 @@ import { DAYS, STIMULI, ZONE_TEXT } from '~/lib/distance';
   .dx__range input {
     width: 100%;
     min-height: 2.75rem;
-    accent-color: var(--or);
+    accent-color: var(--lueur);
   }
 
   .dx__chips {

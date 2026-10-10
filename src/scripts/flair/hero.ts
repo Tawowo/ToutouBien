@@ -2,10 +2,12 @@
  * Pilotage de la scène d'accueil.
  * - Rien n'est chargé si l'appareil ne s'y prête pas (pas de WebGL 2, mouvement réduit,
  *   économie de données) : l'illustration statique et les textes restent affichés.
- * - Three.js (≈ 130 Ko compressés) est importé à la demande, dans un fichier séparé.
+ * - Three.js est importé à la demande, dans un fichier séparé.
  * - Le rendu est suspendu hors écran et quand l'onglet est masqué.
+ * - Textes et particules partagent la même progression lissée (voir timeline.ts).
  */
 import { pickTier, readCapabilities, tierFromQuery } from './quality';
+import { timeline } from './timeline';
 import type { FlairScene } from './scene';
 
 export function initFlairHero(): void {
@@ -17,21 +19,19 @@ export function initFlairHero(): void {
   section.dataset.tier = tier;
   if (tier === 'fallback') return;
 
-  section.dataset.mode = 'cinema';
   const emblem = section.querySelector<SVGPathElement>('[data-emblem-path]');
   const svg = emblem?.ownerSVGElement;
   if (!emblem || !svg) return;
+  section.dataset.mode = 'cinema';
   const vb = svg.viewBox.baseVal;
+  const blocks = {
+    intro: section.querySelector<HTMLElement>('[data-block="intro"]'),
+    walk: section.querySelector<HTMLElement>('[data-block="walk"]'),
+    link: section.querySelector<HTMLElement>('[data-block="link"]'),
+  };
 
   let scene: FlairScene | null = null;
   let visible = true;
-  let ticking = false;
-
-  const toStatic = () => {
-    section.dataset.mode = 'static';
-    scene?.dispose();
-    scene = null;
-  };
 
   const progress = (): number => {
     const r = section.getBoundingClientRect();
@@ -39,22 +39,38 @@ export function initFlairHero(): void {
     return span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
   };
 
-  const update = () => {
-    ticking = false;
-    const p = progress();
+  /** Applique la progression (lissée par la scène) aux textes. */
+  const apply = (p: number) => {
+    const t = timeline(p);
     section.style.setProperty('--p', p.toFixed(4));
-    const chapter = p < 0.1 ? 0 : p < 0.42 ? 1 : p < 0.72 ? 2 : 3;
-    if (section.dataset.chapter !== String(chapter)) section.dataset.chapter = String(chapter);
-    // 1 = rencontre (dès l'arrivée) → 2 = balade → 3 = lien
-    const toWalk = Math.min(1, Math.max(0, (p - 0.36) / 0.18));
-    const toLink = Math.min(1, Math.max(0, (p - 0.68) / 0.2));
-    scene?.setMorph(1 + toWalk + toLink);
-  };
-  const onScroll = () => {
-    if (!ticking) {
-      ticking = true;
-      requestAnimationFrame(update);
+    for (const [key, el] of Object.entries(blocks)) {
+      if (!el) continue;
+      const a = t[key as keyof typeof blocks];
+      el.style.setProperty('--a', a.toFixed(3));
+      // Un bloc invisible ne doit ni capter les clics ni être atteint au clavier.
+      const shown = a > 0.02;
+      if (el.inert === shown) el.inert = !shown;
     }
+    const chapter = String(t.chapter);
+    if (section.dataset.chapter !== chapter) section.dataset.chapter = chapter;
+  };
+
+  const toStatic = () => {
+    section.dataset.mode = 'static';
+    Object.values(blocks).forEach((el) => {
+      if (el) {
+        el.inert = false;
+        el.style.removeProperty('--a');
+      }
+    });
+    scene?.dispose();
+    scene = null;
+  };
+
+  const onScroll = () => {
+    const p = progress();
+    if (scene) scene.setProgress(p);
+    else apply(p);
   };
 
   const load = async () => {
@@ -65,10 +81,11 @@ export function initFlairHero(): void {
         emblemPath: emblem.getAttribute('d') ?? '',
         emblemBox: { x: vb.x, y: vb.y, w: vb.width, h: vb.height },
         tier,
+        onProgress: apply,
         onFallback: toStatic,
       });
       section.dataset.ready = 'true';
-      update();
+      scene.setProgress(progress());
       if (visible && !document.hidden) scene.start();
     } catch {
       toStatic();
@@ -76,12 +93,15 @@ export function initFlairHero(): void {
   };
 
   // Chargement à l'approche de la scène (elle est en haut de page : presque immédiat).
-  const near = new IntersectionObserver((entries) => {
-    if (entries.some((e) => e.isIntersecting)) {
-      near.disconnect();
-      void load();
-    }
-  }, { rootMargin: '300px' });
+  const near = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        near.disconnect();
+        void load();
+      }
+    },
+    { rootMargin: '300px' },
+  );
   near.observe(section);
 
   // Rendu suspendu hors écran.
@@ -100,14 +120,7 @@ export function initFlairHero(): void {
   addEventListener('scroll', onScroll, { passive: true });
   new ResizeObserver(() => {
     scene?.resize();
-    update();
+    onScroll();
   }).observe(canvas);
-
-  section.addEventListener('pointermove', (e) => {
-    if (e.pointerType === 'touch' || !scene) return;
-    const r = canvas.getBoundingClientRect();
-    scene.setPointer(((e.clientX - r.left) / r.width) * 2 - 1, -(((e.clientY - r.top) / r.height) * 2 - 1));
-  });
-  section.addEventListener('pointerleave', () => scene?.setPointer(null));
-  update();
+  apply(progress());
 }

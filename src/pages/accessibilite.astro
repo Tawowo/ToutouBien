@@ -1,0 +1,80 @@
+---
+import Base from '~/layouts/Base.astro';
+import PageIntro from '~/components/PageIntro.astro';
+import Draft from '~/components/Draft.astro';
+---
+<Base
+  title="Accessibilité"
+  description="Les mesures prises pour rendre le site ToutouBien utilisable par toutes et tous, ses limites connues et comment signaler une difficulté."
+>
+  <PageIntro eyebrow="Informations" title="Accessibilité" lede="Ce site est conçu pour être utilisable au clavier, avec un lecteur d’écran, sur mobile et sans animations. Voici ce qui a été fait, ce qui reste à vérifier et comment nous signaler une difficulté." fil={false} />
+  <div class="page legal prose-wrap">
+    <section aria-labelledby="etat">
+      <h2 id="etat">État de conformité</h2>
+      <p>Le site n’a pas encore fait l’objet d’un audit de conformité complet au Référentiel général d’amélioration de l’accessibilité (RGAA). Il ne revendique donc aucun niveau de conformité. Les mesures ci-dessous ont été appliquées et vérifiées pendant sa conception.</p>
+      <Draft label="À compléter avant la mise en ligne">
+        <p>Date de la déclaration, éventuel audit et coordonnées de contact à confirmer (voir docs/CONTENT-VALIDATION.md).</p>
+      </Draft>
+    </section>
+
+    <section aria-labelledby="mesures">
+      <h2 id="mesures">Ce qui a été fait</h2>
+      <ul>
+        <li>Navigation complète au clavier, lien d’accès direct au contenu, focus toujours visible.</li>
+        <li>Structure de titres cohérente, zones de page identifiées, textes alternatifs pour les images porteuses de sens.</li>
+        <li>Contrastes de couleurs vérifiés automatiquement sur chaque page.</li>
+        <li>Formulaires avec étiquettes explicites, messages d’erreur associés aux champs et résumé des erreurs.</li>
+        <li>Respect du réglage système « réduire les animations » : les effets de défilement, les particules 3D et les transitions sont alors désactivés ou remplacés par des versions fixes.</li>
+        <li>Les expériences interactives (« Explorer ») proposent une alternative textuelle et des commandes utilisables au clavier ; aucune information n’est transmise uniquement par la couleur ou le mouvement.</li>
+        <li>Le site reste lisible sans JavaScript ; les contenus essentiels ne dépendent pas de la 3D.</li>
+        <li>Mise en page adaptée aux petits écrans et au zoom jusqu’à 200&nbsp;%.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="tests">
+      <h2 id="tests">Comment c’est vérifié</h2>
+      <p>Des tests automatisés (axe-core) sont exécutés sur les pages principales, complétés par des vérifications manuelles au clavier et avec les réglages de mouvement réduit. Les outils automatiques ne détectent qu’une partie des problèmes : un test avec des personnes utilisant des technologies d’assistance reste souhaitable.</p>
+    </section>
+
+    <section aria-labelledby="limites">
+      <h2 id="limites">Limites connues</h2>
+      <ul>
+        <li>Le champ olfactif de l’expérience « Le monde par le nez » est d’abord visuel ; une version textuelle (liste des odeurs et explications) est proposée à côté.</li>
+        <li>Les animations décoratives à l’accueil peuvent être exigeantes sur des appareils anciens : le site réduit alors automatiquement leur qualité, ou les remplace par une image fixe.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="signaler">
+      <h2 id="signaler">Signaler une difficulté</h2>
+      <p>Si vous ne parvenez pas à accéder à un contenu ou à une fonctionnalité, écrivez-nous via la <a href="/contact/">page Contact</a> en précisant la page concernée et ce que vous cherchiez à faire. Nous vous proposerons une alternative.</p>
+      <p>Si vous n’obtenez pas de réponse satisfaisante, vous pouvez contacter le <a href="https://www.defenseurdesdroits.fr/" rel="noopener">Défenseur des droits</a>.</p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .legal {
+    display: grid;
+    gap: var(--space-xl);
+    padding-bottom: var(--space-2xl);
+  }
+
+  .legal > * {
+    max-width: 52rem;
+  }
+
+  .legal h2 {
+    font-size: var(--step-3);
+    margin-bottom: var(--space-s);
+  }
+
+  .legal p + p {
+    margin-top: var(--space-s);
+  }
+
+  .legal ul {
+    display: grid;
+    gap: var(--space-2xs);
+    padding-left: 1.2em;
+  }
+</style>

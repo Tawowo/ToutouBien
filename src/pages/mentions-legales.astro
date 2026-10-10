@@ -78,8 +78,11 @@ const credits = Object.values(PHOTO_SLOTS)
   .legal {
     display: grid;
     gap: var(--space-xl);
-    max-width: 52rem;
     padding-bottom: var(--space-2xl);
+  }
+
+  .legal > * {
+    max-width: 52rem;
   }
 
   .legal h2 {

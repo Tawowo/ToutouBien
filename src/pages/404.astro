@@ -14,6 +14,15 @@ import Fil from '~/components/Fil.astro';
         <a class="btn" href="/">Retour à l’accueil <Icon name="arrow" class="btn__arrow" /></a>
         <a class="link-arrow" href="/parlons-de-votre-chien/">Parlons de votre chien <Icon name="arrow" /></a>
       </div>
+      <nav class="lost__more" aria-label="Pistes">
+        <p class="label">Ou peut-être cherchiez-vous</p>
+        <ul role="list">
+          <li><a href="/accompagnements/">Les accompagnements</a></li>
+          <li><a href="/orientation/">Par où commencer&nbsp;?</a></li>
+          <li><a href="/explorer/">Les expériences interactives</a></li>
+          <li><a href="/faq/">Les questions fréquentes</a></li>
+        </ul>
+      </nav>
     </div>
   </section>
 </Base>
@@ -34,7 +43,7 @@ import Fil from '~/components/Fil.astro';
     bottom: 10%;
     width: min(50rem, 90vw);
     height: auto;
-    color: var(--argile);
+    color: var(--accent);
     opacity: 0.5;
   }
 
@@ -54,5 +63,19 @@ import Fil from '~/components/Fil.astro';
     flex-wrap: wrap;
     gap: var(--space-m);
     align-items: center;
+  }
+
+  .lost__more {
+    display: grid;
+    gap: var(--space-xs);
+    margin-top: var(--space-l);
+  }
+
+  .lost__more ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-m);
+    padding: 0;
+    list-style: none;
   }
 </style>

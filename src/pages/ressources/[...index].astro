@@ -261,7 +261,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
   }
 
   .lib-sec em {
-    color: var(--argile);
+    color: var(--accent);
   }
 
   /* Parcours de lecture */
@@ -298,7 +298,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
   }
 
   .lib-path__head .label {
-    color: var(--or);
+    color: var(--lueur);
   }
 
   .lib-path__head h3 {
@@ -345,15 +345,15 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
     height: 1.9rem;
     border-radius: 50%;
     background: var(--nuit);
-    border: 1.5px solid var(--or);
+    border: 1.5px solid var(--lueur);
     font-family: var(--font-mono);
     font-size: var(--step--2);
-    color: var(--or);
+    color: var(--lueur);
     transition: background-color var(--dur) ease, color var(--dur) ease;
   }
 
   .lib-path__steps a:hover .lib-path__dot {
-    background: var(--or);
+    background: var(--lueur);
     color: var(--nuit);
   }
 
@@ -496,7 +496,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 
   .lib-item__link:hover {
     transform: translateY(-4px);
-    box-shadow: 0 1.5rem 3rem -2rem rgb(26 36 34 / 0.45);
+    box-shadow: 0 1.5rem 3rem -2rem rgb(20 33 32 / 0.45);
   }
 
   .lib-item__art {
@@ -533,7 +533,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
     font-family: var(--font-mono);
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--argile);
+    color: var(--accent);
   }
 
   .lib-item__title {
@@ -558,7 +558,7 @@ const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
   .lib-item__foot :global(svg) {
     width: 1.2rem;
     height: 1.2rem;
-    color: var(--argile);
+    color: var(--accent);
     transition: transform var(--dur) var(--ease-out);
   }
 

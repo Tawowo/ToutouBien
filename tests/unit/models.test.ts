@@ -136,3 +136,32 @@ describe('parcours de lecture', () => {
     for (const p of READING_PATHS) p.articles.forEach((s) => expect(slugs).toContain(s));
   });
 });
+
+describe('séquence d’accueil', async () => {
+  const { timeline, MARKS } = await import('~/scripts/flair/timeline');
+  it('maintient chaque forme stable pendant son palier', () => {
+    for (const p of [0, 0.05, MARKS.meetEnd]) expect(timeline(p).morph).toBe(1);
+    for (const p of [MARKS.trailStart, 0.4, MARKS.trailEnd]) expect(timeline(p).morph).toBeCloseTo(2, 5);
+    for (const p of [MARKS.ringsStart, 0.85, 1]) expect(timeline(p).morph).toBeCloseTo(3, 5);
+  });
+
+  it('ne montre jamais deux textes pleinement visibles en même temps', () => {
+    for (let p = 0; p <= 1; p += 0.005) {
+      const t = timeline(p);
+      const visible = [t.intro, t.walk, t.link].filter((a) => a > 0.5).length;
+      expect(visible).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('change de texte pendant la transition, pas pendant un palier', () => {
+    expect(timeline(0.1).chapter).toBe(0);
+    expect(timeline(0.42).chapter).toBe(1);
+    expect(timeline(0.9).chapter).toBe(2);
+    expect(timeline(0.42).walk).toBe(1);
+    expect(timeline(0.9).link).toBe(1);
+  });
+
+  it('est réversible : même état pour une même position, quel que soit le sens', () => {
+    expect(timeline(0.6)).toEqual(timeline(0.6));
+  });
+});

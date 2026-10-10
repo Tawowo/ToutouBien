@@ -21,6 +21,7 @@ const configured = Boolean(formConfig);
 <Base
   title="Contact"
   description="Contacter ToutouBien pour parler de votre chien : formulaire guidé, message libre et coordonnées."
+  quietFooter
 >
   <PageIntro eyebrow="Contact" title="Écrire, <em>tout simplement</em>" lede="Pour parler de votre chien, le plus simple est le parcours guidé. Pour toute autre question, un message libre fait très bien l’affaire." />
 
@@ -164,7 +165,7 @@ const configured = Boolean(formConfig);
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--argile-claire);
+    color: var(--lagon-clair);
   }
 
   .channel__title {
@@ -200,7 +201,7 @@ const configured = Boolean(formConfig);
   .channel__icon {
     width: 1.4rem;
     height: 1.4rem;
-    color: var(--argile);
+    color: var(--accent);
   }
 
   .contact__area {
@@ -212,7 +213,7 @@ const configured = Boolean(formConfig);
   .contact__area :global(svg) {
     width: 1.2rem;
     height: 1.2rem;
-    color: var(--argile);
+    color: var(--accent);
   }
 
   .contact__form-wrap {
@@ -220,8 +221,8 @@ const configured = Boolean(formConfig);
     gap: var(--space-m);
     padding: var(--space-l) var(--space-m);
     border-radius: var(--radius-l);
-    background: #fffdf9;
-    box-shadow: 0 1px 0 rgb(26 36 34 / 0.06), 0 2rem 4rem -2.5rem rgb(26 36 34 / 0.3);
+    background: var(--blanc);
+    box-shadow: 0 1px 0 rgb(20 33 32 / 0.06), 0 2rem 4rem -2.5rem rgb(20 33 32 / 0.3);
   }
 
   @media (min-width: 40rem) {

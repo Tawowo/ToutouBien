@@ -3,9 +3,10 @@
  * Scène d'ouverture « Le flair ».
  * Trois modes :
  * - statique (par défaut, sans JS, mouvement réduit, appareil modeste) : l'emblème
- *   dessiné en SVG et les trois chapitres affichés côte à côte ;
- * - cinéma (WebGL disponible) : section collante de 3,6 écrans, les particules
- *   composent la rencontre, la balade puis le lien au fil du défilement ;
+ *   dessiné en SVG et les chapitres affichés à la suite ;
+ * - cinéma (WebGL disponible) : section collante de 3,2 écrans ; les particules
+ *   composent la rencontre, la balade puis le lien, et les textes suivent la même
+ *   progression lissée (scripts/flair/timeline.ts) ;
  * - repli automatique vers le mode statique si l'appareil ne tient pas la cadence.
  * Le texte est toujours du HTML réel, lisible par tous et indexable.
  */
@@ -17,11 +18,6 @@ import { site } from '~/config/site';
 const d = emblemRaw.match(/ d="([^"]+)"/)?.[1] ?? '';
 const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
 
-const chapters = [
-  { num: '01', title: 'La rencontre', text: 'Tout commence face à face, à hauteur de chien : faire connaissance avec votre chien, votre quotidien et vos questions.' },
-  { num: '02', title: 'La balade', text: 'Dehors, votre chien lit le monde avec son nez. Comprendre ce qu’il perçoit change la façon de marcher ensemble.' },
-  { num: '03', title: 'Le lien', text: 'Peu à peu, chacun apprend à lire l’autre. Une relation qui fait du bien, au quotidien.' },
-];
 ---
 <section class="cine on-dark" data-cine data-mode="static" data-chapter="0" aria-labelledby="cine-title">
   <div class="cine__sticky">
@@ -29,16 +25,16 @@ const chapters = [
     <canvas class="cine__canvas" aria-hidden="true"></canvas>
     <svg class="cine__static" viewBox={viewBox} aria-hidden="true" focusable="false">
       <defs>
-        <radialGradient id="cine-grad" cx="50%" cy="40%" r="65%">
+        <linearGradient id="cine-grad" x1="0" y1="0" x2="0.4" y2="1">
           <stop offset="0%" stop-color="#cfeae6" />
-          <stop offset="70%" stop-color="#9ad3cd" />
-          <stop offset="100%" stop-color="#f2c08a" />
-        </radialGradient>
+          <stop offset="55%" stop-color="#9ad3cd" />
+          <stop offset="100%" stop-color="#119693" />
+        </linearGradient>
       </defs>
       <path d={d} fill="url(#cine-grad)" fill-rule="evenodd" data-emblem-path />
     </svg>
 
-    <div class="cine__intro page">
+    <div class="cine__block cine__intro page" data-block="intro">
       <p class="eyebrow enter">Éducation canine · accompagnement des familles</p>
       <SplitTitle as="h1" id="cine-title" class="cine__title" text="Comprendre son chien, *se sentir bien* ensemble." now />
       <p class="lede cine__lede enter" data-i="4">
@@ -53,17 +49,20 @@ const chapters = [
       </div>
     </div>
 
-    <ol class="cine__chapters page" role="list">
-      {
-        chapters.map((c, i) => (
-          <li class="cine__chapter" data-step={i + 1}>
-            <span class="label">Chapitre {c.num}</span>
-            <h2 class="cine__chapter-title">{c.title}</h2>
-            <p>{c.text}</p>
-          </li>
-        ))
-      }
-    </ol>
+    <div class="cine__chapters page">
+      <div class="cine__block cine__chapter" data-block="walk">
+        <p class="label">Chapitre 02 · La balade</p>
+        <h2 class="cine__chapter-title">Dehors, <em>il lit le monde</em> avec son nez.</h2>
+        <p>Comprendre ce que votre chien perçoit change la façon de marcher ensemble.</p>
+        <a class="link-arrow" href="/explorer/flair/">Essayer : le monde par le nez <Icon name="arrow" /></a>
+      </div>
+      <div class="cine__block cine__chapter" data-block="link">
+        <p class="label">Chapitre 03 · Le lien</p>
+        <h2 class="cine__chapter-title">Apprendre <em>à se lire</em>, l’un l’autre.</h2>
+        <p>Un accompagnement qui part de votre quotidien, pour une relation qui fait du bien à chacun.</p>
+        <a class="link-arrow" href="/approche/">Découvrir l’approche <Icon name="arrow" /></a>
+      </div>
+    </div>
 
     <div class="cine__rail" aria-hidden="true">
       <span class="cine__rail-fill"></span>
@@ -83,15 +82,16 @@ const chapters = [
     position: relative;
     z-index: 1;
     background:
-      radial-gradient(80% 60% at 70% 35%, #1d332f 0%, var(--nuit) 70%),
+      radial-gradient(80% 60% at 70% 35%, #15302d 0%, var(--nuit) 70%),
       var(--nuit);
   }
 
   .cine__sticky {
     position: relative;
     display: grid;
+    gap: var(--space-xl);
     min-height: min(100svh - 4.75rem, 60rem);
-    padding-block: var(--space-xl) var(--space-l);
+    padding-block: var(--space-xl);
     overflow: hidden;
     isolation: isolate;
   }
@@ -101,8 +101,8 @@ const chapters = [
     inset: 0;
     z-index: -2;
     background:
-      radial-gradient(40% 35% at 72% 42%, rgb(242 192 138 / 0.16), transparent 70%),
-      radial-gradient(30% 30% at 20% 80%, rgb(154 211 205 / 0.08), transparent 70%);
+      radial-gradient(38% 34% at 72% 44%, rgb(17 150 147 / 0.2), transparent 70%),
+      radial-gradient(30% 30% at 18% 82%, rgb(154 211 205 / 0.06), transparent 70%);
   }
 
   .cine__canvas {
@@ -112,19 +112,56 @@ const chapters = [
     width: 100%;
     height: 100%;
     opacity: 0;
-    transition: opacity 1.2s var(--ease-out);
+    transition: opacity 900ms var(--ease-out);
   }
 
+  /* Mode statique : grille texte + emblème, chapitres en dessous ; rien ne se chevauche. */
   .cine__static {
-    position: absolute;
-    z-index: -1;
-    right: 4%;
-    top: 50%;
-    width: min(44vw, 38rem);
+    grid-area: art;
+    justify-self: center;
+    align-self: center;
+    width: min(100%, 30rem);
     height: auto;
-    transform: translateY(-50%);
-    filter: drop-shadow(0 0 2.5rem rgb(154 211 205 / 0.25));
-    transition: opacity 1s var(--ease-out);
+    filter: drop-shadow(0 0 2.5rem rgb(17 150 147 / 0.35));
+    transition: opacity 900ms var(--ease-out);
+  }
+
+  .cine[data-mode='static'] .cine__sticky {
+    grid-template-areas: 'art' 'intro' 'chapters';
+    width: var(--page);
+    margin-inline: auto;
+  }
+
+  .cine[data-mode='static'] .cine__intro,
+  .cine[data-mode='static'] .cine__chapters {
+    width: auto;
+    margin: 0;
+  }
+
+  .cine[data-mode='static'] .cine__intro {
+    grid-area: intro;
+  }
+
+  .cine[data-mode='static'] .cine__chapters {
+    grid-area: chapters;
+  }
+
+  .cine[data-mode='static'] .cine__static {
+    width: min(70%, 18rem);
+    justify-self: end;
+  }
+
+  @media (min-width: 60rem) {
+    .cine[data-mode='static'] .cine__sticky {
+      grid-template-columns: 7fr 5fr;
+      grid-template-areas: 'intro art' 'chapters chapters';
+      column-gap: var(--space-xl);
+    }
+
+    .cine[data-mode='static'] .cine__static {
+      width: min(100%, 30rem);
+      justify-self: center;
+    }
   }
 
   .cine__intro {
@@ -135,10 +172,10 @@ const chapters = [
   }
 
   .cine__title {
-    max-width: 11ch;
-    font-size: clamp(3.4rem, 1.2rem + 7.8vw, 9.5rem);
-    line-height: 0.9;
-    letter-spacing: -0.03em;
+    max-width: 12ch;
+    font-size: clamp(2.6rem, 1.3rem + 4.4vw, 5.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
   }
 
   .cine__title :global(em) {
@@ -146,7 +183,7 @@ const chapters = [
   }
 
   .cine__lede {
-    max-width: 34ch;
+    max-width: 36ch;
   }
 
   .cine__actions {
@@ -163,31 +200,36 @@ const chapters = [
 
   .cine__chapters {
     display: grid;
-    gap: var(--space-m);
-    margin-top: var(--space-xl);
-    padding: 0;
-    list-style: none;
+    gap: var(--space-l);
   }
 
   @media (min-width: 48rem) {
     .cine__chapters {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 30rem));
     }
   }
 
   .cine__chapter {
     display: grid;
-    gap: var(--space-2xs);
+    gap: var(--space-s);
+    justify-items: start;
+    align-content: start;
     padding-top: var(--space-s);
     border-top: 1px solid rgb(255 255 255 / 0.16);
   }
 
   .cine__chapter-title {
-    font-size: var(--step-3);
+    font-size: clamp(1.9rem, 1.3rem + 2.4vw, 3.6rem);
+    line-height: 1;
+    max-width: 16ch;
   }
 
-  .cine__chapter p {
-    max-width: 34ch;
+  .cine__chapter-title em {
+    color: var(--lagon);
+  }
+
+  .cine__chapter p:not(.label) {
+    max-width: 36ch;
     color: var(--craie-douce);
   }
 
@@ -196,22 +238,9 @@ const chapters = [
     display: none;
   }
 
-  @media (max-width: 59.99rem) {
-    .cine__static {
-      position: relative;
-      top: auto;
-      right: auto;
-      order: -1;
-      width: min(70vw, 20rem);
-      transform: none;
-      justify-self: end;
-      margin-bottom: var(--space-m);
-    }
-  }
-
   /* ============ Mode cinéma ============ */
   .cine[data-mode='cinema'] {
-    height: 360svh;
+    height: 320svh;
   }
 
   .cine[data-mode='cinema'] .cine__sticky {
@@ -220,36 +249,43 @@ const chapters = [
     height: 100svh;
     min-height: 0;
     padding-block: 0;
-    align-content: center;
   }
 
   .cine[data-ready='true'] .cine__canvas {
     opacity: 1;
   }
 
+  .cine[data-mode='cinema'] .cine__static {
+    position: absolute;
+    z-index: -1;
+    right: 6%;
+    top: 50%;
+    width: min(36vw, 30rem);
+    transform: translateY(-50%);
+  }
+
   .cine[data-ready='true'] .cine__static {
     opacity: 0;
   }
 
-  .cine[data-mode='cinema'] .cine__intro {
-    position: absolute;
-    inset: 0;
-    align-content: center;
-    padding-top: 4rem;
-    transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+  /* Chaque bloc suit la progression lissée (--a), exactement comme les particules. */
+  .cine[data-mode='cinema'] .cine__block {
+    --a: 0;
+    opacity: var(--a);
+    transform: translate3d(0, calc((1 - var(--a)) * 1.5rem), 0);
+    will-change: opacity, transform;
   }
 
-  .cine[data-mode='cinema']:not([data-chapter='0']) .cine__intro {
-    opacity: 0;
-    transform: translateY(-3rem);
-    pointer-events: none;
-    visibility: hidden;
-    transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out), visibility 0s 600ms;
+  .cine[data-mode='cinema'] .cine__intro {
+    --a: 1;
+    position: absolute;
+    inset: 0;
+    padding-top: 4.75rem;
   }
 
   .cine[data-mode='cinema'] .cine__chapters {
     position: absolute;
-    inset: auto 0 12svh 0;
+    inset: auto 0 13svh 0;
     margin: 0 auto;
     display: block;
   }
@@ -258,24 +294,13 @@ const chapters = [
     position: absolute;
     left: 0;
     bottom: 0;
-    width: min(30rem, 100%);
+    width: min(31rem, 100%);
     border-top: 0;
-    opacity: 0;
-    transform: translateY(2rem);
-    transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
-  }
-
-  .cine[data-chapter='1'] .cine__chapter[data-step='1'],
-  .cine[data-chapter='2'] .cine__chapter[data-step='2'],
-  .cine[data-chapter='3'] .cine__chapter[data-step='3'] {
-    opacity: 1;
-    transform: none;
-    transition-delay: 150ms;
+    padding-top: 0;
   }
 
   .cine[data-mode='cinema'] .cine__chapter-title {
-    font-size: var(--step-5);
-    line-height: 0.92;
+    font-size: clamp(2.2rem, 1.3rem + 3vw, 4.4rem);
   }
 
   .cine[data-mode='cinema'] .cine__rail {
@@ -283,19 +308,17 @@ const chapters = [
     position: absolute;
     right: var(--gutter);
     top: 50%;
-    width: 2px;
-    height: 30svh;
+    width: 1px;
+    height: 26svh;
     transform: translateY(-50%);
     background: rgb(255 255 255 / 0.14);
-    border-radius: 2px;
   }
 
   .cine__rail-fill {
     position: absolute;
     inset: 0 0 auto 0;
     height: calc(var(--p, 0) * 100%);
-    background: var(--or);
-    border-radius: inherit;
+    background: var(--lagon);
   }
 
   .cine__rail-label {
@@ -315,38 +338,47 @@ const chapters = [
   .cine[data-mode='cinema'] .cine__signature {
     display: block;
     position: absolute;
-    left: var(--gutter);
+    right: calc(var(--gutter) + 2rem);
     bottom: var(--space-m);
     font-family: var(--font-display);
     font-style: italic;
-    font-size: var(--step-1);
+    font-size: var(--step-0);
     color: var(--craie-douce);
   }
 
   @media (max-width: 59.99rem) {
     .cine[data-mode='cinema'] .cine__static {
-      position: absolute;
+      top: 9%;
+      right: 50%;
+      width: min(62vw, 17rem);
+      transform: translateX(50%);
+    }
+
+    .cine[data-mode='cinema'] .cine__intro > .eyebrow {
+      display: none;
     }
 
     .cine[data-mode='cinema'] .cine__intro {
       align-content: end;
-      padding-bottom: 7svh;
-      background: linear-gradient(to top, rgb(12 21 19 / 0.96) 45%, rgb(12 21 19 / 0.6) 62%, transparent 80%);
+      gap: var(--space-s);
+      padding-bottom: 6svh;
+      background: linear-gradient(to top, rgb(11 21 20 / 0.94) 42%, rgb(11 21 20 / 0.55) 60%, transparent 76%);
     }
 
-    .cine[data-mode='cinema'] .cine__rail {
+    .cine[data-mode='cinema'] .cine__rail,
+    .cine[data-mode='cinema'] .cine__signature {
       display: none;
     }
 
     .cine[data-mode='cinema'] .cine__chapters {
-      bottom: 8svh;
+      bottom: 7svh;
     }
 
     .cine[data-mode='cinema'] .cine__chapter {
       padding: var(--space-m);
       border-radius: var(--radius-l);
-      background: rgb(12 21 19 / 0.72);
-      backdrop-filter: blur(6px);
+      background: rgb(11 21 20 / 0.78);
+      backdrop-filter: blur(8px);
     }
   }
 </style>

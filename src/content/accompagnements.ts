@@ -17,7 +17,7 @@ export interface Accompagnement {
   lede: string;
   motif: PlateMotif;
   /** Couleur d'ambiance de la page. */
-  tone: 'lagon' | 'or' | 'argile' | 'mousse';
+  tone: 'lagon' | 'ocean' | 'sarcelle' | 'foret';
   situations: { title: string; text: string }[];
   benefits: string[];
   steps: { title: string; text: string }[];
@@ -39,7 +39,7 @@ export const ACCOMPAGNEMENTS: Accompagnement[] = [
     short: 'Préparer son arrivée, poser un rythme, accompagner ses découvertes.',
     lede: 'Un chiot découvre tout en même temps : une nouvelle maison, de nouvelles personnes, de nouveaux bruits. Les premières semaines sont le moment idéal pour poser des bases sereines, sans viser la perfection.',
     motif: 'horizon',
-    tone: 'or',
+    tone: 'ocean',
     situations: [
       { title: 'Un chiot arrive bientôt', text: 'Vous voulez préparer la maison, la famille et les premiers jours pour que tout se passe au mieux.' },
       { title: 'Il vient d’arriver', text: 'Les nuits sont courtes, la propreté se cherche et chacun a son avis sur ce qu’il faut faire.' },
@@ -123,7 +123,7 @@ export const ACCOMPAGNEMENTS: Accompagnement[] = [
     short: 'Solitude, visites, excitation, inquiétude : retrouver un équilibre à la maison.',
     lede: 'Certaines situations finissent par peser sur toute la famille : les départs, les visites, l’agitation, les moments où votre chien semble mal à l’aise. Les comprendre est la première étape pour les faire évoluer.',
     motif: 'herbes',
-    tone: 'argile',
+    tone: 'sarcelle',
     situations: [
       { title: 'Les moments seul', text: 'Il vit mal vos absences : aboiements, destructions, voisins qui s’en plaignent.' },
       { title: 'Les visites', text: 'Chaque arrivée tourne à l’agitation, il saute sur tout le monde.' },
@@ -165,7 +165,7 @@ export const ACCOMPAGNEMENTS: Accompagnement[] = [
     short: 'Sans problème particulier : juste l’envie de mieux le comprendre.',
     lede: 'Pas besoin d’avoir un « problème » pour vouloir mieux comprendre son chien. Savoir lire ses signaux, connaître ses besoins et adapter ses habitudes rend la vie commune plus simple et plus riche.',
     motif: 'rencontre',
-    tone: 'mousse',
+    tone: 'foret',
     situations: [
       { title: 'Vous voulez bien faire', text: 'Vous aimeriez savoir si vous répondez vraiment à ses besoins.' },
       { title: 'Ses réactions vous intriguent', text: 'Il fait des choses que vous ne comprenez pas toujours.' },

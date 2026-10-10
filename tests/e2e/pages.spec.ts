@@ -1,7 +1,31 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const PAGES = ['/', '/accompagnement/', '/a-propos/', '/parlons-de-votre-chien/', '/contact/', '/mentions-legales/', '/confidentialite/'];
+const PAGES = [
+  '/',
+  '/accompagnements/',
+  '/accompagnements/chiot/',
+  '/accompagnements/chien-adulte/',
+  '/accompagnements/quotidien/',
+  '/accompagnements/comprendre/',
+  '/approche/',
+  '/deroulement/',
+  '/premier-rendez-vous/',
+  '/tarifs/',
+  '/faq/',
+  '/questions/',
+  '/orientation/',
+  '/explorer/',
+  '/explorer/flair/',
+  '/explorer/distance/',
+  '/explorer/signaux/',
+  '/a-propos/',
+  '/parlons-de-votre-chien/',
+  '/contact/',
+  '/mentions-legales/',
+  '/confidentialite/',
+  '/accessibilite/',
+];
 
 for (const path of PAGES) {
   test.describe(`page ${path}`, () => {
@@ -48,6 +72,11 @@ test('tous les liens internes répondent', async ({ page, request }) => {
     const res = await request.get(href);
     expect(res.status(), href).toBe(200);
   }
+});
+
+test('l’ancienne adresse /accompagnement/ redirige vers /deroulement/', async ({ page }) => {
+  await page.goto('/accompagnement/');
+  await expect(page).toHaveURL(/\/deroulement\/$/);
 });
 
 test('page 404 dédiée', async ({ page }) => {

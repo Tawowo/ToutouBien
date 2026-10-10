@@ -1,8 +1,10 @@
 ---
+import { visibleArticles } from '~/lib/articles';
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
 import ExplorerNext from '~/components/ExplorerNext.astro';
 import { SCENTS } from '~/lib/flair-field';
+const readMore = (await visibleArticles()).some((a) => a.id === 'les-besoins-du-chien');
 ---
 <Base
   title="Le monde par le nez"
@@ -24,61 +26,76 @@ import { SCENTS } from '~/lib/flair-field';
           aria-label="Pré interactif. Déplacez la truffe avec la souris, le doigt ou les flèches du clavier pour découvrir les odeurs."
           aria-describedby="fx-help"
         ></canvas>
+        <div class="fx__markers">
+          {
+            SCENTS.map((s, i) => (
+              <button type="button" class="fx__marker" data-marker={s.id} style={`--x:${s.x};--y:${s.y};--c:${s.color}`} tabindex="-1" aria-hidden="true">
+                <span class="fx__marker-dot" aria-hidden="true"></span>
+                <span class="fx__marker-label">{String(i + 1).padStart(2, '0')} · {s.label}</span>
+              </button>
+            ))
+          }
+        </div>
         <div class="fx__hud" aria-hidden="true">
           <span class="label" data-meter-word>Odeur à peine perceptible</span>
           <span class="fx__meter"><span data-meter></span></span>
         </div>
-        <p class="fx__hint" data-hint aria-hidden="true">Bougez la souris ou glissez le doigt pour flairer</p>
+        <p class="fx__hint" data-hint aria-hidden="true">Bougez la souris ou touchez le pré pour flairer</p>
         <div class="fx__fallback">
           <p>Cette expérience nécessite JavaScript. Les odeurs du pré sont décrites ci-dessous.</p>
         </div>
-        <article class="fx__card" data-card hidden aria-hidden="true">
-          <p class="label">Trouvé</p>
-          <h2 data-card-title></h2>
-          <p data-card-text></p>
-        </article>
       </div>
 
-      <aside class="fx__panel" aria-label="Commandes de l’expérience">
-        <p id="fx-help" class="fx__help">
-          Le pré cache six odeurs. Elles sont invisibles : seule la truffe les révèle autour d’elle. Approchez-vous de leur source pour les découvrir.
-          Au clavier : cliquez dans le pré puis utilisez les flèches (Maj pour aller plus vite).
-        </p>
-
-        <div class="fx__control">
-          <label for="fx-wind-a" class="label">Direction du vent</label>
-          <div class="fx__wind">
-            <span class="fx__compass" aria-hidden="true"><span></span></span>
-            <input id="fx-wind-a" type="range" min="0" max="359" value="20" data-wind-angle />
-          </div>
-        </div>
-        <div class="fx__control">
-          <label for="fx-wind-s" class="label">Force du vent · <output data-wind-out for="fx-wind-s">40 %</output></label>
-          <input id="fx-wind-s" type="range" min="0" max="100" value="40" data-wind-strength />
-        </div>
-        <label class="fx__toggle">
-          <input type="checkbox" data-reveal-all />
-          <span>Révéler toutes les odeurs</span>
-        </label>
+      <aside class="fx__panel" aria-label="Carnet et commandes de l’expérience">
+        <section class="fx__note" aria-live="polite" data-note>
+          <p class="label" data-note-status>Carnet de flair</p>
+          <h2 data-note-title>Six odeurs à trouver</h2>
+          <p data-note-text>Elles sont invisibles : seule la truffe les révèle autour d’elle. Approchez-vous de leur source, ou choisissez-en une dans la liste.</p>
+        </section>
 
         <div class="fx__found">
           <p class="label">Odeurs trouvées · <span data-count>0 / {SCENTS.length}</span></p>
           <ul role="list">
             {
-              SCENTS.map((s) => (
+              SCENTS.map((s, i) => (
                 <li>
-                  <button type="button" data-scent={s.id}>
-                    <span class="fx__dot" aria-hidden="true"></span>
+                  <button type="button" data-scent={s.id} aria-pressed="false" style={`--c:${s.color}`}>
+                    <span class="fx__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
                     <span class="fx__scent-name">{s.label}</span>
-                    <span class="sr-only"> (aller vers cette odeur)</span>
+                    <span class="fx__state" data-state>À trouver</span>
                   </button>
                 </li>
               ))
             }
           </ul>
-          <button type="button" class="btn btn--ghost btn--sm" data-reset>Recommencer</button>
         </div>
-        <p class="fx__complete">Vous avez tout trouvé&nbsp;! Imaginez : votre chien perçoit tout cela en quelques secondes de balade.</p>
+
+        <details class="fx__settings">
+          <summary>Le vent et l’affichage</summary>
+          <div class="fx__settings-body">
+            <p id="fx-help" class="fx__help">Au clavier : sélectionnez le pré puis utilisez les flèches (Maj pour aller plus vite).</p>
+            <div class="fx__control">
+              <label for="fx-wind-a" class="label">Direction du vent</label>
+              <div class="fx__wind">
+                <span class="fx__compass" aria-hidden="true"><span></span></span>
+                <input id="fx-wind-a" type="range" min="0" max="359" value="20" data-wind-angle />
+              </div>
+            </div>
+            <div class="fx__control">
+              <label for="fx-wind-s" class="label">Force du vent · <output data-wind-out for="fx-wind-s">40 %</output></label>
+              <input id="fx-wind-s" type="range" min="0" max="100" value="40" data-wind-strength />
+            </div>
+            <label class="fx__toggle">
+              <input type="checkbox" data-reveal-all />
+              <span>Révéler toutes les odeurs</span>
+            </label>
+          </div>
+        </details>
+
+        <div class="fx__actions">
+          <button type="button" class="btn btn--ghost btn--sm" data-reset>Recommencer</button>
+          <p class="fx__complete">Tout est trouvé&nbsp;! Votre chien perçoit tout cela en quelques secondes de balade.</p>
+        </div>
         <p class="sr-only" aria-live="polite" data-live></p>
       </aside>
     </div>
@@ -122,7 +139,7 @@ import { SCENTS } from '~/lib/flair-field';
         ))
       }
     </div>
-    <p class="scents__note">Modèle illustratif : la forme des panaches et l’intensité sont simplifiées pour la compréhension. Pour aller plus loin, lisez <a href="/blog/les-besoins-du-chien/">« Les besoins du chien »</a>.</p>
+    <p class="scents__note">Modèle illustratif : la forme des panaches et l’intensité sont simplifiées pour la compréhension.{readMore && <> Pour aller plus loin, lisez <a href="/blog/les-besoins-du-chien/">« Les besoins du chien »</a>.</>}</p>
   </section>
 
   <ExplorerNext current="flair" />
@@ -146,12 +163,12 @@ import { SCENTS } from '~/lib/flair-field';
   }
 
   .fx__head h1 {
-    font-size: var(--step-6);
+    font-size: var(--step-5);
     line-height: 0.9;
   }
 
   .fx__head h1 :global(em) {
-    color: var(--or);
+    color: var(--lueur);
   }
 
   .fx__head .lede {
@@ -175,7 +192,7 @@ import { SCENTS } from '~/lib/flair-field';
     aspect-ratio: 16 / 10;
     border-radius: var(--radius-l);
     overflow: hidden;
-    background: #13221c;
+    background: #10201e;
     border: 1px solid rgb(255 255 255 / 0.08);
   }
 
@@ -190,8 +207,8 @@ import { SCENTS } from '~/lib/flair-field';
     inset: 0;
     width: 100%;
     height: 100%;
-    cursor: none;
-    touch-action: none;
+    cursor: crosshair;
+    touch-action: pan-y;
   }
 
   .fx__field canvas:focus-visible {
@@ -239,7 +256,7 @@ import { SCENTS } from '~/lib/flair-field';
     display: block;
     height: 100%;
     width: calc(var(--v, 0) * 100%);
-    background: linear-gradient(90deg, var(--lagon), var(--or));
+    background: linear-gradient(90deg, var(--lagon), var(--lueur));
     transition: width 200ms linear;
   }
 
@@ -264,53 +281,159 @@ import { SCENTS } from '~/lib/flair-field';
     opacity: 0;
   }
 
-  .fx__card {
+  /* Marqueurs : des boutons HTML posés sur le pré, toujours lisibles et cliquables. */
+  .fx__markers {
     position: absolute;
-    right: var(--space-m);
-    bottom: var(--space-m);
-    width: min(22rem, calc(100% - 2 * var(--space-m)));
-    padding: var(--space-m);
-    border-radius: var(--radius-m);
-    background: rgb(12 21 19 / 0.88);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgb(242 192 138 / 0.35);
+    inset: 0;
     pointer-events: none;
   }
 
-  .fx__card h2 {
-    margin-block: 0.3rem;
-    font-size: var(--step-2);
-    color: var(--or);
+  .fx__marker {
+    position: absolute;
+    left: calc(var(--x) * 100%);
+    top: calc(var(--y) * 100%);
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 0.85rem 0 0.4rem;
+    border: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: var(--radius-pill);
+    background: rgb(11 21 20 / 0.86);
+    color: var(--craie);
+    font: 500 var(--step--2) / 1 var(--font-mono);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    cursor: pointer;
+    transform: translate(-1.35rem, -50%) scale(0.92);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out), border-color 200ms ease, visibility 0s 400ms;
   }
 
-  .fx__card p:last-child {
-    color: var(--craie-douce);
-    font-size: var(--step--1);
+  .fx__marker.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-1.35rem, -50%);
+    transition-delay: 0s;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .fx__card.is-new {
-      animation: enter 600ms var(--ease-out) both;
-    }
+  .fx__marker:hover,
+  .fx__marker[aria-pressed='true'] {
+    border-color: var(--c);
+  }
+
+  .fx__marker:focus-visible {
+    outline: 3px solid var(--lagon);
+    outline-offset: 2px;
+  }
+
+  .fx__marker-dot {
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--c) 0 28%, transparent 30%), radial-gradient(circle, color-mix(in oklab, var(--c) 30%, transparent) 0 60%, transparent 62%);
+    flex: none;
+  }
+
+  /* Le libellé passe à gauche pour les sources proches du bord droit. */
+  .fx__marker[style*='--x:0.8'],
+  .fx__marker[style*='--x:0.7'],
+  .fx__marker[style*='--x:0.6'] {
+    flex-direction: row-reverse;
+    padding: 0 0.4rem 0 0.85rem;
+    transform: translate(calc(-100% + 1.35rem), -50%) scale(0.92);
+  }
+
+  .fx__marker.is-visible[style*='--x:0.8'],
+  .fx__marker.is-visible[style*='--x:0.7'],
+  .fx__marker.is-visible[style*='--x:0.6'] {
+    transform: translate(calc(-100% + 1.35rem), -50%);
   }
 
   @media (max-width: 40rem) {
-    .fx__card {
-      position: static;
-      width: auto;
-      margin: 0;
-      border-radius: 0;
+    .fx__marker-label {
+      display: none;
+    }
+
+    .fx__marker,
+    .fx__marker[style*='--x:0.8'],
+    .fx__marker[style*='--x:0.7'],
+    .fx__marker[style*='--x:0.6'] {
+      padding: 0.2rem;
+      transform: translate(-50%, -50%) scale(0.92);
+    }
+
+    .fx__marker.is-visible,
+    .fx__marker.is-visible[style*='--x:0.8'],
+    .fx__marker.is-visible[style*='--x:0.7'],
+    .fx__marker.is-visible[style*='--x:0.6'] {
+      transform: translate(-50%, -50%);
     }
   }
 
   .fx__panel {
     display: grid;
     gap: var(--space-m);
+    align-content: start;
+  }
+
+  /* Carnet : fond opaque, jamais recouvert par la fumée. */
+  .fx__note {
+    display: grid;
+    gap: var(--space-2xs);
+    min-height: 11rem;
+    align-content: start;
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    background: var(--nuit-2);
+    border: 1px solid rgb(255 255 255 / 0.1);
+  }
+
+  .fx__note h2 {
+    font-size: var(--step-2);
+    color: var(--craie);
+  }
+
+  .fx__note p:last-child {
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  .fx__note.is-new {
+    animation: note-in 500ms var(--ease-out);
+  }
+
+  @keyframes note-in {
+    from {
+      opacity: 0.2;
+      transform: translateY(0.5rem);
+    }
   }
 
   .fx__help {
     color: var(--craie-douce);
     font-size: var(--step--1);
+  }
+
+  .fx__settings {
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  }
+
+  .fx__settings summary {
+    display: flex;
+    align-items: center;
+    min-height: 3rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .fx__settings-body {
+    display: grid;
+    gap: var(--space-m);
+    padding-bottom: var(--space-m);
   }
 
   .fx__control {
@@ -320,7 +443,7 @@ import { SCENTS } from '~/lib/flair-field';
 
   .fx__control input[type='range'] {
     width: 100%;
-    accent-color: var(--or);
+    accent-color: var(--lagon);
     min-height: 2.75rem;
   }
 
@@ -345,7 +468,7 @@ import { SCENTS } from '~/lib/flair-field';
     top: 50%;
     width: 1.1rem;
     height: 2px;
-    background: var(--or);
+    background: var(--lagon);
     transform-origin: 0 50%;
     transform: rotate(var(--wind-angle, 0deg));
   }
@@ -355,7 +478,7 @@ import { SCENTS } from '~/lib/flair-field';
     position: absolute;
     right: -2px;
     top: -3px;
-    border-left: 6px solid var(--or);
+    border-left: 6px solid var(--lagon);
     border-top: 4px solid transparent;
     border-bottom: 4px solid transparent;
   }
@@ -376,54 +499,72 @@ import { SCENTS } from '~/lib/flair-field';
 
   .fx__found ul {
     display: grid;
-    gap: 0.2rem;
-    margin-block: var(--space-xs) var(--space-s);
+    gap: 0.15rem;
+    margin-top: var(--space-xs);
     padding: 0;
     list-style: none;
   }
 
   .fx__found button {
-    display: flex;
+    display: grid;
+    grid-template-columns: 2rem 1fr auto;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.5rem;
     width: 100%;
-    min-height: 2.6rem;
-    padding: 0.3rem 0.5rem;
-    border: 0;
+    min-height: 2.75rem;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid transparent;
     border-radius: var(--radius-s);
     background: transparent;
     color: var(--craie-douce);
+    font: inherit;
+    font-size: var(--step--1);
     text-align: left;
     cursor: pointer;
+    transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
   }
 
   .fx__found button:hover {
-    background: rgb(255 255 255 / 0.06);
+    background: rgb(255 255 255 / 0.05);
   }
 
-  .fx__dot {
-    width: 0.8rem;
-    height: 0.8rem;
-    border-radius: 50%;
-    border: 1.5px solid currentColor;
-    flex: none;
+  .fx__found button[aria-pressed='true'] {
+    border-color: color-mix(in oklab, var(--c) 60%, transparent);
+    background: rgb(255 255 255 / 0.05);
+    color: var(--craie);
+  }
+
+  .fx__num {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--c);
+  }
+
+  .fx__state {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.04em;
+    color: var(--craie-douce);
   }
 
   .fx__found .is-found {
     color: var(--craie);
   }
 
-  .fx__found .is-found .fx__dot {
-    background: var(--or);
-    border-color: var(--or);
+  .fx__found .is-found .fx__state {
+    color: var(--c);
+  }
+
+  .fx__actions {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
   }
 
   .fx__complete {
     display: none;
-    padding: var(--space-m);
-    border-radius: var(--radius-m);
-    background: rgb(242 192 138 / 0.12);
-    color: var(--or);
+    color: var(--lagon);
+    font-size: var(--step--1);
   }
 
   :global(.is-complete) .fx__complete {

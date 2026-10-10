@@ -11,29 +11,30 @@
 @import '@fontsource/dm-mono/400.css';
 
 :root {
-  /* — Fonds — */
-  --papier: #f3ecdf;
+  /* — Fonds (palette dérivée du logo : turquoise #9AD3CD, sarcelle #119693, noir) — */
+  --papier: #f1f5f3;
   --ivoire: var(--papier);
-  --lin: #e7ddcb;
-  --sable: #d6c5a8;
-  --nuit: #0c1513;
-  --nuit-2: #14211e;
-  --sous-bois: #1c2e2a;
+  --blanc: #fbfdfc;
+  --lin: #e2ebe8;
+  --sable: #c7d7d3;
+  --nuit: #0b1514;
+  --nuit-2: #132220;
+  --sous-bois: #173130;
 
   /* — Texte — */
-  --encre: #18211f;
-  --encre-douce: #4b5552;
-  --craie: #f1ece3;
-  --craie-douce: #b5c0bb;
+  --encre: #142120;
+  --encre-douce: #45524f;
+  --craie: #eef4f2;
+  --craie-douce: #b2c3bf;
 
-  /* — Accents — */
+  /* — Accents (famille turquoise uniquement) — */
   --lagon: #9ad3cd; /* turquoise du logo : sur fond sombre */
   --lagon-clair: #cfeae6;
+  --turquoise: #119693; /* sarcelle du logo : grands éléments, décor */
   --sarcelle: #0e5f5b; /* turquoise lisible sur fond clair */
-  --or: #f2c08a; /* lumière chaude du crépuscule, particules */
-  --argile: #a3472a; /* action sur fond clair */
-  --argile-claire: #e9b49c;
-  --mousse: #5f6b4c;
+  --accent: #0b5450; /* actions sur fond clair */
+  --lueur: #dff3ef; /* lumière froide : particules, surlignages sur fond sombre */
+  --brume: #6f9a95; /* turquoise grisé : traits, décor secondaire */
 
   /* — États — */
   --erreur: #a3261b;
@@ -51,11 +52,11 @@
   --step--1: clamp(0.84rem, 0.82rem + 0.1vw, 0.9rem);
   --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
   --step-1: clamp(1.2rem, 1.1rem + 0.45vw, 1.5rem);
-  --step-2: clamp(1.55rem, 1.35rem + 0.9vw, 2.2rem);
-  --step-3: clamp(2rem, 1.6rem + 1.8vw, 3.3rem);
-  --step-4: clamp(2.6rem, 1.9rem + 3.2vw, 5rem);
-  --step-5: clamp(3.2rem, 2rem + 5.6vw, 7.6rem);
-  --step-6: clamp(3.6rem, 1.8rem + 9vw, 11.5rem);
+  --step-2: clamp(1.45rem, 1.3rem + 0.7vw, 1.95rem);
+  --step-3: clamp(1.75rem, 1.45rem + 1.3vw, 2.6rem);
+  --step-4: clamp(2.1rem, 1.6rem + 2.2vw, 3.5rem);
+  --step-5: clamp(2.5rem, 1.8rem + 3vw, 4.5rem);
+  --step-6: clamp(2.8rem, 1.9rem + 4vw, 5.6rem);
 
   /* — Espacements — */
   --space-3xs: 0.25rem;
@@ -252,7 +253,7 @@ a {
 }
 
 a:hover {
-  color: var(--argile);
+  color: var(--accent);
 }
 
 :focus-visible {
@@ -339,7 +340,7 @@ a:hover {
   font-weight: 400;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--argile);
+  color: var(--accent);
 }
 
 .eyebrow::before {
@@ -361,7 +362,7 @@ a:hover {
 
 .on-dark .eyebrow,
 .on-dark .label {
-  color: var(--or);
+  color: var(--lueur);
 }
 
 .lede {
@@ -405,14 +406,14 @@ a:hover {
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60% 50% at 80% 10%, rgb(242 192 138 / 0.14), transparent 70%),
+    radial-gradient(60% 50% at 80% 10%, rgb(17 150 147 / 0.16), transparent 70%),
     radial-gradient(50% 60% at 10% 90%, rgb(154 211 205 / 0.1), transparent 70%);
   pointer-events: none;
 }
 
 /* ------------------------------------------------------------------ Boutons */
 .btn {
-  --btn-bg: var(--argile);
+  --btn-bg: var(--accent);
   --btn-fg: #fff;
   --btn-fill: var(--nuit);
   --btn-fill-fg: var(--craie);
@@ -495,12 +496,12 @@ a:hover {
 .btn--lagon {
   --btn-bg: var(--lagon);
   --btn-fg: var(--nuit);
-  --btn-fill: var(--or);
+  --btn-fill: var(--lueur);
   --btn-fill-fg: var(--nuit);
 }
 
-.btn--or {
-  --btn-bg: var(--or);
+.btn--clair {
+  --btn-bg: var(--lueur);
   --btn-fg: var(--nuit);
   --btn-fill: var(--craie);
   --btn-fill-fg: var(--nuit);
@@ -593,11 +594,11 @@ a:hover {
 }
 
 .accordion summary:hover {
-  color: var(--argile);
+  color: var(--accent);
 }
 
 .on-dark .accordion summary:hover {
-  color: var(--or);
+  color: var(--lueur);
 }
 
 .accordion .accordion__body {
@@ -648,7 +649,7 @@ a:hover {
   padding: 0.85rem 1rem;
   border: 1.5px solid color-mix(in oklab, var(--encre) 30%, transparent);
   border-radius: var(--radius-m);
-  background: #fffdf8;
+  background: var(--blanc);
   transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
 }
 
@@ -731,7 +732,7 @@ a:hover {
   padding: 0.6rem 1.1rem;
   border: 1.5px solid color-mix(in oklab, var(--encre) 26%, transparent);
   border-radius: var(--radius-pill);
-  background: #fffdf8;
+  background: var(--blanc);
   line-height: 1.25;
   transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
 }
@@ -813,7 +814,7 @@ a:hover {
 
 /* Contenus non validés : visibles uniquement en dev/préproduction. */
 .draft {
-  outline: 2px dashed #c2410c;
+  outline: 1.5px dashed color-mix(in oklab, var(--turquoise) 70%, transparent);
   outline-offset: 4px;
   position: relative;
 }
@@ -823,8 +824,8 @@ a:hover {
   margin-inline: 0.3em;
   padding: 0.1em 0.5em;
   border-radius: var(--radius-s);
-  background: #c2410c;
-  color: #fff;
+  background: var(--nuit);
+  color: var(--lagon);
   font: 600 0.72rem/1.4 var(--font-text);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1014,7 +1015,7 @@ a:hover {
 }
 
 .prose li::marker {
-  color: var(--argile);
+  color: var(--accent);
 }
 
 .prose blockquote {
@@ -1064,5 +1065,5 @@ a:hover {
   font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--argile);
+  color: var(--accent);
 }

@@ -61,7 +61,7 @@ const steps = QUESTIONS.length;
 
         <div class="or__nav" data-or-nav hidden>
           <button type="button" class="btn btn--ghost" data-or-back><Icon name="arrow-left" /> Retour</button>
-          <button type="submit" class="btn btn--or" data-or-next><span data-or-next-label>Continuer</span> <Icon name="arrow" class="btn__arrow" /></button>
+          <button type="submit" class="btn btn--clair" data-or-next><span data-or-next-label>Continuer</span> <Icon name="arrow" class="btn__arrow" /></button>
         </div>
       </form>
 
@@ -90,7 +90,7 @@ const steps = QUESTIONS.length;
           <ul role="list" data-or-reads-list></ul>
         </div>
         <div class="or__next">
-          <a class="btn btn--or" data-or-primary href="/parlons-de-votre-chien/" data-magnetic><span data-or-primary-label>En parler</span> <Icon name="arrow" class="btn__arrow" /></a>
+          <a class="btn btn--clair" data-or-primary href="/parlons-de-votre-chien/" data-magnetic><span data-or-primary-label>En parler</span> <Icon name="arrow" class="btn__arrow" /></a>
           <button type="button" class="btn btn--ghost" data-or-edit>Modifier mes réponses</button>
           <button type="button" class="or__restart" data-or-restart>Recommencer</button>
         </div>
@@ -133,7 +133,7 @@ const steps = QUESTIONS.length;
   }
 
   .or__title em {
-    color: var(--or);
+    color: var(--lueur);
   }
 
   .or__intro {
@@ -169,7 +169,7 @@ const steps = QUESTIONS.length;
   .or__trail::after {
     right: auto;
     width: calc(80% * var(--trail, 0));
-    background: var(--or);
+    background: var(--lueur);
     transition: width 700ms var(--ease-out);
   }
 
@@ -200,13 +200,13 @@ const steps = QUESTIONS.length;
   }
 
   .or__trail li[data-state='done'] span {
-    background: var(--or);
-    border-color: var(--or);
+    background: var(--lueur);
+    border-color: var(--lueur);
     color: var(--nuit);
   }
 
   .or__trail li[data-state='current'] span {
-    border-color: var(--or);
+    border-color: var(--lueur);
     color: var(--craie);
     transform: scale(1.18);
   }
@@ -330,13 +330,13 @@ const steps = QUESTIONS.length;
   }
 
   .or__opt:has(input:checked) {
-    border-color: var(--or);
-    background: color-mix(in oklab, var(--or) 14%, transparent);
+    border-color: var(--lueur);
+    background: color-mix(in oklab, var(--lueur) 14%, transparent);
   }
 
   .or__opt:has(input:checked) .or__opt-mark {
-    background: var(--or);
-    border-color: var(--or);
+    background: var(--lueur);
+    border-color: var(--lueur);
     color: var(--nuit);
     transform: scale(1.1);
   }
@@ -389,7 +389,7 @@ const steps = QUESTIONS.length;
   }
 
   .or__care {
-    background: color-mix(in oklab, var(--argile) 30%, var(--nuit));
+    background: color-mix(in oklab, var(--accent) 30%, var(--nuit));
     color: var(--craie);
     border: 0;
   }
@@ -485,7 +485,7 @@ const steps = QUESTIONS.length;
   }
 
   .or__reads :global(a:hover) {
-    color: var(--or) !important;
+    color: var(--lueur) !important;
   }
 
   .or__reads :global(small) {

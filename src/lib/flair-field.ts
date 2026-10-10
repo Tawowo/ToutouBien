@@ -21,7 +21,7 @@ export const SCENTS: Scent[] = [
     x: 0.22,
     y: 0.3,
     strength: 1,
-    color: '#f2c08a',
+    color: '#dff3ef',
     text: 'Les endroits fréquentés par d’autres chiens sont de véritables panneaux d’affichage. Votre chien y lit qui est passé : ce temps de lecture fait partie de la balade.',
   },
   {
@@ -30,7 +30,7 @@ export const SCENTS: Scent[] = [
     x: 0.68,
     y: 0.22,
     strength: 0.85,
-    color: '#e9b49c',
+    color: '#5fcfc4',
     text: 'Une odeur d’animal peut capter toute son attention. C’est souvent à ce moment que le rappel devient difficile : ce n’est pas de la désobéissance, c’est une information très forte pour lui.',
   },
   {
@@ -39,7 +39,7 @@ export const SCENTS: Scent[] = [
     x: 0.45,
     y: 0.62,
     strength: 0.6,
-    color: '#c9e78f',
+    color: '#c6e6c9',
     text: 'Une toute petite miette suffit à attirer son nez. Cacher quelques friandises dans l’herbe transforme une balade en jeu de recherche apaisant.',
   },
   {
@@ -48,7 +48,7 @@ export const SCENTS: Scent[] = [
     x: 0.84,
     y: 0.7,
     strength: 0.7,
-    color: '#9ad3cd',
+    color: '#8fd6e0',
     text: 'Les odeurs humaines restent un moment sur le sol : votre chien peut percevoir qu’une personne est passée là avant vous.',
   },
   {
@@ -57,7 +57,7 @@ export const SCENTS: Scent[] = [
     x: 0.12,
     y: 0.78,
     strength: 0.75,
-    color: '#cfeae6',
+    color: '#b7ddd6',
     text: 'Le pré garde la trace de ce qui s’y est passé pendant la nuit. Pour votre chien, la balade du matin est un journal rempli de nouvelles.',
   },
   {
@@ -66,7 +66,7 @@ export const SCENTS: Scent[] = [
     x: 0.58,
     y: 0.86,
     strength: 0.9,
-    color: '#f7d9a8',
+    color: '#7cc8b4',
     text: 'Croiser l’odeur d’un congénère peut enthousiasmer ou rendre vigilant certains chiens, avant même de le voir. Cela explique parfois un changement d’attitude soudain.',
   },
 ];

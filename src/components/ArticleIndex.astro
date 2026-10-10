@@ -122,7 +122,7 @@ const badge = (a: Article) => (a.data.status === 'review' ? 'À relire' : 'Broui
   .ai-lead__foot :global(svg) {
     width: 1.3rem;
     height: 1.3rem;
-    color: var(--argile);
+    color: var(--accent);
   }
 
   .ai-list {
@@ -170,7 +170,7 @@ const badge = (a: Article) => (a.data.status === 'review' ? 'À relire' : 'Broui
     grid-area: num;
     font-family: var(--font-display);
     font-size: var(--step-2);
-    color: var(--argile);
+    color: var(--accent);
   }
 
   .ai-row__cat {
@@ -212,7 +212,7 @@ const badge = (a: Article) => (a.data.status === 'review' ? 'À relire' : 'Broui
     height: 1.3rem;
     transform: translate(-0.4rem, -50%);
     opacity: 0;
-    color: var(--argile);
+    color: var(--accent);
     transition: opacity var(--dur) ease, transform var(--dur) var(--ease-out);
   }
 

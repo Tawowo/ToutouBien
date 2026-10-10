@@ -202,9 +202,9 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
     --tone-soft: var(--lagon-clair);
   }
 
-  .acc--or { --tone: #9a5a14; --tone-soft: #f6dcbc; }
-  .acc--argile { --tone: var(--argile); --tone-soft: #f1d0c2; }
-  .acc--mousse { --tone: #4c5a35; --tone-soft: #dde3cc; }
+  .acc--ocean { --tone: #1b5f6b; --tone-soft: #d6eaee; }
+  .acc--sarcelle { --tone: var(--accent); --tone-soft: #d4e9e5; }
+  .acc--foret { --tone: #2a5a4f; --tone-soft: #dbe9e3; }
 
   .acc__hero {
     padding-block: var(--space-l) var(--space-xl);
@@ -273,7 +273,7 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
     overflow: hidden;
     width: min(100%, 28rem);
     justify-self: center;
-    box-shadow: 0 3rem 5rem -3rem rgb(26 36 34 / 0.45);
+    box-shadow: 0 3rem 5rem -3rem rgb(20 33 32 / 0.45);
   }
 
   .acc__hero-art :global(.plate-art) {
@@ -327,14 +327,14 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
     height: 100%;
     padding: var(--space-l) var(--space-l) var(--space-xl);
     border-radius: var(--radius-l);
-    background: #fffdf8;
+    background: var(--blanc);
     border: 1.5px solid color-mix(in oklab, var(--encre) 12%, transparent);
     transition: border-color var(--dur) ease, background-color var(--dur) ease, transform var(--dur) var(--ease-out), box-shadow var(--dur) ease;
   }
 
   .sit:hover .sit__inner {
     transform: translateY(-3px);
-    box-shadow: 0 1.5rem 3rem -2rem rgb(26 36 34 / 0.35);
+    box-shadow: 0 1.5rem 3rem -2rem rgb(20 33 32 / 0.35);
   }
 
   .sit input:focus-visible + .sit__inner {
@@ -427,7 +427,7 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
   }
 
   .acc__benefits :global(h2 em) {
-    color: var(--or);
+    color: var(--lueur);
   }
 
   .acc__fil {
@@ -437,7 +437,7 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
     bottom: 22%;
     width: 100%;
     height: 7rem;
-    color: var(--or);
+    color: var(--lueur);
     opacity: 0.5;
   }
 
@@ -466,8 +466,8 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
     width: 0.9rem;
     height: 0.9rem;
     border-radius: 50%;
-    background: var(--or);
-    box-shadow: 0 0 0 0.45rem rgb(242 192 138 / 0.18);
+    background: var(--lueur);
+    box-shadow: 0 0 0 0.45rem rgb(223 243 239 / 0.18);
     margin-bottom: var(--space-s);
   }
 
@@ -610,7 +610,7 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
     text-decoration: none;
     color: var(--craie) !important;
     background:
-      radial-gradient(60% 60% at 80% 20%, rgb(242 192 138 / 0.25), transparent 70%),
+      radial-gradient(60% 60% at 80% 20%, rgb(223 243 239 / 0.25), transparent 70%),
       var(--nuit);
     transition: transform var(--dur) var(--ease-out);
   }
@@ -635,7 +635,7 @@ const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompa
     right: var(--space-l);
     width: 1.6rem;
     height: 1.6rem;
-    color: var(--or);
+    color: var(--lueur);
   }
 
   .faq__grid {

@@ -1,15 +1,21 @@
 ---
 import Icon from './Icon.astro';
 import Draft from './Draft.astro';
+import Fil from './Fil.astro';
 import Emblem from '~/assets/brand/emblem.svg';
 import Signature from '~/assets/brand/wordmark-signature.svg';
-import { CTA_NAV, LEGAL_NAV, PRIMARY_NAV } from '~/config/navigation';
+import { CTA_NAV, LEGAL_NAV, NAV_GROUPS } from '~/config/navigation';
 import { site } from '~/config/site';
 import { publicValue, resolve } from '~/lib/fields';
 import { visibleArticles } from '~/lib/articles';
 
+interface Props {
+  /** Masque le grand appel final (pages qui sont déjà le formulaire). */
+  quiet?: boolean;
+}
+const { quiet = false } = Astro.props;
 const hasArticles = (await visibleArticles()).length > 0;
-const nav = PRIMARY_NAV.filter((item) => item.href !== '/ressources/' || hasArticles);
+const groups = NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => i.href !== '/ressources/' || hasArticles) }));
 const phone = resolve(site.contact.phone);
 const phoneE164 = publicValue(site.contact.phoneE164);
 const email = resolve(site.contact.email);
@@ -17,58 +23,61 @@ const area = resolve(site.serviceArea.label);
 const social = resolve(site.social);
 const year = new Date().getFullYear();
 ---
-<footer class="site-footer on-dark">
+<footer class="site-footer on-dark grain-dark">
+  {
+    !quiet && (
+      <div class="footer-call page">
+        <p class="label">Le premier pas</p>
+        <a class="footer-call__link" href={CTA_NAV.href}>
+          <span class="footer-call__text">
+            On en <em>parle</em>&nbsp;?
+          </span>
+          <span class="footer-call__icon" aria-hidden="true">
+            <Icon name="arrow" />
+          </span>
+          <span class="sr-only">{CTA_NAV.label}</span>
+        </a>
+        <Fil variant="traversee" class="footer-call__fil" />
+      </div>
+    )
+  }
+
   <div class="page site-footer__grid">
     <div class="site-footer__brand">
       <a href="/" class="footer-logo" aria-label="ToutouBien, retour à l’accueil">
         <Emblem class="footer-logo__emblem" aria-hidden="true" />
         <Signature class="footer-logo__word" aria-hidden="true" />
       </a>
-    </div>
-
-    <nav class="site-footer__col" aria-label="Plan du site">
-      <h2 class="site-footer__title">Le site</h2>
-      <ul role="list">
-        <li><a href="/">Accueil</a></li>
-        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-        <li><a href={CTA_NAV.href}>{CTA_NAV.label}</a></li>
-      </ul>
-    </nav>
-
-    <div class="site-footer__col">
-      <h2 class="site-footer__title">Nous joindre</h2>
       <ul role="list" class="site-footer__contact">
-        {
-          phone && (
-            phone.draft ? (
-              <li><Draft as="span">{phone.value}</Draft></li>
-            ) : (
-              <li><Icon name="phone" /><a href={`tel:${phoneE164 ?? phone.value.replace(/\s/g, '')}`}>{phone.value}</a></li>
-            )
-          )
-        }
-        {
-          email && (
-            email.draft ? (
-              <li><Draft as="span">{email.value}</Draft></li>
-            ) : (
-              <li><Icon name="mail" /><a href={`mailto:${email.value}`}>{email.value}</a></li>
-            )
-          )
-        }
+        {phone && !phone.draft && <li><Icon name="phone" /><a href={`tel:${phoneE164 ?? phone.value.replace(/\s/g, '')}`}>{phone.value}</a></li>}
+        {email && !email.draft && <li><Icon name="mail" /><a href={`mailto:${email.value}`}>{email.value}</a></li>}
         {area && !area.draft && <li><Icon name="pin" /><span>{area.value}</span></li>}
         <li><Icon name="chat" /><a href={CTA_NAV.href}>Écrire via le formulaire</a></li>
       </ul>
+      {(phone?.draft || email?.draft || !phone || !email) && <Draft as="span" label="Coordonnées à fournir"><span /></Draft>}
       {social && !social.draft && (
         <ul role="list" class="site-footer__social">
           {social.value.map((s) => <li><a href={s.url} rel="me noopener" target="_blank">{s.label}<span class="sr-only"> (nouvel onglet)</span></a></li>)}
         </ul>
       )}
     </div>
+
+    {
+      groups.map((group) => (
+        <nav class="site-footer__col" aria-label={group.title}>
+          <h2 class="label">{group.title}</h2>
+          <ul role="list">
+            {group.items.map((item) => (
+              <li><a href={item.href}>{item.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ))
+    }
   </div>
 
   <div class="page site-footer__bottom">
-    <p>© {year} {site.name.value} · {site.tagline.value}</p>
+    <p>© {year} {site.name.value} · <em>{site.tagline.value}</em></p>
     <ul role="list">
       {LEGAL_NAV.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
     </ul>
@@ -79,27 +88,94 @@ const year = new Date().getFullYear();
   .site-footer {
     padding-block: var(--space-xl) var(--space-l);
     font-size: var(--step--1);
+    overflow: hidden;
+  }
+
+  .footer-call {
+    position: relative;
+    padding-bottom: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+  }
+
+  .footer-call__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-m);
+    margin-top: var(--space-s);
+    color: var(--craie) !important;
+    text-decoration: none;
+  }
+
+  .footer-call__text {
+    font-family: var(--font-display);
+    font-size: clamp(3.6rem, 1rem + 12vw, 13rem);
+    line-height: 0.88;
+    letter-spacing: -0.03em;
+  }
+
+  .footer-call__text em {
+    color: var(--lagon);
+  }
+
+  .footer-call__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: clamp(4rem, 2rem + 8vw, 9rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--or);
+    color: var(--nuit);
+    transition: transform var(--dur-slow) var(--ease-out), background-color var(--dur) ease;
+  }
+
+  .footer-call__icon :global(svg) {
+    width: 40%;
+    height: 40%;
+  }
+
+  .footer-call__link:hover .footer-call__icon {
+    transform: rotate(-35deg) scale(1.05);
+    background: var(--lagon);
+  }
+
+  .footer-call__fil {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1rem;
+    width: 100%;
+    height: 4rem;
+    color: var(--or);
+    opacity: 0.4;
   }
 
   .site-footer__grid {
     display: grid;
     gap: var(--space-l);
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
     padding-bottom: var(--space-l);
-    border-bottom: 1px solid rgb(255 255 255 / 0.12);
   }
 
-  .site-footer .footer-logo {
+  .site-footer__brand {
+    display: grid;
+    gap: var(--space-m);
+    align-content: start;
+  }
+
+  .footer-logo {
     display: inline-grid;
     justify-items: center;
     gap: 0.4rem;
-    width: min(15rem, 100%);
-    color: var(--lagon);
+    width: min(13rem, 100%);
+    color: var(--lagon) !important;
     text-decoration: none;
   }
 
   .footer-logo__emblem {
-    width: 62%;
+    width: 60%;
     height: auto;
   }
 
@@ -109,32 +185,26 @@ const year = new Date().getFullYear();
     color: #2fb3ad;
   }
 
-  .site-footer__title {
+  .site-footer .label {
     margin-bottom: var(--space-s);
-    font-family: var(--font-text);
-    font-size: var(--step--1);
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--argile-claire);
   }
 
   .site-footer ul {
     padding: 0;
     list-style: none;
     display: grid;
-    gap: 0.15rem;
+    gap: 0.1rem;
   }
 
-  .site-footer a {
+  .site-footer a:not(.footer-call__link):not(.footer-logo) {
     display: inline-block;
     padding-block: 0.45rem;
     color: var(--craie);
     text-decoration: none;
   }
 
-  .site-footer a:hover {
-    color: var(--lagon);
+  .site-footer a:not(.footer-call__link):not(.footer-logo):hover {
+    color: var(--or);
     text-decoration: underline;
   }
 
@@ -151,16 +221,13 @@ const year = new Date().getFullYear();
     flex: none;
   }
 
-  .site-footer__social {
-    margin-top: var(--space-s);
-  }
-
   .site-footer__bottom {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     gap: var(--space-s);
     padding-top: var(--space-m);
+    border-top: 1px solid rgb(255 255 255 / 0.12);
     color: var(--craie-douce);
   }
 
@@ -171,6 +238,6 @@ const year = new Date().getFullYear();
   }
 
   .site-footer__bottom a {
-    color: var(--craie-douce);
+    color: var(--craie-douce) !important;
   }
 </style>

@@ -1,0 +1,110 @@
+---
+import Icon from './Icon.astro';
+import { EXPERIENCES, type Experience } from '~/content/explorer';
+
+interface Props {
+  current?: Experience['id'];
+}
+const { current } = Astro.props;
+const others = EXPERIENCES.filter((e) => e.id !== current);
+---
+<section class="section next" aria-labelledby="next-title">
+  <div class="page">
+    <p class="eyebrow">Continuer l’exploration</p>
+    <h2 id="next-title" class="next__title">D’autres façons de voir <em>à hauteur de chien</em></h2>
+    <ul class="next__list" role="list">
+      {
+        others.map((e) => (
+          <li>
+            <a class="next__card" href={e.href}>
+              <span class="label">Expérience {e.num}</span>
+              <span class="next__name">{e.title}</span>
+              <span class="next__q">{e.question}</span>
+              <Icon name="arrow" class="next__arrow" />
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a class="next__card next__card--cta" href="/parlons-de-votre-chien/">
+          <span class="label">Et pour votre chien&nbsp;?</span>
+          <span class="next__name">Parlons-en</span>
+          <span class="next__q">Quelques questions pour préparer un premier échange.</span>
+          <Icon name="arrow" class="next__arrow" />
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<style>
+  .next__title {
+    margin-block: var(--space-s) var(--space-l);
+    max-width: 18ch;
+  }
+
+  .next__list {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .next__card {
+    position: relative;
+    display: grid;
+    gap: var(--space-2xs);
+    height: 100%;
+    padding: var(--space-l) var(--space-l) var(--space-xl);
+    border-radius: var(--radius-l);
+    background: var(--lin);
+    color: var(--encre);
+    text-decoration: none;
+    transition: transform var(--dur) var(--ease-out), background-color var(--dur) ease;
+  }
+
+  .next__card:hover {
+    color: var(--encre);
+    transform: translateY(-4px) rotate(-0.4deg);
+    background: var(--sable);
+  }
+
+  .next__card--cta {
+    background: var(--nuit);
+    color: var(--craie);
+  }
+
+  .next__card--cta:hover {
+    background: var(--sous-bois);
+    color: var(--craie);
+  }
+
+  .next__card--cta .label {
+    color: var(--or);
+  }
+
+  .next__name {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1;
+  }
+
+  .next__q {
+    color: inherit;
+    opacity: 0.8;
+  }
+
+  .next__arrow {
+    position: absolute;
+    right: var(--space-l);
+    bottom: var(--space-m);
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .next__card:hover .next__arrow {
+    transform: translateX(0.3rem);
+  }
+</style>

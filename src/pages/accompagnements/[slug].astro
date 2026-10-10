@@ -1,0 +1,691 @@
+---
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import PlateArt from '~/components/PlateArt.astro';
+import Fil from '~/components/Fil.astro';
+import Icon from '~/components/Icon.astro';
+import ArticleCard from '~/components/ArticleCard.astro';
+import { ACCOMPAGNEMENTS, type Accompagnement } from '~/content/accompagnements';
+import { visibleArticles } from '~/lib/articles';
+import { breadcrumbLd } from '~/lib/seo';
+
+export function getStaticPaths() {
+  return ACCOMPAGNEMENTS.map((a, i) => ({
+    params: { slug: a.slug },
+    props: { a, prev: ACCOMPAGNEMENTS[(i + ACCOMPAGNEMENTS.length - 1) % ACCOMPAGNEMENTS.length]!, next: ACCOMPAGNEMENTS[(i + 1) % ACCOMPAGNEMENTS.length]! },
+  }));
+}
+
+interface Props {
+  a: Accompagnement;
+  prev: Accompagnement;
+  next: Accompagnement;
+}
+const { a, next } = Astro.props;
+const articles = (await visibleArticles()).filter((art) => a.articles.includes(art.id));
+const base = Astro.site ?? new URL('https://toutoubien.example');
+const topic = a.topics[0];
+const ld = [breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Accompagnements', path: '/accompagnements/' }, { name: a.label, path: `/accompagnements/${a.slug}/` }])];
+---
+<Base title={a.title} description={a.seoDescription} jsonLd={ld}>
+  <article class:list={['acc', `acc--${a.tone}`]}>
+    <header class="acc__hero">
+      <div class="page acc__hero-grid">
+        <div class="acc__hero-text">
+          <nav class="crumbs" aria-label="Fil d’Ariane">
+            <a href="/accompagnements/">Accompagnements</a> <span aria-hidden="true">/</span> <span>{a.label}</span>
+          </nav>
+          <p class="eyebrow" data-num={a.num}>{a.label}</p>
+          <SplitTitle as="h1" text={a.heading} now />
+          <p class="lede enter" data-i="3">{a.lede}</p>
+          <div class="acc__hero-actions enter" data-i="4">
+            <a class="btn" href={`/parlons-de-votre-chien/${topic ? `?sujet=${topic}` : ''}`} data-magnetic>Parlons de votre chien <Icon name="arrow" class="btn__arrow" /></a>
+            <a class="acc__jump" href="#situations">Vous reconnaissez-vous&nbsp;?</a>
+          </div>
+        </div>
+        <div class="acc__hero-art reveal-mask" aria-hidden="true">
+          <PlateArt motif={a.motif} />
+        </div>
+      </div>
+    </header>
+
+    <section class="section acc__situations" id="situations" aria-labelledby="sit-title" data-situations data-topic={topic}>
+      <div class="page">
+        <div class="acc__sec-head">
+          <p class="eyebrow">Situations fréquentes</p>
+          <SplitTitle id="sit-title" text="Vous reconnaissez-vous *ici* ?" />
+          <p class="lede">Sélectionnez ce qui vous parle : nous en tiendrons compte dans votre demande.</p>
+        </div>
+        <ul class="sit__list" role="list">
+          {
+            a.situations.map((s, i) => (
+              <li class="reveal">
+                <label class="sit">
+                  <input type="checkbox" value={s.title} data-situation />
+                  <span class="sit__inner">
+                    <span class="sit__num">{String(i + 1).padStart(2, '0')}</span>
+                    <span class="sit__title">{s.title}</span>
+                    <span class="sit__text">{s.text}</span>
+                    <span class="sit__check" aria-hidden="true"><Icon name="check" /></span>
+                    <span class="sit__mine">C’est mon cas</span>
+                  </span>
+                </label>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="sit__cta" aria-live="polite">
+          <p data-sit-summary>Aucune situation sélectionnée pour l’instant.</p>
+          <a class="btn btn--ghost" href={`/parlons-de-votre-chien/${topic ? `?sujet=${topic}` : ''}`} data-sit-link>
+            Préparer ma demande <Icon name="arrow" class="btn__arrow" />
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section acc__benefits on-dark grain-dark" aria-labelledby="ben-title">
+      <Fil variant="traversee" class="acc__fil" />
+      <div class="page">
+        <p class="eyebrow">Ce que l’accompagnement peut apporter</p>
+        <SplitTitle id="ben-title" text="Avancer, *pas à pas*." />
+        <ol class="ben__list" role="list">
+          {
+            a.benefits.map((b, i) => (
+              <li class="reveal">
+                <span class="ben__dot" aria-hidden="true"></span>
+                <span class="label">{String(i + 1).padStart(2, '0')}</span>
+                <p>{b}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <section class="section acc__steps" aria-labelledby="steps-title">
+      <div class="page steps__grid">
+        <div class="steps__head">
+          <p class="eyebrow">Comment cela se passe</p>
+          <SplitTitle id="steps-title" text="Les grandes *étapes*" />
+          <p>Indicatives : chaque accompagnement s’adapte à votre chien et à votre quotidien. <a href="/deroulement/">Voir le déroulement détaillé</a>.</p>
+        </div>
+        <ol class="steps__list" role="list">
+          {
+            a.steps.map((s, i) => (
+              <li class="reveal">
+                <span class="steps__num">{i + 1}</span>
+                <div>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <section class="section section--tight acc__reperes on-lin" aria-labelledby="rep-title">
+      <div class="page">
+        <p class="eyebrow">Trois repères dès maintenant</p>
+        <h2 id="rep-title" class="rep__title">À garder <em>en tête</em></h2>
+        <div class="rep__grid">
+          {
+            a.repères.map((r, i) => (
+              <article class="rep reveal">
+                <span class="rep__big" aria-hidden="true">{i + 1}</span>
+                <h3>{r.title}</h3>
+                <p>{r.text}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    {
+      (a.explorer || articles.length > 0) && (
+        <section class="section acc__more" aria-labelledby="more-title">
+          <div class="page">
+            <p class="eyebrow">Pour aller plus loin</p>
+            <h2 id="more-title" class="more__title">Comprendre <em>en manipulant</em>, ou en lisant</h2>
+            <div class="more__grid">
+              {a.explorer && (
+                <a class="more__xp on-dark" href={a.explorer.href}>
+                  <span class="label">Expérience interactive</span>
+                  <span class="more__xp-title">{a.explorer.label}</span>
+                  <span class="more__xp-text">{a.explorer.text}</span>
+                  <Icon name="arrow" class="more__xp-arrow" />
+                </a>
+              )}
+              {articles.map((art) => <ArticleCard article={art} />)}
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="section section--tight acc__faq" aria-labelledby="acc-faq-title">
+      <div class="page faq__grid">
+        <h2 id="acc-faq-title">Questions <em>fréquentes</em></h2>
+        <div class="accordion">
+          {
+            a.faq.map((f) => (
+              <details>
+                <summary>{f.q}</summary>
+                <div class="accordion__body"><p>{f.a}</p></div>
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <nav class="acc__next" aria-label="Accompagnement suivant">
+      <a class="page acc__next-link" href={`/accompagnements/${next.slug}/`}>
+        <span class="label">Chemin suivant · {next.num}</span>
+        <span class="acc__next-title">{next.label}</span>
+        <Icon name="arrow" class="acc__next-arrow" />
+      </a>
+    </nav>
+  </article>
+</Base>
+
+<script>
+  import { initSituations } from '~/scripts/situations';
+  initSituations();
+</script>
+
+<style>
+  .acc {
+    --tone: var(--sarcelle);
+    --tone-soft: var(--lagon-clair);
+  }
+
+  .acc--or { --tone: #9a5a14; --tone-soft: #f6dcbc; }
+  .acc--argile { --tone: var(--argile); --tone-soft: #f1d0c2; }
+  .acc--mousse { --tone: #4c5a35; --tone-soft: #dde3cc; }
+
+  .acc__hero {
+    padding-block: var(--space-l) var(--space-xl);
+    background: linear-gradient(to bottom, var(--tone-soft), var(--papier));
+  }
+
+  .acc__hero-grid {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .acc__hero-grid {
+      grid-template-columns: 7fr 5fr;
+    }
+  }
+
+  .acc__hero-text {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .crumbs {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--encre-douce);
+  }
+
+  .acc .eyebrow {
+    color: var(--tone);
+  }
+
+  .acc__hero h1 {
+    font-size: var(--step-5);
+    max-width: 14ch;
+  }
+
+  .acc__hero h1 :global(em) {
+    color: var(--tone);
+  }
+
+  .acc__hero .lede {
+    max-width: 52ch;
+  }
+
+  .acc__hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  .acc__jump {
+    font-weight: 600;
+    color: var(--tone);
+  }
+
+  .acc__hero-art {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-arch);
+    overflow: hidden;
+    width: min(100%, 28rem);
+    justify-self: center;
+    box-shadow: 0 3rem 5rem -3rem rgb(26 36 34 / 0.45);
+  }
+
+  .acc__hero-art :global(.plate-art) {
+    position: absolute;
+    inset: 0;
+  }
+
+  .acc__sec-head {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 44rem;
+    margin-bottom: var(--space-l);
+  }
+
+  .acc__sec-head :global(h2 em) {
+    color: var(--tone);
+  }
+
+  .sit__list {
+    display: grid;
+    gap: var(--space-m);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 48rem) {
+    .sit__list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .sit {
+    position: relative;
+    display: block;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  .sit input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .sit__inner {
+    position: relative;
+    display: grid;
+    gap: var(--space-2xs);
+    height: 100%;
+    padding: var(--space-l) var(--space-l) var(--space-xl);
+    border-radius: var(--radius-l);
+    background: #fffdf8;
+    border: 1.5px solid color-mix(in oklab, var(--encre) 12%, transparent);
+    transition: border-color var(--dur) ease, background-color var(--dur) ease, transform var(--dur) var(--ease-out), box-shadow var(--dur) ease;
+  }
+
+  .sit:hover .sit__inner {
+    transform: translateY(-3px);
+    box-shadow: 0 1.5rem 3rem -2rem rgb(26 36 34 / 0.35);
+  }
+
+  .sit input:focus-visible + .sit__inner {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .sit input:checked + .sit__inner {
+    border-color: var(--tone);
+    background: var(--tone-soft);
+  }
+
+  .sit__num {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--tone);
+  }
+
+  .sit__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.05;
+  }
+
+  .sit__text {
+    color: var(--encre-douce);
+  }
+
+  .sit__check {
+    position: absolute;
+    top: var(--space-m);
+    right: var(--space-m);
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in oklab, var(--encre) 30%, transparent);
+    color: transparent;
+    transition: background-color var(--dur) ease, color var(--dur) ease, border-color var(--dur) ease, transform var(--dur) var(--ease-out);
+  }
+
+  .sit__check :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .sit input:checked + .sit__inner .sit__check {
+    background: var(--tone);
+    border-color: var(--tone);
+    color: #fff;
+    transform: scale(1.1);
+  }
+
+  .sit__mine {
+    position: absolute;
+    left: var(--space-l);
+    bottom: var(--space-m);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--encre-douce);
+  }
+
+  .sit input:checked + .sit__inner .sit__mine {
+    color: var(--tone);
+  }
+
+  .sit__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-l);
+    padding: var(--space-m) var(--space-l);
+    border-radius: var(--radius-pill);
+    background: var(--lin);
+  }
+
+  @media (max-width: 40rem) {
+    .sit__cta {
+      border-radius: var(--radius-l);
+    }
+  }
+
+  .acc__benefits {
+    overflow: hidden;
+  }
+
+  .acc__benefits :global(h2 em) {
+    color: var(--or);
+  }
+
+  .acc__fil {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 22%;
+    width: 100%;
+    height: 7rem;
+    color: var(--or);
+    opacity: 0.5;
+  }
+
+  .ben__list {
+    position: relative;
+    display: grid;
+    gap: var(--space-l);
+    margin-top: var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 48rem) {
+    .ben__list {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .ben__list li {
+    display: grid;
+    gap: var(--space-2xs);
+    align-content: start;
+  }
+
+  .ben__dot {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: var(--or);
+    box-shadow: 0 0 0 0.45rem rgb(242 192 138 / 0.18);
+    margin-bottom: var(--space-s);
+  }
+
+  .ben__list p {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.1;
+  }
+
+  .steps__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .steps__grid {
+      grid-template-columns: 4fr 7fr;
+    }
+
+    .steps__head {
+      position: sticky;
+      top: 7rem;
+      align-self: start;
+    }
+  }
+
+  .steps__head {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .steps__head :global(h2 em) {
+    color: var(--tone);
+  }
+
+  .steps__head p {
+    color: var(--encre-douce);
+  }
+
+  .steps__list {
+    display: grid;
+    gap: var(--space-l);
+    padding: 0;
+    list-style: none;
+    counter-reset: s;
+  }
+
+  .steps__list li {
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    gap: var(--space-m);
+    padding-bottom: var(--space-l);
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+  }
+
+  .steps__num {
+    font-family: var(--font-display);
+    font-size: var(--step-5);
+    line-height: 0.8;
+    color: var(--tone);
+  }
+
+  .steps__list h3 {
+    margin-bottom: var(--space-2xs);
+    font-size: var(--step-3);
+  }
+
+  .steps__list p {
+    color: var(--encre-douce);
+  }
+
+  .rep__title {
+    margin-block: var(--space-s) var(--space-l);
+  }
+
+  .rep__title em {
+    color: var(--tone);
+  }
+
+  .rep__grid {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  @media (min-width: 48rem) {
+    .rep__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .rep {
+    position: relative;
+    display: grid;
+    gap: var(--space-2xs);
+    align-content: start;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: var(--papier);
+    overflow: hidden;
+  }
+
+  .rep__big {
+    position: absolute;
+    right: 0.5rem;
+    top: -1.5rem;
+    font-family: var(--font-display);
+    font-size: 8rem;
+    line-height: 1;
+    color: color-mix(in oklab, var(--tone) 14%, transparent);
+  }
+
+  .rep p {
+    position: relative;
+    color: var(--encre-douce);
+  }
+
+  .more__title {
+    margin-block: var(--space-s) var(--space-l);
+  }
+
+  .more__title em {
+    color: var(--tone);
+  }
+
+  .more__grid {
+    display: grid;
+    gap: var(--space-l);
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    align-items: start;
+  }
+
+  .more__xp {
+    position: relative;
+    display: grid;
+    gap: var(--space-2xs);
+    min-height: 16rem;
+    align-content: end;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    text-decoration: none;
+    color: var(--craie) !important;
+    background:
+      radial-gradient(60% 60% at 80% 20%, rgb(242 192 138 / 0.25), transparent 70%),
+      var(--nuit);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .more__xp:hover {
+    transform: translateY(-4px);
+  }
+
+  .more__xp-title {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1;
+  }
+
+  .more__xp-text {
+    color: var(--craie-douce);
+  }
+
+  .more__xp-arrow {
+    position: absolute;
+    top: var(--space-l);
+    right: var(--space-l);
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--or);
+  }
+
+  .faq__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .faq__grid {
+      grid-template-columns: 4fr 7fr;
+    }
+  }
+
+  .faq__grid h2 em {
+    color: var(--tone);
+  }
+
+  .acc__next-link {
+    display: grid;
+    gap: var(--space-2xs);
+    position: relative;
+    padding-block: var(--space-xl);
+    border-top: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+    color: var(--encre);
+    text-decoration: none;
+  }
+
+  .acc__next-title {
+    font-family: var(--font-display);
+    font-size: var(--step-5);
+    line-height: 0.95;
+    transition: transform var(--dur) var(--ease-out), color var(--dur) ease;
+  }
+
+  .acc__next-link:hover {
+    color: var(--encre);
+  }
+
+  .acc__next-link:hover .acc__next-title {
+    transform: translateX(1rem);
+    color: var(--tone);
+  }
+
+  .acc__next-arrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 3rem;
+    height: 3rem;
+    transform: translateY(-50%);
+    color: var(--tone);
+  }
+</style>

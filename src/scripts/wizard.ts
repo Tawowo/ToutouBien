@@ -43,11 +43,16 @@ export function initWizard(root: ParentNode = document): void {
   form.querySelector<HTMLElement>('[data-step="resume"]')!.hidden = false;
 
   // Préremplissage depuis l'accueil : ?sujet=marche-en-laisse
-  const preset = topicFromQuery(new URLSearchParams(location.search).get('sujet'));
+  const params = new URLSearchParams(location.search);
+  const preset = topicFromQuery(params.get('sujet'));
   if (preset) {
     const box = form.querySelector<HTMLInputElement>(`input[name="topics"][value="${preset}"]`);
     if (box) box.checked = true;
   }
+  // Situations sélectionnées sur une page d'accompagnement (texte simple, longueur bornée).
+  const note = params.get('note');
+  const message = form.querySelector<HTMLTextAreaElement>('textarea[name="message"]');
+  if (note && message && !message.value) message.value = note.replace(/[<>]/g, '').slice(0, 300);
 
   const read = (): WizardAnswers => {
     const data = new FormData(form);

@@ -1,0 +1,44 @@
+---
+/**
+ * Titre dont les mots montent derrière un masque à l'entrée dans l'écran.
+ * Découpage au build (aucun JS). Le texte reste lisible tel quel pour les
+ * lecteurs d'écran (aria-label) et sans animation.
+ * Syntaxe : *mot* → mot en italique.
+ */
+interface Props {
+  as?: 'h1' | 'h2' | 'h3' | 'p';
+  text: string;
+  class?: string;
+  /** Animation immédiate (premier écran) plutôt qu'au défilement. */
+  now?: boolean;
+  id?: string;
+}
+const { as: Tag = 'h2', text, class: className, now = false, id } = Astro.props;
+const plain = text.replace(/\*/g, '');
+let italic = false;
+const words = text.split(/\s+/).map((raw) => {
+  const opens = raw.startsWith('*');
+  if (opens) italic = true;
+  const word = raw.replace(/\*/g, '');
+  const isItalic = italic;
+  if (raw.endsWith('*') && (raw.length > 1 || !opens)) italic = false;
+  return { word, isItalic };
+});
+---
+<Tag class:list={['split', now && 'split--now', className]} aria-label={plain} id={id}>
+  {
+    words.map((w, i) => (
+      <>
+        <span class="w" aria-hidden="true" data-wi={String(Math.min(i, 12))}>
+          {w.isItalic ? <em>{w.word}</em> : <span>{w.word}</span>}
+        </span>{' '}
+      </>
+    ))
+  }
+</Tag>
+
+<style>
+  .split .w > :global(em) {
+    display: inline-block;
+  }
+</style>

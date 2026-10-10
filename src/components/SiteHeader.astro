@@ -2,17 +2,19 @@
 import Icon from './Icon.astro';
 import Emblem from '~/assets/brand/emblem.svg';
 import Wordmark from '~/assets/brand/wordmark-nom.svg';
-import { CTA_NAV, PRIMARY_NAV } from '~/config/navigation';
+import { CTA_NAV, NAV_GROUPS, PRIMARY_NAV } from '~/config/navigation';
 import { visibleArticles } from '~/lib/articles';
+import { site } from '~/config/site';
 
 interface Props {
   theme?: 'light' | 'dark';
 }
 const { theme = 'light' } = Astro.props;
 const hasArticles = (await visibleArticles()).length > 0;
-const items = PRIMARY_NAV.filter((item) => item.href !== '/ressources/' || hasArticles);
+const groups = NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => i.href !== '/ressources/' || hasArticles) }));
 const path = Astro.url.pathname;
-const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href)) || (href === '/ressources/' && path.startsWith('/blog/'));
+const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href));
+let n = 0;
 ---
 <header class:list={['site-header', `site-header--${theme}`, theme === 'dark' && 'on-dark']} data-header>
   <div class="site-header__inner page">
@@ -21,52 +23,111 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
       <Wordmark class="brand__word" aria-hidden="true" />
     </a>
 
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-principal" data-menu-toggle>
-      <span class="menu-toggle__label" data-menu-label>Menu</span>
-      <Icon name="menu" class="menu-toggle__icon menu-toggle__icon--open" />
-      <Icon name="close" class="menu-toggle__icon menu-toggle__icon--close" />
-    </button>
-
-    <nav id="menu-principal" class="site-nav" aria-label="Navigation principale" data-menu>
-      <ul class="site-nav__list" role="list">
+    <nav class="quick-nav" aria-label="Accès rapide">
+      <ul role="list">
         {
-          items.map((item) => (
+          PRIMARY_NAV.map((item) => (
             <li>
-              <a href={item.href} class="site-nav__link" aria-current={isCurrent(item.href) ? 'page' : undefined}>
-                {item.label}
-              </a>
+              <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
             </li>
           ))
         }
       </ul>
-      <a href={CTA_NAV.href} class:list={['btn', theme === 'dark' ? 'btn--lagon' : '', 'site-nav__cta']} aria-current={isCurrent(CTA_NAV.href) ? 'page' : undefined}>
-        {CTA_NAV.label}
+    </nav>
+
+    <div class="site-header__actions">
+      <a href={CTA_NAV.href} class:list={['btn btn--sm header-cta', theme === 'dark' && 'btn--lagon']} data-magnetic>
+        <span>{CTA_NAV.label}</span>
         <Icon name="arrow" class="btn__arrow" />
       </a>
-    </nav>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-complet" data-menu-toggle>
+        <span class="menu-toggle__label" data-menu-label>Menu</span>
+        <span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span></span>
+      </button>
+    </div>
   </div>
+
+  <nav id="menu-complet" class="menu on-dark grain-dark" aria-label="Menu complet" data-menu>
+    <div class="menu__inner page">
+      <div class="menu__groups">
+        {
+          groups.map((group) => (
+            <section class="menu__group" aria-labelledby={`menu-${group.title}`}>
+              <h2 class="label" id={`menu-${group.title}`}>{group.title}</h2>
+              <ul role="list">
+                {group.items.map((item) => {
+                  n += 1;
+                  return (
+                    <li>
+                      <a href={item.href} aria-current={path === item.href ? 'page' : undefined}>
+                        <span class="menu__num" aria-hidden="true">{String(n).padStart(2, '0')}</span>
+                        <span class="menu__text">{item.label}</span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+      <aside class="menu__aside">
+        <Emblem class="menu__emblem" aria-hidden="true" />
+        <p class="menu__tagline">{site.tagline.value}</p>
+        <a href={CTA_NAV.href} class="btn btn--lagon">
+          {CTA_NAV.label}
+          <Icon name="arrow" class="btn__arrow" />
+        </a>
+      </aside>
+    </div>
+  </nav>
 </header>
 
 <script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const menu = document.querySelector<HTMLElement>('[data-menu]');
-  const header = document.querySelector<HTMLElement>('[data-header]');
   const label = document.querySelector<HTMLElement>('[data-menu-label]');
-  if (toggle && menu && header) {
+  if (header && toggle && menu) {
+    const focusables = () => [toggle, ...menu.querySelectorAll<HTMLElement>('a')];
     const setOpen = (open: boolean, restoreFocus = false) => {
       toggle.setAttribute('aria-expanded', String(open));
       header.classList.toggle('is-open', open);
-      document.body.classList.toggle('menu-open', open);
+      document.documentElement.classList.toggle('menu-open', open);
       if (label) label.textContent = open ? 'Fermer' : 'Menu';
       if (open) menu.querySelector<HTMLElement>('a')?.focus();
       else if (restoreFocus) toggle.focus();
     };
     toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && header.classList.contains('is-open')) setOpen(false, true);
+      if (!header.classList.contains('is-open')) return;
+      if (event.key === 'Escape') setOpen(false, true);
+      // Le focus reste dans le menu ouvert.
+      if (event.key === 'Tab') {
+        const items = focusables();
+        const first = items[0]!;
+        const last = items[items.length - 1]!;
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     });
-    // Fermeture si l'on repasse en affichage large.
-    window.matchMedia('(min-width: 60rem)').addEventListener('change', (e) => e.matches && setOpen(false));
+    // En-tête compact après le premier écran.
+    let last = 0;
+    addEventListener(
+      'scroll',
+      () => {
+        const y = scrollY;
+        header.classList.toggle('is-scrolled', y > 40);
+        header.classList.toggle('is-hidden', y > 400 && y > last && !header.classList.contains('is-open'));
+        last = y;
+      },
+      { passive: true },
+    );
   }
 </script>
 
@@ -74,24 +135,29 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
   .site-header {
     position: sticky;
     top: 0;
-    z-index: 50;
-    background: color-mix(in oklab, var(--ivoire) 97%, transparent);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    z-index: 100;
+    view-transition-name: site-header;
+    transition: transform var(--dur) var(--ease-out), background-color var(--dur) ease;
+  }
+
+  .site-header--light {
+    background: color-mix(in oklab, var(--papier) 96%, transparent);
     border-bottom: 1px solid color-mix(in oklab, var(--encre) 8%, transparent);
   }
 
   .site-header--dark {
     background: var(--nuit);
-    border-bottom-color: rgb(255 255 255 / 0.06);
+  }
+
+  .site-header.is-hidden {
+    transform: translateY(-100%);
   }
 
   .site-header__inner {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: var(--space-m);
-    min-height: 4.5rem;
+    min-height: 4.75rem;
   }
 
   .brand {
@@ -100,8 +166,8 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     gap: 0.7rem;
     color: var(--sarcelle);
     text-decoration: none;
-    flex: none;
     min-height: 2.75rem;
+    flex: none;
   }
 
   .site-header--dark .brand {
@@ -109,26 +175,83 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
   }
 
   .brand__emblem {
-    width: 2.6rem;
+    width: 2.7rem;
     height: auto;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .brand:hover .brand__emblem {
+    transform: rotate(-6deg) scale(1.06);
   }
 
   .brand__word {
-    width: 8.4rem;
+    width: 8rem;
     height: auto;
-    transform: translateY(0.1rem);
   }
 
   .site-header--dark .brand__word {
     color: var(--craie);
   }
 
-  .menu-toggle {
-    display: none;
+  .quick-nav {
+    margin-inline: auto;
+  }
+
+  .quick-nav ul {
+    display: flex;
+    gap: var(--space-m);
+    padding: 0;
+    list-style: none;
+  }
+
+  .quick-nav a {
+    position: relative;
+    display: inline-block;
+    padding-block: 0.7rem;
+    color: inherit;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .quick-nav a::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0.35rem;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 50%;
+    background: var(--argile);
+    transform: translateX(-50%) scale(0);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .site-header--dark .quick-nav a::after {
+    background: var(--or);
+  }
+
+  .quick-nav a:hover::after,
+  .quick-nav a[aria-current='page']::after {
+    transform: translateX(-50%) scale(1);
+  }
+
+  .site-header__actions {
+    display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-xs);
+    margin-left: auto;
+  }
+
+  .quick-nav + .site-header__actions {
+    margin-left: 0;
+  }
+
+  .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
     min-height: 2.75rem;
-    padding: 0 0.9rem;
+    padding: 0 0.6rem 0 1rem;
     border: 1.5px solid currentColor;
     border-radius: var(--radius-pill);
     background: transparent;
@@ -136,150 +259,170 @@ const isCurrent = (href: string) => path === href || (href !== '/' && path.start
     cursor: pointer;
   }
 
-  .menu-toggle__icon {
-    width: 1.3rem;
-    height: 1.3rem;
+  .menu-toggle__bars {
+    position: relative;
+    display: grid;
+    gap: 5px;
+    width: 1.8rem;
+    height: 1.8rem;
+    place-content: center;
+    border-radius: 50%;
+    background: currentColor;
   }
 
-  .menu-toggle__icon--close,
-  .is-open .menu-toggle__icon--open {
-    display: none;
-  }
-
-  .is-open .menu-toggle__icon--close {
+  .menu-toggle__bars span {
     display: block;
+    width: 0.85rem;
+    height: 1.5px;
+    background: var(--papier);
+    transition: transform var(--dur) var(--ease-out);
   }
 
-  .site-nav {
-    display: flex;
-    align-items: center;
+  .site-header--dark .menu-toggle__bars span {
+    background: var(--nuit);
+  }
+
+  .is-open .menu-toggle__bars span:first-child {
+    transform: translateY(3.25px) rotate(45deg);
+  }
+
+  .is-open .menu-toggle__bars span:last-child {
+    transform: translateY(-3.25px) rotate(-45deg);
+  }
+
+  /* ---- Menu plein écran ---- */
+  .menu {
+    position: fixed;
+    inset: 4.75rem 0 0 0;
+    overflow-y: auto;
+    visibility: hidden;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 600ms var(--ease-in-out), visibility 0s linear 600ms;
+  }
+
+  .is-open .menu {
+    visibility: visible;
+    clip-path: inset(0 0 0 0);
+    transition-delay: 0s;
+  }
+
+  .menu__inner {
+    display: grid;
+    gap: var(--space-xl);
+    padding-block: var(--space-l) var(--space-xl);
+    min-height: 100%;
+  }
+
+  @media (min-width: 64rem) {
+    .menu__inner {
+      grid-template-columns: 3fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .menu__groups {
+    display: grid;
     gap: var(--space-l);
   }
 
-  .site-nav__list {
-    display: flex;
-    gap: var(--space-m);
+  @media (min-width: 48rem) {
+    .menu__groups {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .menu__group ul {
+    display: grid;
+    margin-top: var(--space-s);
     padding: 0;
     list-style: none;
   }
 
-  .site-nav__link {
-    position: relative;
-    display: inline-block;
-    padding-block: 0.6rem;
-    color: inherit;
-    font-weight: 500;
+  .menu__group a {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    align-items: baseline;
+    gap: 0.4rem;
+    padding-block: 0.55rem;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+    color: var(--craie) !important;
     text-decoration: none;
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.1;
+    transition: color var(--dur-fast) ease, padding var(--dur) var(--ease-out);
   }
 
-  .site-nav__link::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0.3rem;
-    height: 1.5px;
-    background: currentColor;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--dur) var(--ease-out);
+  .menu__group a:hover,
+  .menu__group a[aria-current='page'] {
+    color: var(--or) !important;
+    padding-left: 0.4rem;
   }
 
-  .site-nav__link:hover::after,
-  .site-nav__link[aria-current='page']::after {
-    transform: scaleX(1);
+  .menu__num {
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--lagon);
   }
 
-  .site-nav__link:hover {
-    color: inherit;
+  @media (prefers-reduced-motion: no-preference) {
+    .is-open .menu__group li {
+      animation: enter 700ms var(--ease-out) both;
+    }
+
+    .is-open .menu__group li:nth-child(2) { animation-delay: 60ms; }
+    .is-open .menu__group li:nth-child(3) { animation-delay: 120ms; }
+    .is-open .menu__group li:nth-child(4) { animation-delay: 180ms; }
+    .is-open .menu__group li:nth-child(5) { animation-delay: 240ms; }
   }
 
-  .site-nav__cta {
-    min-height: 2.75rem;
-    padding-block: 0.6em;
-    font-size: var(--step--1);
+  .menu__aside {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
   }
 
-  @media (max-width: 59.99rem) {
-    :global(.js) .menu-toggle {
-      display: inline-flex;
-    }
+  .menu__emblem {
+    width: min(14rem, 50vw);
+    height: auto;
+    color: var(--lagon);
+  }
 
-    .brand__word {
-      width: 7.2rem;
-    }
+  .menu__tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--craie-douce);
+  }
 
-    /* Sans JavaScript : la navigation reste visible, sous l'en-tête. */
-    :global(.no-js) .site-header__inner {
-      flex-wrap: wrap;
-      padding-block: var(--space-xs);
-    }
+  :global(html.menu-open) {
+    overflow: hidden;
+  }
 
-    :global(.no-js) .site-nav {
-      width: 100%;
-      flex-wrap: wrap;
-      gap: var(--space-s);
-    }
-
-    :global(.no-js) .site-nav__list {
-      flex-wrap: wrap;
-    }
-
-    :global(.js) .site-nav {
-      position: fixed;
-      inset: 4.5rem 0 auto 0;
-      height: calc(100dvh - 4.5rem);
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: space-between;
-      padding: var(--space-l) var(--gutter) var(--space-xl);
-      background: var(--nuit);
-      color: var(--craie);
-      visibility: hidden;
-      opacity: 0;
-      transform: translateY(-0.75rem);
-      transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out), visibility 0s linear var(--dur);
-      overflow-y: auto;
-    }
-
-    :global(.js) .is-open .site-nav {
-      visibility: visible;
-      opacity: 1;
-      transform: none;
-      transition-delay: 0s;
-    }
-
-    :global(.js) .site-nav__list {
-      flex-direction: column;
-      gap: 0;
-    }
-
-    :global(.js) .site-nav__link {
-      display: block;
-      padding-block: var(--space-s);
-      border-bottom: 1px solid rgb(255 255 255 / 0.12);
-      font-family: var(--font-display);
-      font-size: var(--step-3);
-      font-weight: 350;
-    }
-
-    :global(.js) .site-nav__link::after {
+  @media (max-width: 63.99rem) {
+    .quick-nav {
       display: none;
     }
 
-    :global(.js) .site-nav__link[aria-current='page'] {
-      color: var(--lagon);
-    }
-
-    :global(.js) .site-nav__cta {
-      --btn-bg: var(--lagon);
-      --btn-fg: var(--nuit);
-      min-height: 3.25rem;
-      font-size: var(--step-0);
+    .header-cta {
+      display: none;
     }
   }
 
-  :global(body.menu-open) {
-    overflow: hidden;
+  @media (max-width: 30rem) {
+    .brand__word {
+      width: 6.6rem;
+    }
+  }
+
+  /* Sans JavaScript : le menu complet s'affiche sous l'en-tête. */
+  :global(.no-js) .menu {
+    position: static;
+    visibility: visible;
+    clip-path: none;
+  }
+
+  :global(.no-js) .menu-toggle {
+    display: none;
   }
 </style>

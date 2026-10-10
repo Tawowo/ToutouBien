@@ -1,34 +1,39 @@
 /* ==========================================================================
-   ToutouBien — système de design « Le fil »
-   Voir docs/ART-DIRECTION.md pour l'intention et les règles d'usage.
+   ToutouBien — système de design V2 « Le flair »
+   Un univers de sous-bois au crépuscule et de papier chaud ; des particules
+   lumineuses (le flair), un fil continu (le lien) et une grammaire de carnet
+   d'observation (étiquettes en chasse fixe). Voir docs/ART-DIRECTION.md.
    ========================================================================== */
 
-@import '@fontsource-variable/fraunces/soft.css';
-@import '@fontsource-variable/fraunces/soft-italic.css';
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
 @import '@fontsource-variable/instrument-sans/wght.css';
+@import '@fontsource/dm-mono/400.css';
 
 :root {
-  /* — Couleurs de fond — */
-  --ivoire: #f5efe6;
-  --lin: #ebe2d4;
-  --sable: #dccdb6;
-  --nuit: #0f1b1a;
-  --nuit-2: #172826;
+  /* — Fonds — */
+  --papier: #f3ecdf;
+  --ivoire: var(--papier);
+  --lin: #e7ddcb;
+  --sable: #d6c5a8;
+  --nuit: #0c1513;
+  --nuit-2: #14211e;
+  --sous-bois: #1c2e2a;
 
   /* — Texte — */
-  --encre: #1a2422;
-  --encre-douce: #4a5552;
-  --craie: #f1ece3; /* texte sur fond nuit */
-  --craie-douce: #b9c3bf;
+  --encre: #18211f;
+  --encre-douce: #4b5552;
+  --craie: #f1ece3;
+  --craie-douce: #b5c0bb;
 
   /* — Accents — */
-  --lagon: #9ad3cd; /* turquoise du logo : sur fond sombre uniquement */
+  --lagon: #9ad3cd; /* turquoise du logo : sur fond sombre */
   --lagon-clair: #cfeae6;
-  --sarcelle: #0e5f5b; /* turquoise profond, lisible sur fond clair */
-  --sarcelle-vive: #127a75;
-  --argile: #a3472a; /* accent chaleureux : appels à l'action, détails */
+  --sarcelle: #0e5f5b; /* turquoise lisible sur fond clair */
+  --or: #f2c08a; /* lumière chaude du crépuscule, particules */
+  --argile: #a3472a; /* action sur fond clair */
   --argile-claire: #e9b49c;
-  --mousse: #56624a;
+  --mousse: #5f6b4c;
 
   /* — États — */
   --erreur: #a3261b;
@@ -38,17 +43,19 @@
   --focus: #127a75;
 
   /* — Typographie — */
-  --font-display: 'Fraunces Variable', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
-  --font-text: 'Instrument Sans Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-text: 'Instrument Sans Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
+  --step--2: clamp(0.72rem, 0.7rem + 0.08vw, 0.78rem);
   --step--1: clamp(0.84rem, 0.82rem + 0.1vw, 0.9rem);
   --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
-  --step-1: clamp(1.2rem, 1.12rem + 0.4vw, 1.45rem);
-  --step-2: clamp(1.45rem, 1.3rem + 0.75vw, 1.95rem);
-  --step-3: clamp(1.8rem, 1.5rem + 1.5vw, 2.8rem);
-  --step-4: clamp(2.3rem, 1.8rem + 2.6vw, 4.1rem);
-  --step-5: clamp(2.8rem, 1.9rem + 4.6vw, 6.4rem);
-  --step-6: clamp(3.1rem, 1.6rem + 7.4vw, 9.5rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.45vw, 1.5rem);
+  --step-2: clamp(1.55rem, 1.35rem + 0.9vw, 2.2rem);
+  --step-3: clamp(2rem, 1.6rem + 1.8vw, 3.3rem);
+  --step-4: clamp(2.6rem, 1.9rem + 3.2vw, 5rem);
+  --step-5: clamp(3.2rem, 2rem + 5.6vw, 7.6rem);
+  --step-6: clamp(3.6rem, 1.8rem + 9vw, 11.5rem);
 
   /* — Espacements — */
   --space-3xs: 0.25rem;
@@ -58,18 +65,18 @@
   --space-m: 1.5rem;
   --space-l: clamp(2rem, 1.6rem + 2vw, 3rem);
   --space-xl: clamp(3rem, 2.2rem + 4vw, 5.5rem);
-  --space-2xl: clamp(4.5rem, 3rem + 7vw, 9rem);
+  --space-2xl: clamp(4.5rem, 3rem + 7vw, 9.5rem);
 
-  /* — Grille & largeurs — */
-  --gutter: clamp(1rem, 0.5rem + 2.5vw, 2.5rem);
+  /* — Grille — */
+  --gutter: clamp(1rem, 0.4rem + 2.8vw, 2.75rem);
   --measure: 62ch;
-  --wide: 84rem;
+  --wide: 88rem;
   --page: min(var(--wide), 100% - 2 * var(--gutter));
 
   /* — Formes — */
   --radius-s: 0.4rem;
   --radius-m: 0.9rem;
-  --radius-l: 1.6rem;
+  --radius-l: 1.8rem;
   --radius-pill: 999px;
   --radius-arch: 50% 50% var(--radius-m) var(--radius-m) / 38% 38% var(--radius-m) var(--radius-m);
 
@@ -77,8 +84,11 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 160ms;
-  --dur: 320ms;
+  --dur: 340ms;
   --dur-slow: 900ms;
+
+  /* Grain photographique (SVG inline : aucune requête). */
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 
   color-scheme: light;
 }
@@ -101,32 +111,83 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  scroll-padding-top: 5.5rem;
+  scroll-padding-top: 6rem;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   html {
     scroll-behavior: smooth;
   }
+
+  /* Transitions entre pages (navigation native, sans JavaScript). */
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+::view-transition-old(root) {
+  animation: vt-out 260ms var(--ease-in-out) both;
+}
+
+::view-transition-new(root) {
+  animation: vt-in 520ms var(--ease-out) both;
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: translateY(-1.2rem);
+    filter: blur(4px);
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+    clip-path: inset(100% 0 0 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 body {
   min-height: 100dvh;
-  background: var(--ivoire);
+  background: var(--papier);
   color: var(--encre);
   font-family: var(--font-text);
   font-size: var(--step-0);
   line-height: 1.6;
-  font-optical-sizing: auto;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
 
+/* Grain : donne de la matière aux aplats, sans image. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  background-image: var(--grain);
+  opacity: 0.07;
+  mix-blend-mode: multiply;
+}
+
 img,
 svg,
 picture,
-video {
+video,
+canvas {
   display: block;
   max-width: 100%;
 }
@@ -155,11 +216,10 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  font-weight: 380;
-  line-height: 1.05;
+  font-weight: 400;
+  line-height: 0.98;
   letter-spacing: -0.015em;
   text-wrap: balance;
-  font-variation-settings: 'SOFT' 60;
 }
 
 h1 {
@@ -172,7 +232,11 @@ h2 {
 
 h3 {
   font-size: var(--step-2);
-  line-height: 1.15;
+  line-height: 1.08;
+}
+
+h4 {
+  font-size: var(--step-1);
 }
 
 em,
@@ -180,20 +244,11 @@ em,
   font-style: italic;
 }
 
-h1 em,
-h2 em,
-h3 em,
-.display em {
-  font-weight: 340;
-  font-variation-settings: 'SOFT' 100;
-  color: inherit;
-}
-
 a {
   color: var(--sarcelle);
   text-decoration-thickness: 0.07em;
   text-underline-offset: 0.2em;
-  transition: color var(--dur-fast) ease, text-decoration-color var(--dur-fast) ease;
+  transition: color var(--dur-fast) ease;
 }
 
 a:hover {
@@ -233,7 +288,7 @@ a:hover {
   position: absolute;
   left: var(--gutter);
   top: -4rem;
-  z-index: 100;
+  z-index: 300;
   padding: var(--space-xs) var(--space-s);
   background: var(--nuit);
   color: var(--craie);
@@ -273,27 +328,40 @@ a:hover {
   background: var(--lin);
 }
 
-.eyebrow {
+/* Étiquette « carnet d'observation » : petite, en chasse fixe, numérotable. */
+.eyebrow,
+.label {
   display: inline-flex;
   align-items: center;
-  gap: 0.6em;
-  font-family: var(--font-text);
-  font-size: var(--step--1);
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  gap: 0.75em;
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--argile);
 }
 
 .eyebrow::before {
   content: '';
-  width: 2.2em;
+  width: 2.4em;
   height: 1px;
   background: currentColor;
 }
 
-.on-dark .eyebrow {
-  color: var(--argile-claire);
+.eyebrow[data-num]::before {
+  content: attr(data-num);
+  width: auto;
+  height: auto;
+  background: none;
+  padding: 0.15em 0.5em;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-pill);
+}
+
+.on-dark .eyebrow,
+.on-dark .label {
+  color: var(--or);
 }
 
 .lede {
@@ -304,6 +372,13 @@ a:hover {
 
 .on-dark .lede {
   color: var(--craie-douce);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-size: var(--step-6);
+  line-height: 0.9;
+  letter-spacing: -0.025em;
 }
 
 .section {
@@ -319,17 +394,35 @@ a:hover {
   margin-top: var(--flow, var(--space-s));
 }
 
+.grain-dark {
+  position: relative;
+  isolation: isolate;
+}
+
+.grain-dark::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 50% at 80% 10%, rgb(242 192 138 / 0.14), transparent 70%),
+    radial-gradient(50% 60% at 10% 90%, rgb(154 211 205 / 0.1), transparent 70%);
+  pointer-events: none;
+}
+
 /* ------------------------------------------------------------------ Boutons */
 .btn {
   --btn-bg: var(--argile);
   --btn-fg: #fff;
+  --btn-fill: var(--nuit);
+  --btn-fill-fg: var(--craie);
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.7em;
   min-height: 3.1rem;
-  padding: 0.85em 1.5em;
+  padding: 0.85em 1.55em;
   border: 1.5px solid transparent;
   border-radius: var(--radius-pill);
   background: var(--btn-bg);
@@ -342,16 +435,32 @@ a:hover {
   cursor: pointer;
   isolation: isolate;
   overflow: hidden;
-  transition: transform var(--dur) var(--ease-out), background-color var(--dur) ease, color var(--dur) ease, border-color var(--dur) ease;
+  transition: color var(--dur) ease, border-color var(--dur) ease, transform var(--dur) var(--ease-out);
+  translate: var(--mx, 0) var(--my, 0);
+}
+
+/* Remplissage qui monte depuis le bas au survol. */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--btn-fill);
+  border-radius: inherit;
+  transform: translateY(102%);
+  transition: transform var(--dur) var(--ease-out);
 }
 
 .btn:hover {
-  color: var(--btn-fg);
-  background: color-mix(in oklab, var(--btn-bg), black 14%);
+  color: var(--btn-fill-fg);
+}
+
+.btn:hover::before {
+  transform: none;
 }
 
 .btn:active {
-  transform: translateY(1px) scale(0.99);
+  transform: scale(0.98);
 }
 
 .btn .btn__arrow {
@@ -362,46 +471,48 @@ a:hover {
 }
 
 .btn:hover .btn__arrow {
-  transform: translateX(0.25em);
+  transform: translateX(0.25em) rotate(-8deg);
 }
 
 .btn--ghost {
   --btn-bg: transparent;
   --btn-fg: var(--encre);
+  --btn-fill: var(--encre);
+  --btn-fill-fg: var(--papier);
   border-color: currentColor;
 }
 
 .btn--ghost:hover {
-  background: var(--encre);
   border-color: var(--encre);
-  color: var(--ivoire);
 }
 
 .on-dark .btn--ghost {
   --btn-fg: var(--craie);
-}
-
-.on-dark .btn--ghost:hover {
-  background: var(--craie);
-  border-color: var(--craie);
-  color: var(--nuit);
+  --btn-fill: var(--craie);
+  --btn-fill-fg: var(--nuit);
 }
 
 .btn--lagon {
   --btn-bg: var(--lagon);
   --btn-fg: var(--nuit);
+  --btn-fill: var(--or);
+  --btn-fill-fg: var(--nuit);
 }
 
-.btn--lagon:hover {
-  background: var(--lagon-clair);
-  color: var(--nuit);
+.btn--sm {
+  min-height: 2.75rem;
+  padding: 0.6em 1.15em;
+  font-size: var(--step--1);
 }
 
 .btn[disabled],
 .btn[aria-disabled='true'] {
   opacity: 0.55;
   cursor: not-allowed;
-  transform: none;
+}
+
+.btn[disabled]::before {
+  display: none;
 }
 
 .link-arrow {
@@ -410,8 +521,14 @@ a:hover {
   gap: 0.5em;
   font-weight: 600;
   text-decoration: none;
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 0.1em;
+  background: linear-gradient(currentColor, currentColor) left bottom / 100% 1px no-repeat;
+  padding-bottom: 0.15em;
+  transition: background-size var(--dur) var(--ease-out), color var(--dur-fast) ease;
+}
+
+.link-arrow:hover {
+  background-size: 0% 1px;
+  background-position: right bottom;
 }
 
 .link-arrow svg {
@@ -421,7 +538,7 @@ a:hover {
 }
 
 .link-arrow:hover svg {
-  transform: translateX(0.2em);
+  transform: translateX(0.25em);
 }
 
 /* ---------------------------------------------------------------- Accordéons */
@@ -440,8 +557,8 @@ a:hover {
   gap: var(--space-m);
   padding-block: var(--space-m);
   font-family: var(--font-display);
-  font-size: var(--step-1);
-  line-height: 1.25;
+  font-size: var(--step-2);
+  line-height: 1.1;
   cursor: pointer;
   list-style: none;
 }
@@ -453,19 +570,19 @@ a:hover {
 .accordion summary::after {
   content: '';
   flex: none;
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 2.2rem;
+  height: 2.2rem;
   border-radius: 50%;
   border: 1px solid currentColor;
   background:
-    linear-gradient(currentColor, currentColor) center / 0.75rem 1.5px no-repeat,
-    linear-gradient(currentColor, currentColor) center / 1.5px 0.75rem no-repeat;
-  transition: transform var(--dur) var(--ease-out), background-size var(--dur) var(--ease-out);
+    linear-gradient(currentColor, currentColor) center / 0.8rem 1.5px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 1.5px 0.8rem no-repeat;
+  transition: transform var(--dur) var(--ease-out), background-size var(--dur) var(--ease-out), background-color var(--dur) ease;
 }
 
 .accordion details[open] summary::after {
   transform: rotate(180deg);
-  background-size: 0.75rem 1.5px, 1.5px 0;
+  background-size: 0.8rem 1.5px, 1.5px 0;
 }
 
 .accordion summary:hover {
@@ -473,7 +590,7 @@ a:hover {
 }
 
 .on-dark .accordion summary:hover {
-  color: var(--argile-claire);
+  color: var(--or);
 }
 
 .accordion .accordion__body {
@@ -520,11 +637,11 @@ a:hover {
 .input,
 .textarea {
   width: 100%;
-  min-height: 3.1rem;
-  padding: 0.8rem 1rem;
-  border: 1.5px solid color-mix(in oklab, var(--encre) 35%, transparent);
-  border-radius: var(--radius-s);
-  background: #fffdf9;
+  min-height: 3.2rem;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid color-mix(in oklab, var(--encre) 30%, transparent);
+  border-radius: var(--radius-m);
+  background: #fffdf8;
   transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
 }
 
@@ -543,7 +660,7 @@ a:hover {
 .textarea:focus-visible {
   outline: none;
   border-color: var(--sarcelle);
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--sarcelle) 30%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--sarcelle) 25%, transparent);
 }
 
 .input[aria-invalid='true'],
@@ -578,7 +695,6 @@ a:hover {
   font-size: 0.8em;
 }
 
-/* Choix (radios & cases) présentés en « pastilles » */
 .choices {
   display: flex;
   flex-wrap: wrap;
@@ -606,9 +722,9 @@ a:hover {
   gap: 0.55em;
   min-height: 2.9rem;
   padding: 0.6rem 1.1rem;
-  border: 1.5px solid color-mix(in oklab, var(--encre) 28%, transparent);
+  border: 1.5px solid color-mix(in oklab, var(--encre) 26%, transparent);
   border-radius: var(--radius-pill);
-  background: #fffdf9;
+  background: #fffdf8;
   line-height: 1.25;
   transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
 }
@@ -688,7 +804,7 @@ a:hover {
   color: var(--encre);
 }
 
-/* Marquage des contenus non validés : visible uniquement en dev/préproduction. */
+/* Contenus non validés : visibles uniquement en dev/préproduction. */
 .draft {
   outline: 2px dashed #c2410c;
   outline-offset: 4px;
@@ -709,11 +825,30 @@ a:hover {
   white-space: nowrap;
 }
 
-/* --------------------------------------------------------- Mouvement : révélations
-   Progressif : sans prise en charge des animations liées au défilement, ou avec
-   la préférence « mouvement réduit », tout est simplement visible. */
+/* ------------------------------------------------------------ Titres révélés
+   Chaque mot (composant SplitTitle) monte derrière un masque quand le titre entre
+   dans l'écran. Sans prise en charge ou en mouvement réduit : titre immédiatement lisible. */
+.split .w {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.2em;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.split .w > * {
+  display: inline-block;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
+    .split .w > * {
+      animation: word-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry calc(45% + var(--wi, 0) * 3%);
+    }
+
     .reveal {
       animation: reveal-up linear both;
       animation-timeline: view();
@@ -732,6 +867,33 @@ a:hover {
       animation-timeline: view();
       animation-range: entry 0% cover 60%;
     }
+
+    .parallax {
+      animation: parallax linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+  }
+
+  .split--now .w > * {
+    animation: word-up var(--dur-slow) var(--ease-out) both !important;
+    animation-timeline: auto !important;
+    animation-delay: calc(var(--wi, 0) * 70ms + 120ms) !important;
+  }
+
+  .enter {
+    animation: enter var(--dur-slow) var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 110ms);
+  }
+}
+
+@keyframes word-up {
+  from {
+    transform: translateY(105%) rotate(4deg);
+  }
+
+  to {
+    transform: none;
   }
 }
 
@@ -749,7 +911,7 @@ a:hover {
 
 @keyframes reveal-mask {
   from {
-    clip-path: inset(12% 8% 12% 8% round var(--radius-l));
+    clip-path: inset(14% 10% 14% 10% round var(--radius-l));
   }
 
   to {
@@ -759,7 +921,7 @@ a:hover {
 
 @keyframes settle {
   from {
-    transform: scale(1.12);
+    transform: scale(1.14);
   }
 
   to {
@@ -767,21 +929,15 @@ a:hover {
   }
 }
 
-/* Chargement d'entrée (premier écran) : court, jamais bloquant. */
-@media (prefers-reduced-motion: no-preference) {
-  .enter {
-    animation: enter var(--dur-slow) var(--ease-out) both;
-    animation-delay: calc(var(--i, 0) * 110ms);
+@keyframes parallax {
+  from {
+    transform: translateY(var(--parallax, 3rem));
+  }
+
+  to {
+    transform: translateY(calc(var(--parallax, 3rem) * -1));
   }
 }
-
-/* Décalage des apparitions, sans style inline (compatible CSP). */
-[data-i='1'] { --i: 1; }
-[data-i='2'] { --i: 2; }
-[data-i='3'] { --i: 3; }
-[data-i='4'] { --i: 4; }
-[data-i='5'] { --i: 5; }
-[data-i='6'] { --i: 6; }
 
 @keyframes enter {
   from {
@@ -795,6 +951,26 @@ a:hover {
   }
 }
 
+/* Décalage des apparitions, sans style inline (compatible CSP). */
+[data-i='1'] { --i: 1; }
+[data-i='2'] { --i: 2; }
+[data-i='3'] { --i: 3; }
+[data-i='4'] { --i: 4; }
+[data-i='5'] { --i: 5; }
+[data-i='6'] { --i: 6; }
+[data-wi='1'] { --wi: 1; }
+[data-wi='2'] { --wi: 2; }
+[data-wi='3'] { --wi: 3; }
+[data-wi='4'] { --wi: 4; }
+[data-wi='5'] { --wi: 5; }
+[data-wi='6'] { --wi: 6; }
+[data-wi='7'] { --wi: 7; }
+[data-wi='8'] { --wi: 8; }
+[data-wi='9'] { --wi: 9; }
+[data-wi='10'] { --wi: 10; }
+[data-wi='11'] { --wi: 11; }
+[data-wi='12'] { --wi: 12; }
+
 /* ------------------------------------------------------------- Texte long */
 .prose {
   max-width: var(--measure);
@@ -807,7 +983,7 @@ a:hover {
 }
 
 .prose h2 {
-  margin-top: 2.2em;
+  margin-top: 2.1em;
   font-size: var(--step-3);
 }
 
@@ -835,12 +1011,19 @@ a:hover {
 }
 
 .prose blockquote {
-  padding-left: var(--space-m);
-  border-left: 2px solid var(--argile);
+  margin-block: 1.8em;
+  padding: var(--space-m) var(--space-l);
+  border-radius: var(--radius-l);
+  background: var(--nuit);
+  color: var(--craie);
   font-family: var(--font-display);
   font-style: italic;
   font-size: var(--step-2);
-  line-height: 1.4;
+  line-height: 1.25;
+}
+
+.prose blockquote p {
+  color: inherit;
 }
 
 .prose strong {
@@ -852,4 +1035,27 @@ a:hover {
   height: 1px;
   background: color-mix(in oklab, var(--encre) 18%, transparent);
   margin-block: 2.5em;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--step-0);
+}
+
+.prose th,
+.prose td {
+  padding: 0.6em 0.8em;
+  border-bottom: 1px solid color-mix(in oklab, var(--encre) 15%, transparent);
+  text-align: left;
+  vertical-align: top;
+}
+
+.prose th {
+  font-family: var(--font-mono);
+  font-size: var(--step--2);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--argile);
 }

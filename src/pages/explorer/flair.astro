@@ -1,0 +1,480 @@
+---
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import ExplorerNext from '~/components/ExplorerNext.astro';
+import { SCENTS } from '~/lib/flair-field';
+---
+<Base
+  title="Le monde par le nez"
+  description="Expérience interactive : promenez une truffe dans un pré, suivez les odeurs portées par le vent et découvrez pourquoi le flair est essentiel pour votre chien."
+  headerTheme="dark"
+>
+  <section class="fx on-dark grain-dark" aria-labelledby="fx-title">
+    <div class="page fx__head">
+      <p class="eyebrow" data-num="01">Explorer · Le monde par le nez</p>
+      <SplitTitle as="h1" id="fx-title" text="Un pré, *mille nouvelles*." now />
+      <p class="lede">Pour nous, c’est un carré d’herbe. Pour votre chien, c’est un journal. Promenez la truffe, jouez avec le vent, et découvrez ce qu’il perçoit.</p>
+    </div>
+
+    <div class="page fx__lab" data-flair-field>
+      <div class="fx__field">
+        <canvas
+          tabindex="0"
+          role="application"
+          aria-label="Pré interactif. Déplacez la truffe avec la souris, le doigt ou les flèches du clavier pour découvrir les odeurs."
+          aria-describedby="fx-help"
+        ></canvas>
+        <div class="fx__hud" aria-hidden="true">
+          <span class="label" data-meter-word>Odeur à peine perceptible</span>
+          <span class="fx__meter"><span data-meter></span></span>
+        </div>
+        <p class="fx__hint" data-hint aria-hidden="true">Bougez la souris ou glissez le doigt pour flairer</p>
+        <div class="fx__fallback">
+          <p>Cette expérience nécessite JavaScript. Les odeurs du pré sont décrites ci-dessous.</p>
+        </div>
+        <article class="fx__card" data-card hidden aria-hidden="true">
+          <p class="label">Trouvé</p>
+          <h2 data-card-title></h2>
+          <p data-card-text></p>
+        </article>
+      </div>
+
+      <aside class="fx__panel" aria-label="Commandes de l’expérience">
+        <p id="fx-help" class="fx__help">
+          Le pré cache six odeurs. Elles sont invisibles : seule la truffe les révèle autour d’elle. Approchez-vous de leur source pour les découvrir.
+          Au clavier : cliquez dans le pré puis utilisez les flèches (Maj pour aller plus vite).
+        </p>
+
+        <div class="fx__control">
+          <label for="fx-wind-a" class="label">Direction du vent</label>
+          <div class="fx__wind">
+            <span class="fx__compass" aria-hidden="true"><span></span></span>
+            <input id="fx-wind-a" type="range" min="0" max="359" value="20" data-wind-angle />
+          </div>
+        </div>
+        <div class="fx__control">
+          <label for="fx-wind-s" class="label">Force du vent · <output data-wind-out for="fx-wind-s">40 %</output></label>
+          <input id="fx-wind-s" type="range" min="0" max="100" value="40" data-wind-strength />
+        </div>
+        <label class="fx__toggle">
+          <input type="checkbox" data-reveal-all />
+          <span>Révéler toutes les odeurs</span>
+        </label>
+
+        <div class="fx__found">
+          <p class="label">Odeurs trouvées · <span data-count>0 / {SCENTS.length}</span></p>
+          <ul role="list">
+            {
+              SCENTS.map((s) => (
+                <li>
+                  <button type="button" data-scent={s.id}>
+                    <span class="fx__dot" aria-hidden="true"></span>
+                    <span class="fx__scent-name">{s.label}</span>
+                    <span class="sr-only"> (aller vers cette odeur)</span>
+                  </button>
+                </li>
+              ))
+            }
+          </ul>
+          <button type="button" class="btn btn--ghost btn--sm" data-reset>Recommencer</button>
+        </div>
+        <p class="fx__complete">Vous avez tout trouvé&nbsp;! Imaginez : votre chien perçoit tout cela en quelques secondes de balade.</p>
+        <p class="sr-only" aria-live="polite" data-live></p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section learn" aria-labelledby="learn-title">
+    <div class="page learn__grid">
+      <div>
+        <p class="eyebrow">Ce qu’il faut retenir</p>
+        <h2 id="learn-title">Flairer, c’est <em>lire</em>.</h2>
+      </div>
+      <div class="learn__points">
+        <article>
+          <span class="label">01</span>
+          <h3>Le vent porte les odeurs</h3>
+          <p>Votre chien capte souvent une odeur bien avant d’atteindre sa source, en la cherchant dans le vent. Essayez : changez la direction du vent et observez les panaches.</p>
+        </article>
+        <article>
+          <span class="label">02</span>
+          <h3>Renifler n’est pas perdre du temps</h3>
+          <p>Laisser son chien flairer pendant la balade répond à un besoin. Pour beaucoup de chiens, c’est aussi une activité apaisante.</p>
+        </article>
+        <article>
+          <span class="label">03</span>
+          <h3>Une information forte</h3>
+          <p>Certaines odeurs captent toute son attention. Comprendre cela aide à adapter ses attentes, par exemple pour le rappel.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight page" aria-labelledby="scents-title">
+    <h2 id="scents-title" class="scents__title">Les odeurs du pré <em>en toutes lettres</em></h2>
+    <div class="accordion">
+      {
+        SCENTS.map((s) => (
+          <details>
+            <summary>{s.label}</summary>
+            <div class="accordion__body"><p>{s.text}</p></div>
+          </details>
+        ))
+      }
+    </div>
+    <p class="scents__note">Modèle illustratif : la forme des panaches et l’intensité sont simplifiées pour la compréhension. Pour aller plus loin, lisez <a href="/blog/les-besoins-du-chien/">« Les besoins du chien »</a>.</p>
+  </section>
+
+  <ExplorerNext current="flair" />
+</Base>
+
+<script>
+  import { initFlairField } from '~/scripts/explorer/flair';
+  initFlairField();
+</script>
+
+<style>
+  .fx {
+    padding-block: var(--space-xl);
+    overflow: hidden;
+  }
+
+  .fx__head {
+    display: grid;
+    gap: var(--space-m);
+    margin-bottom: var(--space-l);
+  }
+
+  .fx__head h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+  }
+
+  .fx__head h1 :global(em) {
+    color: var(--or);
+  }
+
+  .fx__head .lede {
+    max-width: 50ch;
+  }
+
+  .fx__lab {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 64rem) {
+    .fx__lab {
+      grid-template-columns: minmax(0, 3fr) minmax(18rem, 1fr);
+      align-items: start;
+    }
+  }
+
+  .fx__field {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    background: #13221c;
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  @media (max-width: 40rem) {
+    .fx__field {
+      aspect-ratio: 4 / 5;
+    }
+  }
+
+  .fx__field canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    cursor: none;
+    touch-action: none;
+  }
+
+  .fx__field canvas:focus-visible {
+    outline: 3px solid var(--lagon);
+    outline-offset: -3px;
+  }
+
+  [data-flair-field]:not([data-enhanced]) canvas,
+  [data-flair-field]:not([data-enhanced]) .fx__hud,
+  [data-flair-field]:not([data-enhanced]) .fx__hint {
+    display: none;
+  }
+
+  .fx__fallback {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding: var(--space-l);
+    text-align: center;
+    color: var(--craie-douce);
+  }
+
+  [data-enhanced] .fx__fallback {
+    display: none;
+  }
+
+  .fx__hud {
+    position: absolute;
+    left: var(--space-m);
+    top: var(--space-m);
+    display: grid;
+    gap: 0.4rem;
+    pointer-events: none;
+  }
+
+  .fx__meter {
+    width: 10rem;
+    height: 4px;
+    border-radius: 4px;
+    background: rgb(255 255 255 / 0.12);
+    overflow: hidden;
+  }
+
+  .fx__meter span {
+    display: block;
+    height: 100%;
+    width: calc(var(--v, 0) * 100%);
+    background: linear-gradient(90deg, var(--lagon), var(--or));
+    transition: width 200ms linear;
+  }
+
+  .fx__hint {
+    position: absolute;
+    left: 50%;
+    bottom: var(--space-m);
+    transform: translateX(-50%);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-pill);
+    background: rgb(12 21 19 / 0.75);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    transition: opacity 600ms ease;
+  }
+
+  .fx__hint.is-gone {
+    opacity: 0;
+  }
+
+  .fx__card {
+    position: absolute;
+    right: var(--space-m);
+    bottom: var(--space-m);
+    width: min(22rem, calc(100% - 2 * var(--space-m)));
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    background: rgb(12 21 19 / 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgb(242 192 138 / 0.35);
+    pointer-events: none;
+  }
+
+  .fx__card h2 {
+    margin-block: 0.3rem;
+    font-size: var(--step-2);
+    color: var(--or);
+  }
+
+  .fx__card p:last-child {
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .fx__card.is-new {
+      animation: enter 600ms var(--ease-out) both;
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .fx__card {
+      position: static;
+      width: auto;
+      margin: 0;
+      border-radius: 0;
+    }
+  }
+
+  .fx__panel {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .fx__help {
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  .fx__control {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .fx__control input[type='range'] {
+    width: 100%;
+    accent-color: var(--or);
+    min-height: 2.75rem;
+  }
+
+  .fx__wind {
+    display: grid;
+    grid-template-columns: 2.75rem 1fr;
+    align-items: center;
+    gap: var(--space-s);
+  }
+
+  .fx__compass {
+    position: relative;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    border: 1px solid rgb(255 255 255 / 0.25);
+  }
+
+  .fx__compass span {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1.1rem;
+    height: 2px;
+    background: var(--or);
+    transform-origin: 0 50%;
+    transform: rotate(var(--wind-angle, 0deg));
+  }
+
+  .fx__compass span::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: -3px;
+    border-left: 6px solid var(--or);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+  }
+
+  .fx__toggle {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    min-height: 2.75rem;
+    cursor: pointer;
+  }
+
+  .fx__toggle input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--lagon);
+  }
+
+  .fx__found ul {
+    display: grid;
+    gap: 0.2rem;
+    margin-block: var(--space-xs) var(--space-s);
+    padding: 0;
+    list-style: none;
+  }
+
+  .fx__found button {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    min-height: 2.6rem;
+    padding: 0.3rem 0.5rem;
+    border: 0;
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--craie-douce);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .fx__found button:hover {
+    background: rgb(255 255 255 / 0.06);
+  }
+
+  .fx__dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    flex: none;
+  }
+
+  .fx__found .is-found {
+    color: var(--craie);
+  }
+
+  .fx__found .is-found .fx__dot {
+    background: var(--or);
+    border-color: var(--or);
+  }
+
+  .fx__complete {
+    display: none;
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    background: rgb(242 192 138 / 0.12);
+    color: var(--or);
+  }
+
+  :global(.is-complete) .fx__complete {
+    display: block;
+  }
+
+  .learn__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .learn__grid {
+      grid-template-columns: 4fr 8fr;
+    }
+  }
+
+  .learn__grid h2 {
+    margin-top: var(--space-s);
+  }
+
+  .learn__points {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 48rem) {
+    .learn__points {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .learn__points article {
+    display: grid;
+    gap: var(--space-2xs);
+    align-content: start;
+    padding-top: var(--space-s);
+    border-top: 1px solid color-mix(in oklab, var(--encre) 18%, transparent);
+  }
+
+  .learn__points p {
+    color: var(--encre-douce);
+  }
+
+  .scents__title {
+    margin-bottom: var(--space-l);
+  }
+
+  .scents__note {
+    margin-top: var(--space-m);
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+</style>

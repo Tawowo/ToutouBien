@@ -1,0 +1,457 @@
+---
+import Base from '~/layouts/Base.astro';
+import DogFigure from '~/components/DogFigure.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import ExplorerNext from '~/components/ExplorerNext.astro';
+import Icon from '~/components/Icon.astro';
+import { DAYS, STIMULI, ZONE_TEXT } from '~/lib/distance';
+---
+<Base
+  title="La distance de confort"
+  description="Expérience interactive : rapprochez un vélo, un enfant ou un autre chien et comprenez pourquoi la distance et la fatigue de la journée changent les réactions de votre chien."
+  headerTheme="dark"
+>
+  <section class="dx on-dark grain-dark" aria-labelledby="dx-title">
+    <div class="page dx__head">
+      <p class="eyebrow" data-num="02">Explorer · La distance de confort</p>
+      <SplitTitle as="h1" id="dx-title" text="Tout est *une question de distance*." now />
+      <p class="lede">Pourquoi votre chien reste-t-il calme ici, mais réagit-il là&nbsp;? Rapprochez ce qu’il croise, changez sa journée, et observez comment sa marge de confort évolue.</p>
+    </div>
+
+    <div class="page dx__lab" data-distance data-zone="aise">
+      <div class="dx__stage" aria-hidden="true">
+        <div class="dx__zones">
+          <span class="dx__zone dx__zone--deborde"><span class="label">Débordé</span></span>
+          <span class="dx__zone dx__zone--vigilant"><span class="label">Vigilant</span></span>
+          <span class="dx__zone dx__zone--aise"><span class="label">À l’aise</span></span>
+        </div>
+        <svg class="dx__arc" viewBox="0 0 1000 200" preserveAspectRatio="none">
+          <path d="M300 190 C 520 40, 780 40, 1000 120" />
+        </svg>
+        <DogFigure class="dx__dog" />
+        <div class="dx__stimulus" data-stim-el>
+          <svg class="dx__icon dx__icon--chien" viewBox="0 0 140 100"><path d="M20 62 C 18 44 34 38 58 40 L 96 40 C 112 40 120 50 118 62 C 116 72 108 76 96 76 L 48 77 C 30 77 21 72 20 62 Z M100 44 C 104 30 112 22 122 22 C 132 22 138 30 136 38 L 124 46 Z M28 54 C 14 50 8 40 6 30" /><path d="M36 76 L 34 96 M 50 76 L 50 96 M 92 76 L 92 96 M 106 74 L 108 96" class="dx__legs" /></svg>
+          <svg class="dx__icon dx__icon--velo" viewBox="0 0 140 100"><circle cx="30" cy="70" r="24" /><circle cx="110" cy="70" r="24" /><path d="M30 70 L 58 38 L 96 38 L 110 70 M58 38 L 70 70 L 30 70 M52 28 L 66 28 M96 38 L 100 24 L 112 24" /></svg>
+          <svg class="dx__icon dx__icon--enfant" viewBox="0 0 100 100"><circle cx="54" cy="14" r="10" /><path d="M54 26 L 48 58 M51 34 L 32 46 M51 34 L 70 26 M48 58 L 30 84 M48 58 L 64 76 L 74 90" /></svg>
+        </div>
+        <div class="dx__ground"></div>
+      </div>
+
+      <div class="dx__panel">
+        <div class="dx__reading" aria-live="polite">
+          <p class="label">Votre chien est</p>
+          <h2 class="dx__zone-title" data-zone-title>{ZONE_TEXT.aise.title}</h2>
+          <p data-zone-text>{ZONE_TEXT.aise.text}</p>
+        </div>
+
+        <div class="dx__controls">
+          <div class="dx__control">
+            <label for="dx-dist" class="label">Distance</label>
+            <div class="dx__range">
+              <span aria-hidden="true">Proche</span>
+              <input id="dx-dist" type="range" min="2" max="100" value="85" data-dist aria-valuetext="Loin" />
+              <span aria-hidden="true">Loin</span>
+            </div>
+          </div>
+
+          <fieldset class="dx__control">
+            <legend class="label">Ce qu’il croise</legend>
+            <div class="dx__chips">
+              {STIMULI.map((s, i) => (
+                <label class="chip"><input type="radio" name="stimulus" value={s.id} checked={i === 0} /><span>{s.label}</span></label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset class="dx__control">
+            <legend class="label">Sa journée</legend>
+            <div class="dx__chips">
+              {DAYS.map((d, i) => (
+                <label class="chip"><input type="radio" name="day" value={d.id} checked={i === 1} /><span>{d.label}</span></label>
+              ))}
+            </div>
+          </fieldset>
+
+          <label class="dx__toggle">
+            <input type="checkbox" data-arc />
+            <span>Passer en arc de cercle plutôt que de face</span>
+          </label>
+
+          <div class="dx__actions">
+            <button type="button" class="btn btn--lagon" data-play>
+              <span data-play-label>Faire passer</span> <Icon name="arrow" class="btn__arrow" />
+            </button>
+            <button type="button" class="btn btn--ghost" data-back>Reprendre de la distance</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page dx__note">
+      <p><strong>Illustration pédagogique.</strong> Les zones et leurs limites sont fictives : chaque chien a ses propres seuils, qui varient selon ce qu’il croise, son vécu et son état du moment. Si votre chien réagit fortement, un accompagnement permet de trouver la bonne distance et une progression adaptée.</p>
+    </div>
+  </section>
+
+  <section class="section page dx-learn" aria-labelledby="dx-learn-title">
+    <div class="dx-learn__grid">
+      <h2 id="dx-learn-title">Trois idées <em>à emporter</em></h2>
+      <ol class="dx-learn__list" role="list">
+        <li><span class="label">01</span><h3>La distance est une alliée</h3><p>S’éloigner n’est pas « fuir le problème » : c’est redonner à votre chien la possibilité de rester calme et d’apprendre.</p></li>
+        <li><span class="label">02</span><h3>Les tensions s’additionnent</h3><p>Après une journée agitée, un même croisement peut être plus difficile. La marge de confort se réduit.</p></li>
+        <li><span class="label">03</span><h3>La forme du passage compte</h3><p>Un face-à-face direct est souvent plus intense qu’un passage en arc de cercle, à distance.</p></li>
+      </ol>
+    </div>
+    <p class="dx-learn__more">Votre chien réagit en croisant d’autres chiens&nbsp;? <a href="/parlons-de-votre-chien/?sujet=congeneres">Parlons-en</a> ou lisez <a href="/accompagnements/chien-adulte/">l’accompagnement du chien adulte</a>.</p>
+  </section>
+
+  <ExplorerNext current="distance" />
+</Base>
+
+<script>
+  import { initDistance } from '~/scripts/explorer/distance';
+  initDistance();
+</script>
+
+<style>
+  .dx {
+    padding-block: var(--space-xl);
+    overflow: hidden;
+  }
+
+  .dx__head {
+    display: grid;
+    gap: var(--space-m);
+    margin-bottom: var(--space-l);
+  }
+
+  .dx__head h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+    max-width: 14ch;
+  }
+
+  .dx__head h1 :global(em) {
+    color: var(--lagon);
+  }
+
+  .dx__head .lede {
+    max-width: 52ch;
+  }
+
+  .dx__lab {
+    --comfort: 0.62;
+    --alert: 0.34;
+    --d: 0.85;
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 64rem) {
+    .dx__lab {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      align-items: center;
+    }
+  }
+
+  .dx__stage {
+    --track-start: 30%;
+    --track-len: 66%;
+    position: relative;
+    aspect-ratio: 16 / 8;
+    min-height: 16rem;
+    border-radius: var(--radius-l);
+    background: linear-gradient(to bottom, var(--nuit-2), var(--sous-bois));
+    border: 1px solid rgb(255 255 255 / 0.08);
+    overflow: hidden;
+  }
+
+  .dx__ground {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 18%;
+    background: rgb(0 0 0 / 0.25);
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+  }
+
+  .dx__zones {
+    position: absolute;
+    left: var(--track-start);
+    right: 0;
+    top: 0;
+    bottom: 18%;
+    display: flex;
+  }
+
+  .dx__zone {
+    position: relative;
+    height: 100%;
+    transition: flex-basis 600ms var(--ease-out);
+  }
+
+  .dx__zone .label {
+    position: absolute;
+    left: 0.6rem;
+    top: 0.8rem;
+    color: var(--craie-douce);
+  }
+
+  .dx__zone--deborde {
+    flex: 0 0 calc(var(--alert) * 94.3%);
+    background: linear-gradient(to top, rgb(233 180 156 / 0.28), transparent);
+  }
+
+  .dx__zone--vigilant {
+    flex: 0 0 calc((var(--comfort) - var(--alert)) * 94.3%);
+    background: linear-gradient(to top, rgb(242 192 138 / 0.18), transparent);
+    border-left: 1px dashed rgb(242 192 138 / 0.5);
+  }
+
+  .dx__zone--aise {
+    flex: 1 1 auto;
+    background: linear-gradient(to top, rgb(154 211 205 / 0.12), transparent);
+    border-left: 1px dashed rgb(154 211 205 / 0.5);
+  }
+
+  .dx__arc {
+    position: absolute;
+    inset: 15% 0 18% 0;
+    width: 100%;
+    height: 67%;
+    opacity: 0;
+    transition: opacity 400ms ease;
+  }
+
+  .dx__arc path {
+    fill: none;
+    stroke: var(--or);
+    stroke-width: 2;
+    stroke-dasharray: 8 8;
+    vector-effect: non-scaling-stroke;
+  }
+
+  [data-arc-on] .dx__arc {
+    opacity: 0.6;
+  }
+
+  .dx__dog {
+    position: absolute;
+    left: 2%;
+    bottom: 12%;
+    width: 30%;
+  }
+
+  .dx__stimulus {
+    position: absolute;
+    bottom: 15%;
+    left: calc(var(--track-start) + var(--d) * var(--track-len));
+    width: 11%;
+    transform: translateX(-50%) translateY(var(--lift, 0)) scale(var(--depth, 1));
+    transform-origin: 50% 100%;
+    transition: left 120ms linear, transform 500ms var(--ease-out);
+  }
+
+  /* En arc de cercle, ce qu'il croise passe plus loin : plus haut, plus petit. */
+  [data-arc-on] .dx__stimulus {
+    --lift: -150%;
+    --depth: 0.72;
+  }
+
+  .dx__icon {
+    display: none;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .dx__icon :is(path, circle) {
+    fill: none;
+    stroke: var(--or);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .dx__icon--chien path:first-child {
+    fill: var(--or);
+    stroke-width: 3;
+  }
+
+  [data-stimulus='chien'] .dx__icon--chien,
+  [data-stimulus='velo'] .dx__icon--velo,
+  [data-stimulus='enfant'] .dx__icon--enfant {
+    display: block;
+  }
+
+  .dx__panel {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .dx__reading {
+    display: grid;
+    gap: var(--space-2xs);
+    min-height: 11rem;
+  }
+
+  .dx__zone-title {
+    font-size: var(--step-4);
+    transition: color 400ms ease;
+  }
+
+  [data-zone='aise'] .dx__zone-title { color: var(--lagon); }
+  [data-zone='vigilant'] .dx__zone-title { color: var(--or); }
+  [data-zone='deborde'] .dx__zone-title { color: var(--argile-claire); }
+
+  .dx__reading p {
+    color: var(--craie-douce);
+  }
+
+  .dx__controls {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .dx__control {
+    display: grid;
+    gap: 0.5rem;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .dx__control legend {
+    margin-bottom: 0.5rem;
+  }
+
+  .dx__range {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: var(--space-s);
+    align-items: center;
+    font-size: var(--step--1);
+    color: var(--craie-douce);
+  }
+
+  .dx__range input {
+    width: 100%;
+    min-height: 2.75rem;
+    accent-color: var(--or);
+  }
+
+  .dx__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .chip {
+    position: relative;
+  }
+
+  .chip input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .chip span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    border-radius: var(--radius-pill);
+    font-size: var(--step--1);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  }
+
+  .chip input:hover + span {
+    border-color: var(--lagon);
+  }
+
+  .chip input:checked + span {
+    background: var(--lagon);
+    border-color: var(--lagon);
+    color: var(--nuit);
+  }
+
+  .chip input:focus-visible + span {
+    outline: 3px solid var(--lagon);
+    outline-offset: 2px;
+  }
+
+  .dx__toggle {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    min-height: 2.75rem;
+    cursor: pointer;
+  }
+
+  .dx__toggle input {
+    width: 1.25rem;
+    height: 1.25rem;
+    accent-color: var(--lagon);
+  }
+
+  .dx__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+  }
+
+  .dx__note {
+    margin-top: var(--space-l);
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    border: 1px dashed rgb(255 255 255 / 0.2);
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  .dx-learn__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .dx-learn__grid {
+      grid-template-columns: 4fr 8fr;
+    }
+  }
+
+  .dx-learn__list {
+    display: grid;
+    gap: var(--space-l);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 48rem) {
+    .dx-learn__list {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .dx-learn__list li {
+    display: grid;
+    gap: var(--space-2xs);
+    align-content: start;
+    padding-top: var(--space-s);
+    border-top: 1px solid color-mix(in oklab, var(--encre) 18%, transparent);
+  }
+
+  .dx-learn__list p {
+    color: var(--encre-douce);
+  }
+
+  .dx-learn__more {
+    margin-top: var(--space-l);
+  }
+</style>

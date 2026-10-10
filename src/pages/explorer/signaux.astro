@@ -1,0 +1,483 @@
+---
+import Base from '~/layouts/Base.astro';
+import DogFigure from '~/components/DogFigure.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import ExplorerNext from '~/components/ExplorerNext.astro';
+import Icon from '~/components/Icon.astro';
+import { CONTEXTS, PARTS, SCENARIOS, DEFAULT_STATE, cuesSentence, readPosture } from '~/lib/signaux';
+
+const first = SCENARIOS[0]!;
+const initial = readPosture(first.state, first.context);
+const axes = [
+  { key: 'detente', label: 'Détente' },
+  { key: 'attention', label: 'Attention' },
+  { key: 'inconfort', label: 'Inconfort' },
+  { key: 'excitation', label: 'Excitation' },
+] as const;
+---
+<Base
+  title="Lire les signaux de son chien"
+  description="Explorateur interactif : modifiez la posture, les oreilles, la queue ou le regard d’un chien et découvrez comment lire ses signaux en tenant compte du contexte."
+  headerTheme="dark"
+>
+  <section class="xp on-dark grain-dark" aria-labelledby="xp-title">
+    <div class="page xp__head">
+      <p class="eyebrow" data-num="03">Explorer · Lire les signaux</p>
+      <SplitTitle as="h1" id="xp-title" text="Ce que son corps *raconte*." now />
+      <p class="lede">Modifiez chaque partie du corps, changez de contexte, et observez comment la lecture évolue. Un signal isolé dit peu de chose : c’est l’ensemble qui compte.</p>
+    </div>
+
+    <div class="page xp__lab" data-signaux>
+      <div class="xp__stage" data-context="calme">
+        <div class="xp__stage-bg" aria-hidden="true">
+          <span class="xp__ctx-label label" data-ctx-label>{CONTEXTS[0].label}</span>
+        </div>
+        <DogFigure class="xp__dog" ears="relaxed" tail="neutral" body="soft" head="neutral" mouth="relaxed" gaze="soft" label="Chien illustré dont la posture change selon vos choix" />
+        <div class="xp__reading" aria-live="polite" data-reading>
+          <p class="label">Lecture possible</p>
+          <h2 class="xp__reading-title" data-r-title>{initial.title}</h2>
+          <div class="xp__bars" aria-hidden="true">
+            {
+              axes.map((a) => (
+                <div class="xp__bar" data-axis={a.key}>
+                  <span class="xp__bar-label">{a.label}</span>
+                  <span class="xp__bar-track"><span class="xp__bar-fill" data-bar={a.key}></span></span>
+                </div>
+              ))
+            }
+          </div>
+          <p data-r-summary>{initial.summary}</p>
+          <p class="xp__cues" data-r-cues>{cuesSentence(initial.cues)}</p>
+          <p class="xp__advice"><Icon name="check" /> <span data-r-advice>{initial.advice}</span></p>
+        </div>
+      </div>
+
+      <form class="xp__controls" data-controls>
+        <fieldset class="xp__group">
+          <legend class="label">Scénarios</legend>
+          <div class="xp__chips">
+            {SCENARIOS.map((s, i) => (
+              <label class="chip">
+                <input type="radio" name="scenario" value={s.id} checked={i === 0} />
+                <span>{s.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset class="xp__group">
+          <legend class="label">Contexte</legend>
+          <div class="xp__chips">
+            {CONTEXTS.map((c, i) => (
+              <label class="chip">
+                <input type="radio" name="context" value={c.value} checked={i === 0} />
+                <span>{c.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div class="xp__parts">
+          {
+            PARTS.map((part) => (
+              <fieldset class="xp__part">
+                <legend>{part.label}</legend>
+                <div class="seg">
+                  {part.options.map((o) => (
+                    <label>
+                      <input type="radio" name={part.key} value={o.value} checked={DEFAULT_STATE[part.key] === o.value} />
+                      <span>{o.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            ))
+          }
+        </div>
+
+        <div class="xp__quiz" data-quiz>
+          <button type="button" class="btn btn--lagon" data-quiz-start>
+            À vous de lire <Icon name="arrow" class="btn__arrow" />
+          </button>
+          <div class="xp__quiz-panel" data-quiz-panel hidden>
+            <p data-quiz-question>Observez la posture et le contexte. Quelle lecture vous semble la plus probable&nbsp;?</p>
+            <div class="xp__chips" role="group" aria-label="Votre réponse">
+              {axes.map((a) => <button type="button" class="chip-btn" data-answer={a.key}>{a.label}</button>)}
+            </div>
+            <p class="xp__quiz-feedback" data-quiz-feedback aria-live="assertive"></p>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="page xp__note">
+      <p><strong>Illustration pédagogique.</strong> Les lectures proposées sont indicatives et simplifiées. Elles ne remplacent ni l’observation de votre chien dans sa situation réelle, ni l’avis d’un professionnel. Un changement brutal de comportement doit faire penser à la santé : parlez-en à votre vétérinaire.</p>
+    </div>
+  </section>
+
+  <section class="section page fallback-list" aria-labelledby="scenarios-title">
+    <h2 id="scenarios-title" class="fallback-list__title">Les scénarios <em>en détail</em></h2>
+    <div class="accordion">
+      {
+        SCENARIOS.map((s) => {
+          const r = readPosture(s.state, s.context);
+          return (
+            <details>
+              <summary>{s.label}</summary>
+              <div class="accordion__body">
+                <p><strong>{r.title}.</strong> {r.summary}</p>
+                <p>{cuesSentence(r.cues)}</p>
+                <p>{r.advice}</p>
+              </div>
+            </details>
+          );
+        })
+      }
+    </div>
+    <p class="fallback-list__more">Pour aller plus loin : <a href="/blog/lire-les-signaux/">le guide « Lire les signaux de son chien »</a>.</p>
+  </section>
+
+  <ExplorerNext current="signaux" />
+</Base>
+
+<script>
+  import { initSignaux } from '~/scripts/explorer/signaux';
+  initSignaux();
+</script>
+
+<style>
+  .xp {
+    padding-block: var(--space-xl) var(--space-l);
+    overflow: hidden;
+  }
+
+  .xp__head {
+    display: grid;
+    gap: var(--space-m);
+    margin-bottom: var(--space-l);
+  }
+
+  .xp__head h1 {
+    font-size: var(--step-6);
+    line-height: 0.9;
+  }
+
+  .xp__head h1 :global(em) {
+    color: var(--lagon);
+  }
+
+  .xp__head .lede {
+    max-width: 52ch;
+  }
+
+  .xp__lab {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 64rem) {
+    .xp__lab {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: start;
+    }
+
+    .xp__stage {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+
+  .xp__stage {
+    position: relative;
+    display: grid;
+    gap: var(--space-m);
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: radial-gradient(70% 70% at 50% 30%, var(--sous-bois), var(--nuit-2));
+    border: 1px solid rgb(255 255 255 / 0.08);
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .xp__stage-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transition: background 700ms ease;
+  }
+
+  .xp__stage[data-context='inconnu'] .xp__stage-bg { background: radial-gradient(50% 60% at 95% 30%, rgb(233 180 156 / 0.18), transparent 70%); }
+  .xp__stage[data-context='congenere'] .xp__stage-bg { background: radial-gradient(50% 60% at 100% 60%, rgb(242 192 138 / 0.2), transparent 70%); }
+  .xp__stage[data-context='jeu'] .xp__stage-bg { background: radial-gradient(60% 60% at 50% 20%, rgb(154 211 205 / 0.22), transparent 70%); }
+  .xp__stage[data-context='bruit'] .xp__stage-bg { background: radial-gradient(60% 50% at 50% 0%, rgb(255 255 255 / 0.12), transparent 70%); }
+
+  .xp__ctx-label {
+    position: absolute;
+    top: var(--space-m);
+    left: var(--space-l);
+  }
+
+  .xp__dog {
+    width: 100%;
+    max-width: 34rem;
+    margin: var(--space-l) auto 0;
+  }
+
+  .xp__reading {
+    display: grid;
+    gap: var(--space-xs);
+    padding-top: var(--space-m);
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+  }
+
+  .xp__reading-title {
+    font-size: var(--step-3);
+    color: var(--or);
+  }
+
+  .xp__bars {
+    display: grid;
+    gap: 0.4rem;
+    margin-block: var(--space-2xs);
+  }
+
+  .xp__bar {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    align-items: center;
+    gap: var(--space-s);
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--craie-douce);
+  }
+
+  .xp__bar-track {
+    height: 6px;
+    border-radius: 6px;
+    background: rgb(255 255 255 / 0.08);
+    overflow: hidden;
+  }
+
+  .xp__bar-fill {
+    display: block;
+    height: 100%;
+    width: calc(var(--v, 0) * 100%);
+    border-radius: inherit;
+    background: var(--lagon);
+    transition: width 600ms var(--ease-out);
+  }
+
+  .xp__bar[data-axis='inconfort'] .xp__bar-fill { background: var(--argile-claire); }
+  .xp__bar[data-axis='attention'] .xp__bar-fill { background: var(--or); }
+  .xp__bar[data-axis='excitation'] .xp__bar-fill { background: #c9e78f; }
+
+  .xp__reading p {
+    color: var(--craie-douce);
+    max-width: 60ch;
+  }
+
+  .xp__cues {
+    font-size: var(--step--1);
+  }
+
+  .xp__advice {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    color: var(--craie) !important;
+  }
+
+  .xp__advice :global(svg) {
+    flex: none;
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-top: 0.2rem;
+    color: var(--lagon);
+  }
+
+  .xp__controls {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .xp__group {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .xp__group legend {
+    margin-bottom: var(--space-xs);
+  }
+
+  .xp__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .chip {
+    position: relative;
+  }
+
+  .chip input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .chip span,
+  .chip-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgb(255 255 255 / 0.22);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--craie);
+    font-size: var(--step--1);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  }
+
+  .chip input:hover + span,
+  .chip-btn:hover {
+    border-color: var(--lagon);
+  }
+
+  .chip input:checked + span {
+    background: var(--lagon);
+    border-color: var(--lagon);
+    color: var(--nuit);
+  }
+
+  .chip input:focus-visible + span,
+  .chip-btn:focus-visible {
+    outline: 3px solid var(--lagon);
+    outline-offset: 2px;
+  }
+
+  .xp__parts {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .xp__part {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    align-items: center;
+    gap: var(--space-s);
+    border: 0;
+    padding: 0 0 var(--space-s);
+    margin: 0;
+    min-width: 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .xp__part legend {
+    float: left;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+  }
+
+  .seg {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .seg label {
+    position: relative;
+  }
+
+  .seg input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .seg span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: var(--radius-s);
+    background: rgb(255 255 255 / 0.06);
+    font-size: var(--step--1);
+    color: var(--craie-douce);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  }
+
+  .seg input:hover + span {
+    background: rgb(255 255 255 / 0.12);
+  }
+
+  .seg input:checked + span {
+    background: var(--or);
+    color: var(--nuit);
+  }
+
+  .seg input:focus-visible + span {
+    outline: 3px solid var(--lagon);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 40rem) {
+    .xp__part {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .xp__quiz {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+  }
+
+  .xp__quiz-panel {
+    display: grid;
+    gap: var(--space-s);
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    background: rgb(255 255 255 / 0.05);
+  }
+
+  .xp__quiz-feedback:empty {
+    display: none;
+  }
+
+  .xp__quiz-feedback {
+    color: var(--or);
+    font-weight: 600;
+  }
+
+  [data-signaux].is-quiz .xp__reading {
+    visibility: hidden;
+  }
+
+  .xp__note {
+    margin-top: var(--space-l);
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    border: 1px dashed rgb(255 255 255 / 0.2);
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  .fallback-list__title {
+    margin-bottom: var(--space-l);
+  }
+
+  .fallback-list__more {
+    margin-top: var(--space-m);
+  }
+</style>

@@ -5,7 +5,7 @@ import SiteFooter from '~/components/SiteFooter.astro';
 import { site } from '~/config/site';
 import { organizationLd, websiteLd } from '~/lib/seo';
 import { draftsVisible } from '~/lib/fields';
-import frauncesUrl from '@fontsource-variable/fraunces/files/fraunces-latin-soft-normal.woff2?url';
+import serifUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url';
 import instrumentUrl from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url';
 
 interface Props {
@@ -20,9 +20,11 @@ interface Props {
   /** Thème de l'en-tête : sombre sur l'accueil. */
   headerTheme?: 'light' | 'dark';
   jsonLd?: Record<string, unknown>[];
+  /** Pied de page sans grand appel final. */
+  quietFooter?: boolean;
 }
 
-const { title, description, canonicalPath, noindex = false, ogImage = '/og-default.jpg', ogType = 'website', headerTheme = 'light', jsonLd = [] } = Astro.props;
+const { title, description, canonicalPath, noindex = false, ogImage = '/og-default.jpg', ogType = 'website', headerTheme = 'light', jsonLd = [], quietFooter = false } = Astro.props;
 const brand = site.name.value;
 const fullTitle = title === brand ? `${brand} — ${site.tagline.value}` : `${title} · ${brand}`;
 const base = Astro.site ?? new URL('https://toutoubien.example');
@@ -38,7 +40,7 @@ const structured = [organizationLd(base), websiteLd(base), ...jsonLd];
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script is:inline>document.documentElement.classList.replace('no-js', 'js');</script>
-    <link rel="preload" href={frauncesUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={serifUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={instrumentUrl} as="font" type="font/woff2" crossorigin />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
@@ -72,6 +74,10 @@ const structured = [organizationLd(base), websiteLd(base), ...jsonLd];
     <main id="contenu" tabindex="-1">
       <slot />
     </main>
-    <SiteFooter />
+    <SiteFooter quiet={quietFooter} />
+    <script>
+      import { initMagnetic } from '~/scripts/magnetic';
+      initMagnetic();
+    </script>
   </body>
 </html>

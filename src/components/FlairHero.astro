@@ -1,0 +1,352 @@
+---
+/**
+ * Scène d'ouverture « Le flair ».
+ * Trois modes :
+ * - statique (par défaut, sans JS, mouvement réduit, appareil modeste) : l'emblème
+ *   dessiné en SVG et les trois chapitres affichés côte à côte ;
+ * - cinéma (WebGL disponible) : section collante de 3,6 écrans, les particules
+ *   composent la rencontre, la balade puis le lien au fil du défilement ;
+ * - repli automatique vers le mode statique si l'appareil ne tient pas la cadence.
+ * Le texte est toujours du HTML réel, lisible par tous et indexable.
+ */
+import Icon from './Icon.astro';
+import SplitTitle from './SplitTitle.astro';
+import emblemRaw from '~/assets/brand/emblem.svg?raw';
+import { site } from '~/config/site';
+
+const d = emblemRaw.match(/ d="([^"]+)"/)?.[1] ?? '';
+const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
+
+const chapters = [
+  { num: '01', title: 'La rencontre', text: 'Tout commence face à face, à hauteur de chien : faire connaissance avec votre chien, votre quotidien et vos questions.' },
+  { num: '02', title: 'La balade', text: 'Dehors, votre chien lit le monde avec son nez. Comprendre ce qu’il perçoit change la façon de marcher ensemble.' },
+  { num: '03', title: 'Le lien', text: 'Peu à peu, chacun apprend à lire l’autre. Une relation qui fait du bien, au quotidien.' },
+];
+---
+<section class="cine on-dark" data-cine data-mode="static" data-chapter="0" aria-labelledby="cine-title">
+  <div class="cine__sticky">
+    <div class="cine__glow" aria-hidden="true"></div>
+    <canvas class="cine__canvas" aria-hidden="true"></canvas>
+    <svg class="cine__static" viewBox={viewBox} aria-hidden="true" focusable="false">
+      <defs>
+        <radialGradient id="cine-grad" cx="50%" cy="40%" r="65%">
+          <stop offset="0%" stop-color="#cfeae6" />
+          <stop offset="70%" stop-color="#9ad3cd" />
+          <stop offset="100%" stop-color="#f2c08a" />
+        </radialGradient>
+      </defs>
+      <path d={d} fill="url(#cine-grad)" fill-rule="evenodd" data-emblem-path />
+    </svg>
+
+    <div class="cine__intro page">
+      <p class="eyebrow enter">Éducation canine · accompagnement des familles</p>
+      <SplitTitle as="h1" id="cine-title" class="cine__title" text="Comprendre son chien, *se sentir bien* ensemble." now />
+      <p class="lede cine__lede enter" data-i="4">
+        ToutouBien accompagne les propriétaires et leur chien pour que le quotidien redevienne plus simple, à la maison comme en balade.
+      </p>
+      <div class="cine__actions enter" data-i="5">
+        <a class="btn btn--lagon" href="/parlons-de-votre-chien/" data-magnetic>
+          Parlons de votre chien
+          <Icon name="arrow" class="btn__arrow" />
+        </a>
+        <a class="cine__secondary" href="/orientation/">Par où commencer&nbsp;?</a>
+      </div>
+    </div>
+
+    <ol class="cine__chapters page" role="list">
+      {
+        chapters.map((c, i) => (
+          <li class="cine__chapter" data-step={i + 1}>
+            <span class="label">Chapitre {c.num}</span>
+            <h2 class="cine__chapter-title">{c.title}</h2>
+            <p>{c.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="cine__rail" aria-hidden="true">
+      <span class="cine__rail-fill"></span>
+      <span class="cine__rail-label">Défilez</span>
+    </div>
+    <p class="cine__signature" aria-hidden="true">{site.tagline.value}</p>
+  </div>
+</section>
+
+<script>
+  import { initFlairHero } from '~/scripts/flair/hero';
+  initFlairHero();
+</script>
+
+<style>
+  .cine {
+    position: relative;
+    z-index: 1;
+    background:
+      radial-gradient(80% 60% at 70% 35%, #1d332f 0%, var(--nuit) 70%),
+      var(--nuit);
+  }
+
+  .cine__sticky {
+    position: relative;
+    display: grid;
+    min-height: min(100svh - 4.75rem, 60rem);
+    padding-block: var(--space-xl) var(--space-l);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .cine__glow {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(40% 35% at 72% 42%, rgb(242 192 138 / 0.16), transparent 70%),
+      radial-gradient(30% 30% at 20% 80%, rgb(154 211 205 / 0.08), transparent 70%);
+  }
+
+  .cine__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1.2s var(--ease-out);
+  }
+
+  .cine__static {
+    position: absolute;
+    z-index: -1;
+    right: 4%;
+    top: 50%;
+    width: min(44vw, 38rem);
+    height: auto;
+    transform: translateY(-50%);
+    filter: drop-shadow(0 0 2.5rem rgb(154 211 205 / 0.25));
+    transition: opacity 1s var(--ease-out);
+  }
+
+  .cine__intro {
+    display: grid;
+    gap: var(--space-m);
+    align-content: center;
+    justify-items: start;
+  }
+
+  .cine__title {
+    max-width: 11ch;
+    font-size: clamp(3.4rem, 1.2rem + 7.8vw, 9.5rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+  }
+
+  .cine__title :global(em) {
+    color: var(--lagon);
+  }
+
+  .cine__lede {
+    max-width: 34ch;
+  }
+
+  .cine__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  .cine__secondary {
+    padding-block: 0.6rem;
+    font-weight: 600;
+  }
+
+  .cine__chapters {
+    display: grid;
+    gap: var(--space-m);
+    margin-top: var(--space-xl);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 48rem) {
+    .cine__chapters {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .cine__chapter {
+    display: grid;
+    gap: var(--space-2xs);
+    padding-top: var(--space-s);
+    border-top: 1px solid rgb(255 255 255 / 0.16);
+  }
+
+  .cine__chapter-title {
+    font-size: var(--step-3);
+  }
+
+  .cine__chapter p {
+    max-width: 34ch;
+    color: var(--craie-douce);
+  }
+
+  .cine__rail,
+  .cine__signature {
+    display: none;
+  }
+
+  @media (max-width: 59.99rem) {
+    .cine__static {
+      position: relative;
+      top: auto;
+      right: auto;
+      order: -1;
+      width: min(70vw, 20rem);
+      transform: none;
+      justify-self: end;
+      margin-bottom: var(--space-m);
+    }
+  }
+
+  /* ============ Mode cinéma ============ */
+  .cine[data-mode='cinema'] {
+    height: 360svh;
+  }
+
+  .cine[data-mode='cinema'] .cine__sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    min-height: 0;
+    padding-block: 0;
+    align-content: center;
+  }
+
+  .cine[data-ready='true'] .cine__canvas {
+    opacity: 1;
+  }
+
+  .cine[data-ready='true'] .cine__static {
+    opacity: 0;
+  }
+
+  .cine[data-mode='cinema'] .cine__intro {
+    position: absolute;
+    inset: 0;
+    align-content: center;
+    padding-top: 4rem;
+    transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+  }
+
+  .cine[data-mode='cinema']:not([data-chapter='0']) .cine__intro {
+    opacity: 0;
+    transform: translateY(-3rem);
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out), visibility 0s 600ms;
+  }
+
+  .cine[data-mode='cinema'] .cine__chapters {
+    position: absolute;
+    inset: auto 0 12svh 0;
+    margin: 0 auto;
+    display: block;
+  }
+
+  .cine[data-mode='cinema'] .cine__chapter {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: min(30rem, 100%);
+    border-top: 0;
+    opacity: 0;
+    transform: translateY(2rem);
+    transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out);
+  }
+
+  .cine[data-chapter='1'] .cine__chapter[data-step='1'],
+  .cine[data-chapter='2'] .cine__chapter[data-step='2'],
+  .cine[data-chapter='3'] .cine__chapter[data-step='3'] {
+    opacity: 1;
+    transform: none;
+    transition-delay: 150ms;
+  }
+
+  .cine[data-mode='cinema'] .cine__chapter-title {
+    font-size: var(--step-5);
+    line-height: 0.92;
+  }
+
+  .cine[data-mode='cinema'] .cine__rail {
+    display: block;
+    position: absolute;
+    right: var(--gutter);
+    top: 50%;
+    width: 2px;
+    height: 30svh;
+    transform: translateY(-50%);
+    background: rgb(255 255 255 / 0.14);
+    border-radius: 2px;
+  }
+
+  .cine__rail-fill {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: calc(var(--p, 0) * 100%);
+    background: var(--or);
+    border-radius: inherit;
+  }
+
+  .cine__rail-label {
+    position: absolute;
+    top: calc(100% + 0.8rem);
+    left: 50%;
+    transform: translateX(-50%) rotate(90deg);
+    transform-origin: left center;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--craie-douce);
+    white-space: nowrap;
+  }
+
+  .cine[data-mode='cinema'] .cine__signature {
+    display: block;
+    position: absolute;
+    left: var(--gutter);
+    bottom: var(--space-m);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-1);
+    color: var(--craie-douce);
+  }
+
+  @media (max-width: 59.99rem) {
+    .cine[data-mode='cinema'] .cine__static {
+      position: absolute;
+    }
+
+    .cine[data-mode='cinema'] .cine__intro {
+      align-content: end;
+      padding-bottom: 7svh;
+      background: linear-gradient(to top, rgb(12 21 19 / 0.96) 45%, rgb(12 21 19 / 0.6) 62%, transparent 80%);
+    }
+
+    .cine[data-mode='cinema'] .cine__rail {
+      display: none;
+    }
+
+    .cine[data-mode='cinema'] .cine__chapters {
+      bottom: 8svh;
+    }
+
+    .cine[data-mode='cinema'] .cine__chapter {
+      padding: var(--space-m);
+      border-radius: var(--radius-l);
+      background: rgb(12 21 19 / 0.72);
+      backdrop-filter: blur(6px);
+    }
+  }
+</style>

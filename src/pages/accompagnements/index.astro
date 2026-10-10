@@ -1,0 +1,263 @@
+---
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import PlateArt from '~/components/PlateArt.astro';
+import Icon from '~/components/Icon.astro';
+import Faq from '~/components/Faq.astro';
+import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
+---
+<Base
+  title="Accompagnements"
+  description="Chiot, chien adulte, difficultés du quotidien ou simple envie de mieux comprendre son chien : découvrez les accompagnements ToutouBien selon votre situation."
+>
+  <section class="acc-hero">
+    <div class="page acc-hero__inner">
+      <p class="eyebrow enter">Accompagnements</p>
+      <SplitTitle as="h1" text="Quatre chemins, *un seul point de départ* : votre chien." now />
+      <p class="lede enter" data-i="3">Chaque famille arrive avec sa propre histoire. Choisissez la situation qui vous ressemble le plus : vous y trouverez ce qui se joue, ce que l’accompagnement peut apporter et comment il se déroule.</p>
+    </div>
+  </section>
+
+  <section class="section section--tight paths" aria-label="Les accompagnements">
+    <div class="page paths__wrap" data-hover-list>
+      <div class="paths__preview" data-hover-preview aria-hidden="true">
+        {ACCOMPAGNEMENTS.map((a) => <PlateArt motif={a.motif} class={`paths__art paths__art--${a.slug}`} />)}
+      </div>
+    <ol class="paths__list" role="list">
+      {
+        ACCOMPAGNEMENTS.map((a) => (
+          <li data-hover-item={a.slug}>
+            <a class="path" href={`/accompagnements/${a.slug}/`}>
+              <span class="path__num">{a.num}</span>
+              <span class="path__title">{a.label}</span>
+              <span class="path__short">{a.short}</span>
+              <span class="path__thumb" aria-hidden="true"><PlateArt motif={a.motif} /></span>
+              <Icon name="arrow" class="path__arrow" />
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+    </div>
+  </section>
+
+  <section class="section on-dark grain-dark unsure" aria-labelledby="unsure-title">
+    <div class="page unsure__grid">
+      <div>
+        <p class="eyebrow">Vous hésitez&nbsp;?</p>
+        <h2 id="unsure-title">Trois questions pour <em>trouver votre chemin</em>.</h2>
+      </div>
+      <div class="unsure__text">
+        <p class="lede">Le questionnaire d’orientation vous propose les pages, articles et expériences les plus utiles pour votre situation. Il ne pose aucun diagnostic.</p>
+        <div class="unsure__actions">
+          <a class="btn btn--lagon" href="/orientation/" data-magnetic>Par où commencer&nbsp;? <Icon name="arrow" class="btn__arrow" /></a>
+          <a class="unsure__link" href="/deroulement/">Comment se déroule un accompagnement</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Faq scope="accompagnement" />
+</Base>
+
+<script>
+  import { initHoverPreview } from '~/scripts/hover-preview';
+  initHoverPreview();
+</script>
+
+<style>
+  .acc-hero {
+    padding-block: var(--space-xl) var(--space-l);
+  }
+
+  .acc-hero__inner {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .acc-hero h1 {
+    max-width: 16ch;
+    font-size: var(--step-6);
+    line-height: 0.9;
+  }
+
+  .acc-hero h1 :global(em) {
+    color: var(--sarcelle);
+  }
+
+  .acc-hero .lede {
+    max-width: 56ch;
+  }
+
+  .paths__wrap {
+    position: relative;
+  }
+
+  .paths__list {
+    position: relative;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid color-mix(in oklab, var(--encre) 18%, transparent);
+  }
+
+  .path {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    grid-template-areas: 'num title arrow' 'thumb thumb thumb' 'short short short';
+    gap: var(--space-xs) var(--space-s);
+    align-items: center;
+    padding-block: var(--space-l);
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 18%, transparent);
+    color: var(--encre);
+    text-decoration: none;
+    z-index: 1;
+  }
+
+  .path__num {
+    grid-area: num;
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--argile);
+  }
+
+  .path__title {
+    grid-area: title;
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1;
+    transition: transform var(--dur) var(--ease-out), color var(--dur) ease;
+  }
+
+  .path__short {
+    grid-area: short;
+    color: var(--encre-douce);
+    max-width: 40ch;
+  }
+
+  .path__thumb {
+    grid-area: thumb;
+    display: block;
+    position: relative;
+    aspect-ratio: 16 / 7;
+    border-radius: var(--radius-m);
+    overflow: hidden;
+  }
+
+  .path__thumb :global(.plate-art),
+  .paths__art {
+    position: absolute;
+    inset: 0;
+  }
+
+  .path__arrow {
+    grid-area: arrow;
+    width: 2rem;
+    height: 2rem;
+    color: var(--argile);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .path:hover {
+    color: var(--encre);
+  }
+
+  .path:hover .path__title {
+    transform: translateX(0.6rem);
+    color: var(--sarcelle);
+  }
+
+  .path:hover .path__arrow {
+    transform: translateX(0.4rem) rotate(-30deg);
+  }
+
+  @media (min-width: 56rem) {
+    .path {
+      grid-template-columns: 5rem minmax(0, 1.4fr) minmax(0, 1fr) 2.5rem;
+      grid-template-areas: 'num title short arrow';
+      padding-block: var(--space-l);
+    }
+
+    .path__thumb {
+      display: none;
+    }
+
+    .path__title {
+      font-size: var(--step-5);
+    }
+  }
+
+  /* Aperçu flottant (souris) */
+  .paths__preview {
+    display: none;
+  }
+
+  :global(.has-hover-preview) .paths__preview {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 22rem;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-arch);
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transform: translate(calc(var(--px, 0px) - 50%), calc(var(--py, 0px) - 50%)) scale(0.85) rotate(-4deg);
+    transition: opacity 300ms ease, transform 500ms var(--ease-out);
+  }
+
+  :global(.is-previewing) .paths__preview {
+    opacity: 1;
+    transform: translate(calc(var(--px, 0px) - 50%), calc(var(--py, 0px) - 50%)) scale(1) rotate(0deg);
+  }
+
+  .paths__preview :global(.paths__art) {
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  .paths__preview[data-active='chiot'] :global(.paths__art--chiot),
+  .paths__preview[data-active='chien-adulte'] :global(.paths__art--chien-adulte),
+  .paths__preview[data-active='quotidien'] :global(.paths__art--quotidien),
+  .paths__preview[data-active='comprendre'] :global(.paths__art--comprendre) {
+    opacity: 1;
+  }
+
+  .unsure__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .unsure__grid {
+      grid-template-columns: 6fr 5fr;
+      align-items: end;
+    }
+  }
+
+  .unsure h2 {
+    margin-top: var(--space-s);
+  }
+
+  .unsure h2 em {
+    color: var(--lagon);
+  }
+
+  .unsure__text {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .unsure__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  .unsure__link {
+    font-weight: 600;
+  }
+</style>

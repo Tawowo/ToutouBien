@@ -1,13 +1,17 @@
 ---
 import Base from '~/layouts/Base.astro';
-import Icon from '~/components/Icon.astro';
-import Fil from '~/components/Fil.astro';
+import FlairHero from '~/components/FlairHero.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import PlateArt from '~/components/PlateArt.astro';
 import Plate from '~/components/Plate.astro';
+import DogFigure from '~/components/DogFigure.astro';
+import Fil from '~/components/Fil.astro';
+import Icon from '~/components/Icon.astro';
 import Faq from '~/components/Faq.astro';
-import CtaBand from '~/components/CtaBand.astro';
 import ArticleCard from '~/components/ArticleCard.astro';
 import Draft from '~/components/Draft.astro';
-import Emblem from '~/assets/brand/emblem.svg';
+import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
+import { EXPERIENCES } from '~/content/explorer';
 import { site } from '~/config/site';
 import { resolve } from '~/lib/fields';
 import { TOPICS, joinFr } from '~/lib/wizard';
@@ -19,67 +23,77 @@ const intro = resolve(site.educator.intro);
 const purpose = resolve(site.firstMeeting.purpose);
 const places = resolve(site.firstMeeting.places);
 const free = resolve(site.firstMeeting.free);
-const phone = resolve(site.contact.phone);
 const articles = (await visibleArticles()).slice(0, 3);
+const signals = [
+  { id: 'detendu', label: 'Détendu', state: { body: 'soft', ears: 'relaxed', tail: 'neutral', wag: 'none', head: 'neutral', mouth: 'relaxed', gaze: 'soft' }, text: 'Corps souple, gueule entrouverte, regard doux.' },
+  { id: 'attentif', label: 'Attentif', state: { body: 'frozen', ears: 'forward', tail: 'high', wag: 'stiff', head: 'up', mouth: 'closed', gaze: 'fixed' }, text: 'Il se fige et fixe : quelque chose capte toute son attention.' },
+  { id: 'gene', label: 'Mal à l’aise', state: { body: 'lowered', ears: 'back', tail: 'low', wag: 'none', head: 'turned', mouth: 'lick', gaze: 'away' }, text: 'Il se fait petit, détourne la tête, se lèche la truffe.' },
+  { id: 'joueur', label: 'Joueur', state: { body: 'bow', ears: 'forward', tail: 'high', wag: 'loose', head: 'neutral', mouth: 'relaxed', gaze: 'soft' }, text: 'L’avant baissé, l’arrière levé : une invitation au jeu.' },
+];
 ---
 <Base
   title="ToutouBien"
-  description="ToutouBien accompagne les propriétaires de chiens au quotidien : comprendre son chien, retrouver des balades sereines et une vie de famille plus simple. Premier échange pour parler de votre situation."
+  description="ToutouBien accompagne les propriétaires de chiens au quotidien : comprendre son chien, retrouver des balades sereines et une vie de famille plus simple. Expériences interactives, ressources et premier échange."
   headerTheme="dark"
 >
-  <!-- 1. Première scène -->
-  <section class="hero on-dark" aria-labelledby="hero-title">
-    <div class="page hero__layout">
-      <div class="hero__art" aria-hidden="true">
-        <Emblem class="hero__emblem" />
-        <Fil variant="descente" class="hero__fil" immediate />
-      </div>
-      <div class="hero__content">
-        <p class="eyebrow enter" data-i="0">Éducation canine · accompagnement des familles</p>
-        <h1 id="hero-title" class="hero__title">
-          <span class="enter" data-i="1">Comprendre</span>
-          <span class="enter" data-i="2">son chien,</span>
-          <span class="enter hero__title-em" data-i="3"><em>se sentir bien</em></span>
-          <span class="enter" data-i="4">ensemble.</span>
-        </h1>
-        <p class="lede hero__lede enter" data-i="5">
-          ToutouBien accompagne les propriétaires et leur chien pour que le quotidien redevienne plus simple, à la maison comme en balade.
-        </p>
-        <div class="hero__actions enter" data-i="6">
-          <a class="btn btn--lagon" href="/parlons-de-votre-chien/">
-            Parlons de votre chien
-            <Icon name="arrow" class="btn__arrow" />
-          </a>
-          <a class="hero__secondary" href="#premier-pas">Comment ça se passe&nbsp;?</a>
-        </div>
-      </div>
-    </div>
-    <p class="hero__signature" aria-hidden="true">{site.tagline.value}</p>
-  </section>
+  <FlairHero />
 
-  <!-- 2. L'esprit -->
+  <!-- Manifeste -->
   <section class="section manifesto" aria-labelledby="manifesto-title">
+    <Fil variant="descente" class="manifesto__fil" />
     <div class="page manifesto__grid">
-      <div class="manifesto__text">
-        <p class="eyebrow reveal">L’esprit ToutouBien</p>
-        <h2 id="manifesto-title" class="manifesto__statement reveal">
-          Un chien ne vient pas avec un mode d’emploi. <em>Ses réactions ont souvent leurs raisons</em>&nbsp;: encore faut-il les comprendre.
-        </h2>
-        <p class="lede reveal">
-          L’idée n’est pas de « corriger » votre chien, mais de vous aider à mieux le lire, à ajuster quelques habitudes et à retrouver une relation qui fait du bien à toute la famille.
-        </p>
+      <p class="eyebrow">L’esprit ToutouBien</p>
+      <SplitTitle id="manifesto-title" class="manifesto__statement" text="Un chien ne vient pas avec un mode d’emploi. *Ses réactions ont souvent leurs raisons* : encore faut-il les comprendre." />
+      <div class="manifesto__aside">
+        <p class="lede">L’idée n’est pas de « corriger » votre chien, mais de vous aider à mieux le lire, à ajuster quelques habitudes et à retrouver une relation qui fait du bien à toute la famille.</p>
+        <a class="link-arrow" href="/approche/">Découvrir l’approche <Icon name="arrow" /></a>
       </div>
-      <Plate id="accueil-balade" class="manifesto__plate" shape="arch" sizes="(min-width: 60rem) 38vw, 92vw" />
+      <Plate id="accueil-balade" class="manifesto__plate parallax" shape="arch" sizes="(min-width: 60rem) 30vw, 80vw" />
     </div>
   </section>
 
-  <!-- 3. Les situations -->
-  <section class="section topics on-lin" aria-labelledby="topics-title">
+  <!-- La balade : les quatre chemins, en défilement horizontal -->
+  <section class="walk on-dark grain-dark" aria-labelledby="walk-title">
+    <div class="walk__sticky">
+      <div class="page walk__head">
+        <p class="eyebrow">Quatre chemins</p>
+        <h2 id="walk-title">Où en êtes-vous <em>avec votre chien</em>&nbsp;?</h2>
+      </div>
+      <ol class="walk__track" role="list">
+        {
+          ACCOMPAGNEMENTS.map((a) => (
+            <li class="walk__panel">
+              <a href={`/accompagnements/${a.slug}/`} class="walk__card">
+                <span class="walk__art" aria-hidden="true"><PlateArt motif={a.motif} /></span>
+                <span class="walk__meta">
+                  <span class="label">Chemin {a.num}</span>
+                  <span class="walk__title">{a.label}</span>
+                  <span class="walk__short">{a.short}</span>
+                  <span class="walk__go">Explorer ce chemin <Icon name="arrow" /></span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+        <li class="walk__panel walk__panel--end">
+          <a href="/orientation/" class="walk__card walk__card--end">
+            <span class="label">Vous hésitez&nbsp;?</span>
+            <span class="walk__title">Trouvons ensemble par où commencer</span>
+            <span class="walk__go">Questionnaire d’orientation <Icon name="arrow" /></span>
+          </a>
+        </li>
+      </ol>
+      <div class="walk__progress" aria-hidden="true"><span></span></div>
+    </div>
+  </section>
+
+  <!-- Situations -->
+  <section class="section topics" aria-labelledby="topics-title">
     <div class="page">
       <div class="topics__head">
-        <p class="eyebrow reveal">Vous reconnaissez-vous&nbsp;?</p>
-        <h2 id="topics-title" class="reveal">De quoi aimeriez-vous <em>parler</em>&nbsp;?</h2>
-        <p class="lede reveal">Des situations que vivent beaucoup de familles. Choisissez celle qui vous parle&nbsp;: elle sera présélectionnée dans le formulaire.</p>
+        <p class="eyebrow">Vous reconnaissez-vous&nbsp;?</p>
+        <SplitTitle id="topics-title" text="De quoi aimeriez-vous *parler* ?" />
+        <p class="lede">Des situations que vivent beaucoup de familles. Choisissez celle qui vous parle&nbsp;: elle sera présélectionnée dans le formulaire.</p>
       </div>
       <ol class="topics__list" role="list">
         {
@@ -95,106 +109,112 @@ const articles = (await visibleArticles()).slice(0, 3);
           ))
         }
       </ol>
-      <p class="topics__more reveal">
-        Votre situation est différente&nbsp;? <a href="/parlons-de-votre-chien/?sujet=autre">Décrivez-la avec vos mots</a>.
-      </p>
     </div>
   </section>
 
-  <!-- 4. Le premier pas -->
-  <section class="section first-step" id="premier-pas" aria-labelledby="first-step-title">
-    <div class="page first-step__grid">
-      <div class="first-step__intro">
-        <p class="eyebrow reveal">Le premier pas</p>
-        <h2 id="first-step-title" class="reveal">Tout commence par <em>une rencontre</em>.</h2>
-        {
-          free && (
-            free.draft ? (
-              <Draft label="Gratuité à confirmer">
-                <p class="first-step__badge">Première rencontre offerte</p>
-              </Draft>
-            ) : (
-              <p class="first-step__badge reveal">Première rencontre offerte</p>
-            )
-          )
-        }
-        <Plate id="accueil-rencontre" class="first-step__plate" shape="arch" sizes="(min-width: 60rem) 30vw, 80vw" />
+  <!-- Mini-laboratoire : lire son chien -->
+  <section class="section lab on-dark grain-dark" aria-labelledby="lab-title" data-mini-lab>
+    <div class="page lab__grid">
+      <div class="lab__text">
+        <p class="eyebrow">Explorer</p>
+        <SplitTitle id="lab-title" text="Son corps vous *parle*. Essayez." />
+        <p class="lede">Choisissez une attitude et observez ce qui change : posture, oreilles, queue, regard. Ce n’est qu’un aperçu des expériences interactives.</p>
+        <div class="lab__choices" role="radiogroup" aria-label="Attitude du chien">
+          {
+            signals.map((s, i) => (
+              <button type="button" class="lab__choice" role="radio" aria-checked={i === 0 ? 'true' : 'false'} data-signal={s.id} data-state={JSON.stringify(s.state)} data-text={s.text}>
+                {s.label}
+              </button>
+            ))
+          }
+        </div>
+        <p class="lab__caption" aria-live="polite" data-lab-caption>{signals[0]!.text}</p>
+        <a class="btn btn--lagon" href="/explorer/" data-magnetic>Voir les trois expériences <Icon name="arrow" class="btn__arrow" /></a>
       </div>
-      <div class="steps-wrap">
-      <Fil variant="colonne" class="steps__fil" />
-      <ol class="steps" role="list">
-        <li class="step reveal">
-          <span class="step__num">1</span>
-          <div>
-            <h3>Vous prenez contact</h3>
-            <p>Via le formulaire{phone && !phone.draft ? ' ou par téléphone' : ''}. Quelques mots suffisent pour décrire ce qui vous amène.</p>
-          </div>
+      <div class="lab__stage">
+        <DogFigure class="lab__dog" label="Chien illustré : sa posture change selon l’attitude choisie" />
+        <ul class="lab__xps" role="list">
+          {EXPERIENCES.map((e) => <li><a href={e.href}><span class="label">{e.num}</span> {e.title}</a></li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Le premier pas -->
+  <section class="section first" id="premier-pas" aria-labelledby="first-title">
+    <div class="page first__grid">
+      <div class="first__intro">
+        <p class="eyebrow">Le premier pas</p>
+        <SplitTitle id="first-title" text="Tout commence par *une rencontre*." />
+        {free && (free.draft ? <Draft label="Gratuité à confirmer"><p class="first__badge">Première rencontre offerte</p></Draft> : <p class="first__badge">Première rencontre offerte</p>)}
+        <Plate id="accueil-rencontre" class="first__plate" shape="arch" sizes="(min-width: 60rem) 26vw, 80vw" />
+      </div>
+      <ol class="first__steps" role="list">
+        <li class="reveal">
+          <span class="first__num">01</span>
+          <h3>Vous prenez contact</h3>
+          <p>Quelques questions à choix, deux minutes, aucun long texte à rédiger.</p>
+          <a class="link-arrow" href="/parlons-de-votre-chien/">Parlons de votre chien <Icon name="arrow" /></a>
         </li>
-        <li class="step reveal">
-          <span class="step__num">2</span>
-          <div>
-            <h3>On se rencontre{places && !places.draft ? ` ${places.value[0]} ou dehors` : ''}</h3>
-            <p>{purpose ? purpose.value : 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}</p>
-            {places && !places.draft && <p class="step__note">La rencontre peut se dérouler {joinFr(places.value, 'ou')}.</p>}
-          </div>
+        <li class="reveal">
+          <span class="first__num">02</span>
+          <h3>On se rencontre</h3>
+          <p>{purpose ? purpose.value : 'Un premier échange pour parler de la situation et faire connaissance avec votre chien.'}{places && !places.draft ? ` La rencontre peut se dérouler ${joinFr(places.value, 'ou')}.` : ''}</p>
+          <a class="link-arrow" href="/premier-rendez-vous/">Le premier rendez-vous <Icon name="arrow" /></a>
         </li>
-        <li class="step reveal">
-          <span class="step__num">3</span>
-          <div>
-            <h3>Vous décidez de la suite</h3>
-            <p>Vous faites le point ensemble sur ce qui pourrait vous aider, puis vous choisissez librement comment continuer.</p>
-          </div>
+        <li class="reveal">
+          <span class="first__num">03</span>
+          <h3>Vous décidez de la suite</h3>
+          <p>Vous faites le point ensemble sur ce qui pourrait vous aider, puis vous choisissez librement comment continuer.</p>
+          <a class="link-arrow" href="/deroulement/">Le déroulement <Icon name="arrow" /></a>
         </li>
       </ol>
-      </div>
-    </div>
-    <div class="page first-step__more reveal">
-      <a class="link-arrow" href="/accompagnement/">Découvrir l’accompagnement <Icon name="arrow" /></a>
     </div>
   </section>
 
-  <!-- 5. Qui vous accompagne -->
-  <section class="section who on-dark" aria-labelledby="who-title">
-    <Fil variant="traversee" class="who__fil" />
+  <!-- Qui -->
+  <section class="section who on-lin" aria-labelledby="who-title">
     <div class="page who__grid">
-      <Plate id="educatrice-portrait" class="who__plate" shape="arch" sizes="(min-width: 60rem) 34vw, 80vw" />
+      <Plate id="educatrice-portrait" class="who__plate" shape="arch" sizes="(min-width: 60rem) 30vw, 80vw" />
       <div class="who__text">
-        <p class="eyebrow reveal">Qui vous accompagne</p>
-        <h2 id="who-title" class="reveal">
-          {
-            name && !name.draft ? (
-              <>{name.value}, <em>à votre rencontre</em></>
-            ) : (
-              <>Une éducatrice <em>qui vient à vous</em></>
-            )
-          }
+        <p class="eyebrow">Qui vous accompagne</p>
+        <h2 id="who-title" class="who__title">
+          {name && !name.draft ? <>{name.value}, <em>à votre rencontre</em></> : <>Une éducatrice <em>qui vient à vous</em></>}
         </h2>
         {name?.draft && <Draft label="Nom à confirmer"><p>{name.value}</p></Draft>}
-        {
-          intro && !intro.draft ? (
-            <p class="lede reveal">{intro.value}</p>
-          ) : (
-            <p class="lede reveal">
-              Derrière ToutouBien, il y a une éducatrice qui se déplace pour rencontrer les familles et leur chien là où ils vivent. Parce qu’on comprend souvent mieux un chien dans son environnement.
-            </p>
-          )
-        }
-        <a class="link-arrow reveal" href="/a-propos/">Faire connaissance <Icon name="arrow" /></a>
+        <p class="lede">{intro && !intro.draft ? intro.value : 'Derrière ToutouBien, il y a une éducatrice qui se déplace pour rencontrer les familles et leur chien là où ils vivent. Parce qu’on comprend souvent mieux un chien dans son environnement.'}</p>
+        <div class="who__links">
+          <a class="link-arrow" href="/a-propos/">Faire connaissance <Icon name="arrow" /></a>
+          <a class="link-arrow" href="/approche/">L’approche <Icon name="arrow" /></a>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- 6. Ressources -->
+  <!-- Tarifs -->
+  <section class="section section--tight prices" aria-labelledby="prices-title">
+    <div class="page prices__inner">
+      <div>
+        <p class="eyebrow">Tarifs</p>
+        <h2 id="prices-title">Des tarifs <em>expliqués simplement</em>.</h2>
+      </div>
+      <div class="prices__text">
+        <p>La page des tarifs explique ce que comprend chaque accompagnement et comment choisir celui qui vous convient. Vous pouvez aussi simplement poser la question.</p>
+        <a class="btn btn--ghost" href="/tarifs/">Voir les tarifs <Icon name="arrow" class="btn__arrow" /></a>
+      </div>
+    </div>
+  </section>
+
   {
     articles.length > 0 && (
-      <section class="section resources" aria-labelledby="resources-title">
+      <section class="section resources on-lin" aria-labelledby="resources-title">
         <div class="page">
           <div class="resources__head">
             <div>
-              <p class="eyebrow reveal">Ressources</p>
-              <h2 id="resources-title" class="reveal">À lire, <em>entre deux balades</em></h2>
+              <p class="eyebrow">Ressources</p>
+              <h2 id="resources-title">À lire, <em>entre deux balades</em></h2>
             </div>
-            <a class="link-arrow reveal" href="/ressources/">Toutes les ressources <Icon name="arrow" /></a>
+            <a class="link-arrow" href="/blog/">Tous les articles <Icon name="arrow" /></a>
           </div>
           <div class="resources__grid">
             {articles.map((article, i) => <ArticleCard article={article} featured={i === 0} />)}
@@ -205,204 +225,292 @@ const articles = (await visibleArticles()).slice(0, 3);
   }
 
   <Faq scope="accueil" limit={4} />
-  <CtaBand />
 </Base>
 
+<script>
+  const lab = document.querySelector<HTMLElement>('[data-mini-lab]');
+  const dog = lab?.querySelector<SVGSVGElement>('.dog');
+  const caption = lab?.querySelector<HTMLElement>('[data-lab-caption]');
+  const choices = Array.from(lab?.querySelectorAll<HTMLButtonElement>('[data-signal]') ?? []);
+  const select = (btn: HTMLButtonElement) => {
+    choices.forEach((b) => b.setAttribute('aria-checked', String(b === btn)));
+    const state = JSON.parse(btn.dataset.state ?? '{}') as Record<string, string>;
+    if (dog) for (const [k, v] of Object.entries(state)) dog.dataset[k] = v;
+    if (caption) caption.textContent = btn.dataset.text ?? '';
+  };
+  choices.forEach((btn, i) => {
+    btn.addEventListener('click', () => select(btn));
+    btn.addEventListener('pointerenter', () => matchMedia('(pointer: fine)').matches && select(btn));
+    // Navigation au clavier dans le groupe (flèches).
+    btn.addEventListener('keydown', (e) => {
+      const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+      if (!d) return;
+      e.preventDefault();
+      const next = choices[(i + d + choices.length) % choices.length]!;
+      next.focus();
+      select(next);
+    });
+    btn.tabIndex = i === 0 ? 0 : -1;
+  });
+</script>
+
 <style>
-  /* ---------- Hero ---------- */
-  .hero {
-    position: relative;
-    z-index: 1;
-    overflow-x: clip;
-    padding-block: var(--space-l) var(--space-2xl);
-  }
-
-  .hero__layout {
-    display: grid;
-    gap: var(--space-l);
-    align-items: center;
-  }
-
-  .hero__art {
-    position: relative;
-    justify-self: end;
-    width: min(78vw, 22rem);
-    margin-right: calc(-0.4 * var(--gutter));
-  }
-
-  .hero__emblem {
-    width: 100%;
-    height: auto;
-    color: var(--lagon);
-  }
-
-  /* Le fil sort de la pointe du cœur et descend vers la suite de la page. */
-  .hero__fil {
-    display: none;
-    position: absolute;
-    left: calc(54.6% - 6rem);
-    top: 96.5%;
-    width: 12rem;
-    height: calc(var(--space-2xl) + 14rem);
-    color: var(--argile-claire);
-    --fil-width: 2px;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .hero__emblem {
-      animation: emblem-in 1.4s var(--ease-out) both;
-    }
-  }
-
-  @keyframes emblem-in {
-    from {
-      opacity: 0;
-      transform: translateY(1.5rem) scale(0.97);
-    }
-
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  .hero__content {
-    display: grid;
-    gap: var(--space-m);
-    justify-items: start;
-  }
-
-  .hero__title {
-    display: grid;
-    font-size: clamp(3rem, 1.4rem + 5.8vw, 7.2rem);
-    line-height: 0.95;
-    letter-spacing: -0.025em;
-    font-weight: 360;
-  }
-
-  .hero__title > span {
-    display: block;
-  }
-
-  .hero__title-em {
-    color: var(--lagon);
-    padding-left: 0.55em;
-  }
-
-  .hero__lede {
-    max-width: 36ch;
-  }
-
-  .hero__actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-m);
-    margin-top: var(--space-xs);
-  }
-
-  .hero__secondary {
-    display: inline-block;
-    padding-block: 0.6rem;
-    font-weight: 600;
-  }
-
-  .hero__signature {
-    display: none;
-  }
-
-  @media (min-width: 60rem) {
-    .hero {
-      min-height: min(calc(100svh - 4.5rem), 58rem);
-      display: grid;
-      align-items: center;
-      padding-block: var(--space-xl) var(--space-2xl);
-    }
-
-    .hero__layout {
-      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    }
-
-    .hero__fil {
-      display: block;
-    }
-
-    .hero__art {
-      order: 2;
-      width: min(100%, 36rem);
-      margin-right: calc(-1 * var(--gutter));
-    }
-
-    .hero__signature {
-      display: block;
-      position: absolute;
-      left: var(--gutter);
-      bottom: var(--space-m);
-      font-family: var(--font-display);
-      font-style: italic;
-      color: var(--craie-douce);
-    }
-  }
-
   /* ---------- Manifeste ---------- */
+  .manifesto {
+    overflow: hidden;
+  }
+
+  .manifesto__fil {
+    position: absolute;
+    right: 8%;
+    top: -2rem;
+    width: 10rem;
+    height: 70%;
+    color: var(--argile);
+    opacity: 0.6;
+  }
+
   .manifesto__grid {
     display: grid;
-    gap: var(--space-xl);
-    align-items: center;
-  }
-
-  .manifesto__text {
-    display: grid;
-    gap: var(--space-m);
+    gap: var(--space-l);
   }
 
   .manifesto__statement {
-    font-size: var(--step-3);
-    line-height: 1.18;
-    font-weight: 360;
+    max-width: 19ch;
+    font-size: var(--step-5);
+    line-height: 0.98;
   }
 
-  .manifesto__statement em {
+  .manifesto__statement :global(em) {
     color: var(--sarcelle);
   }
 
+  .manifesto__aside {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+    max-width: 40ch;
+  }
+
   .manifesto__plate {
-    width: min(100%, 26rem);
-    justify-self: center;
+    width: min(100%, 22rem);
+    justify-self: end;
+    --parallax: 4rem;
   }
 
   @media (min-width: 60rem) {
     .manifesto__grid {
       grid-template-columns: 7fr 5fr;
+      grid-template-areas: 'eye eye' 'statement plate' 'aside plate';
+      align-items: start;
     }
 
-    .manifesto__text {
-      padding-right: var(--space-l);
+    .manifesto__grid > .eyebrow { grid-area: eye; }
+    .manifesto__grid > :global(.manifesto__statement) { grid-area: statement; }
+    .manifesto__aside { grid-area: aside; }
+    .manifesto__grid > :global(.manifesto__plate) { grid-area: plate; align-self: center; }
+  }
+
+  /* ---------- La balade horizontale ---------- */
+  .walk {
+    position: relative;
+  }
+
+  .walk__sticky {
+    padding-block: var(--space-xl);
+    overflow: hidden;
+  }
+
+  .walk__head {
+    margin-bottom: var(--space-l);
+  }
+
+  .walk__head h2 {
+    max-width: 16ch;
+    margin-top: var(--space-s);
+  }
+
+  .walk__head h2 em {
+    color: var(--lagon);
+  }
+
+  .walk__track {
+    display: flex;
+    gap: var(--space-m);
+    padding: 0 var(--gutter);
+    margin: 0;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .walk__panel {
+    flex: 0 0 min(82vw, 30rem);
+    scroll-snap-align: start;
+  }
+
+  .walk__card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    background: var(--nuit-2);
+    border: 1px solid rgb(255 255 255 / 0.08);
+    color: var(--craie) !important;
+    text-decoration: none;
+    transition: transform var(--dur-slow) var(--ease-out), border-color var(--dur) ease;
+  }
+
+  .walk__card:hover {
+    transform: translateY(-6px);
+    border-color: rgb(242 192 138 / 0.45);
+  }
+
+  .walk__art {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+  }
+
+  .walk__art :global(.plate-art) {
+    position: absolute;
+    inset: 0;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+
+  .walk__card:hover .walk__art :global(.plate-art) {
+    transform: scale(1.06);
+  }
+
+  .walk__meta {
+    display: grid;
+    gap: var(--space-2xs);
+    align-content: start;
+    padding: var(--space-l);
+  }
+
+  .walk__title {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1;
+  }
+
+  .walk__short {
+    color: var(--craie-douce);
+  }
+
+  .walk__go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: var(--space-xs);
+    font-weight: 600;
+    color: var(--or);
+  }
+
+  .walk__go :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .walk__card--end {
+    display: grid;
+    align-content: center;
+    gap: var(--space-m);
+    padding: var(--space-l);
+    background: var(--or);
+    color: var(--nuit) !important;
+  }
+
+  .walk__card--end .label,
+  .walk__card--end .walk__go {
+    color: var(--nuit);
+  }
+
+  .walk__progress {
+    display: none;
+  }
+
+  /* Grand écran : section épinglée, la piste défile horizontalement au rythme du défilement. */
+  @media (min-width: 60rem) and (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .walk {
+        height: 320svh;
+        view-timeline-name: --walk;
+      }
+
+      .walk__sticky {
+        position: sticky;
+        top: 0;
+        height: 100svh;
+        display: grid;
+        align-content: center;
+      }
+
+      .walk__track {
+        overflow: visible;
+        width: max-content;
+        padding-left: max(var(--gutter), (100vw - var(--wide)) / 2);
+        padding-right: 30vw;
+        animation: walk-x linear both;
+        animation-timeline: --walk;
+        animation-range: contain 0% contain 100%;
+      }
+
+      .walk__panel {
+        flex-basis: 30rem;
+      }
+
+      .walk__progress {
+        display: block;
+        position: relative;
+        width: var(--page);
+        height: 2px;
+        margin: var(--space-l) auto 0;
+        background: rgb(255 255 255 / 0.12);
+      }
+
+      .walk__progress span {
+        position: absolute;
+        inset: 0;
+        background: var(--or);
+        transform-origin: left;
+        animation: walk-bar linear both;
+        animation-timeline: --walk;
+        animation-range: contain 0% contain 100%;
+      }
+    }
+  }
+
+  @keyframes walk-x {
+    to {
+      transform: translateX(calc(-100% + 100vw));
+    }
+  }
+
+  @keyframes walk-bar {
+    from {
+      transform: scaleX(0);
     }
 
-    .manifesto__plate {
-      margin-bottom: calc(-1 * var(--space-2xl) - 6rem);
-      position: relative;
-      z-index: 2;
+    to {
+      transform: scaleX(1);
     }
   }
 
   /* ---------- Situations ---------- */
-  .topics {
-    padding-top: var(--space-2xl);
-  }
-
-  @media (min-width: 60rem) {
-    .topics {
-      padding-top: calc(var(--space-2xl) + 4rem);
-    }
-  }
-
   .topics__head {
     display: grid;
     gap: var(--space-s);
     max-width: 44rem;
     margin-bottom: var(--space-l);
+  }
+
+  .topics__head :global(h2 em) {
+    color: var(--argile);
   }
 
   .topics__list {
@@ -422,23 +530,22 @@ const articles = (await visibleArticles()).slice(0, 3);
     border-bottom: 1px solid color-mix(in oklab, var(--encre) 20%, transparent);
     color: var(--encre);
     text-decoration: none;
-    transition: background-color var(--dur) ease, padding var(--dur) var(--ease-out);
+    background: linear-gradient(var(--lin), var(--lin)) left / 0% 100% no-repeat;
+    transition: background-size var(--dur) var(--ease-out), padding var(--dur) var(--ease-out);
   }
 
   .topic__num {
     grid-area: num;
-    font-family: var(--font-display);
-    font-size: var(--step-0);
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
     color: var(--argile);
-    font-variant-numeric: tabular-nums;
   }
 
   .topic__label {
     grid-area: label;
     font-family: var(--font-display);
     font-size: var(--step-2);
-    line-height: 1.15;
-    font-weight: 360;
+    line-height: 1.1;
   }
 
   .topic__teaser {
@@ -459,7 +566,7 @@ const articles = (await visibleArticles()).slice(0, 3);
   .topic:hover,
   .topic:focus-visible {
     color: var(--encre);
-    background: color-mix(in oklab, var(--ivoire) 70%, transparent);
+    background-size: 100% 100%;
   }
 
   .topic:hover .topic__arrow {
@@ -482,163 +589,235 @@ const articles = (await visibleArticles()).slice(0, 3);
     }
   }
 
-  .topics__more {
-    margin-top: var(--space-l);
-  }
-
-  /* ---------- Premier pas ---------- */
-  .first-step__grid {
-    display: grid;
-    gap: var(--space-xl);
-  }
-
-  .first-step__intro {
-    display: grid;
-    gap: var(--space-m);
-    align-content: start;
-  }
-
-  .first-step__badge {
-    justify-self: start;
-    display: inline-block;
-    padding: 0.4em 1em;
-    border-radius: var(--radius-pill);
-    background: var(--lagon-clair);
-    color: var(--nuit);
-    font-weight: 600;
-  }
-
-  .first-step__plate {
-    width: min(100%, 22rem);
-    margin-top: var(--space-s);
-  }
-
-  .steps-wrap {
-    position: relative;
-    align-self: center;
-  }
-
-  .steps {
-    position: relative;
-    display: grid;
-    gap: var(--space-xl);
-    padding: 0;
-    list-style: none;
-    align-content: center;
-  }
-
-  .steps__fil {
-    position: absolute;
-    left: 1.1rem;
-    top: 1rem;
-    bottom: 1rem;
-    width: 3rem;
-    height: calc(100% - 2rem);
-    color: var(--argile);
-    opacity: 0.6;
-    transform: translateX(-50%);
-  }
-
-  .step {
-    position: relative;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: var(--space-m);
-  }
-
-  .step__num {
-    display: grid;
-    place-items: center;
-    width: 2.6rem;
-    height: 2.6rem;
-    border-radius: 50%;
-    background: var(--nuit);
-    color: var(--lagon);
-    font-family: var(--font-display);
-    font-size: var(--step-1);
-    position: relative;
-    margin-left: -0.2rem;
-  }
-
-  .step h3 {
-    margin-bottom: var(--space-2xs);
-    font-size: var(--step-3);
-  }
-
-  .step p {
-    color: var(--encre-douce);
-    max-width: 46ch;
-  }
-
-  .step__note {
-    margin-top: var(--space-2xs);
-    font-size: var(--step--1);
-  }
-
-  .first-step__more {
-    margin-top: var(--space-xl);
-  }
-
-  @media (min-width: 60rem) {
-    .first-step__grid {
-      grid-template-columns: 5fr 7fr;
-      align-items: start;
-    }
-
-    .steps {
-      padding-top: var(--space-xl);
-    }
-
-    .first-step__more {
-      padding-left: calc(41.66% + var(--space-xl) * 0.42);
-    }
-  }
-
-  /* ---------- Qui ---------- */
-  .who {
-    overflow: hidden;
-  }
-
-  .who__fil {
-    position: absolute;
-    left: 0;
-    top: 10%;
-    width: 100%;
-    height: 9rem;
-    color: var(--lagon);
-    opacity: 0.35;
-  }
-
-  .who__grid {
-    position: relative;
+  /* ---------- Mini-laboratoire ---------- */
+  .lab__grid {
     display: grid;
     gap: var(--space-xl);
     align-items: center;
   }
 
-  .who__plate {
-    width: min(100%, 24rem);
+  @media (min-width: 60rem) {
+    .lab__grid {
+      grid-template-columns: 5fr 6fr;
+    }
   }
 
-  .who__text {
+  .lab__text {
     display: grid;
     gap: var(--space-m);
     justify-items: start;
   }
 
-  .who__text h2 em {
-    color: var(--lagon);
+  .lab__text :global(h2 em) {
+    color: var(--or);
+  }
+
+  .lab__choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .lab__choice {
+    min-height: 2.9rem;
+    padding: 0.5rem 1.1rem;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--craie);
+    cursor: pointer;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  }
+
+  .lab__choice:hover {
+    border-color: var(--lagon);
+  }
+
+  .lab__choice[aria-checked='true'] {
+    background: var(--lagon);
+    border-color: var(--lagon);
+    color: var(--nuit);
+  }
+
+  .lab__caption {
+    min-height: 3em;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-1);
+    color: var(--craie-douce);
+  }
+
+  .lab__stage {
+    position: relative;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: radial-gradient(70% 70% at 50% 35%, var(--sous-bois), var(--nuit-2));
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  .lab__dog {
+    width: 100%;
+    max-width: 34rem;
+    margin: var(--space-m) auto;
+  }
+
+  .lab__xps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    padding: var(--space-s) 0 0;
+    margin: 0;
+    list-style: none;
+    border-top: 1px solid rgb(255 255 255 / 0.1);
+  }
+
+  .lab__xps a {
+    color: var(--craie) !important;
+    text-decoration: none;
+    font-size: var(--step--1);
+  }
+
+  .lab__xps a:hover {
+    color: var(--or) !important;
+  }
+
+  /* ---------- Premier pas ---------- */
+  .first__grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  @media (min-width: 60rem) {
+    .first__grid {
+      grid-template-columns: 5fr 7fr;
+      align-items: start;
+    }
+
+    .first__intro {
+      position: sticky;
+      top: 7rem;
+    }
+  }
+
+  .first__intro {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .first__intro :global(h2 em) {
+    color: var(--sarcelle);
+  }
+
+  .first__badge {
+    justify-self: start;
+    padding: 0.4em 1em;
+    border-radius: var(--radius-pill);
+    background: var(--lagon-clair);
+    font-weight: 600;
+  }
+
+  .first__plate {
+    width: min(100%, 20rem);
+  }
+
+  .first__steps {
+    display: grid;
+    gap: var(--space-l);
+    padding: 0;
+    list-style: none;
+  }
+
+  .first__steps li {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: start;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: #fffdf8;
+    border: 1px solid color-mix(in oklab, var(--encre) 10%, transparent);
+  }
+
+  .first__num {
+    font-family: var(--font-display);
+    font-size: var(--step-5);
+    line-height: 0.8;
+    color: var(--argile);
+  }
+
+  .first__steps h3 {
+    font-size: var(--step-3);
+  }
+
+  .first__steps p {
+    color: var(--encre-douce);
+    max-width: 48ch;
+  }
+
+  /* ---------- Qui ---------- */
+  .who__grid {
+    display: grid;
+    gap: var(--space-xl);
+    align-items: center;
   }
 
   @media (min-width: 60rem) {
     .who__grid {
       grid-template-columns: 5fr 7fr;
     }
+  }
 
-    .who__plate {
-      justify-self: end;
-      margin-right: var(--space-l);
+  .who__plate {
+    width: min(100%, 24rem);
+    justify-self: center;
+  }
+
+  .who__text {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .who__title em {
+    color: var(--sarcelle);
+  }
+
+  .who__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-l);
+  }
+
+  /* ---------- Tarifs ---------- */
+  .prices__inner {
+    display: grid;
+    gap: var(--space-l);
+    padding: var(--space-xl) var(--space-l);
+    border-radius: var(--radius-l);
+    background:
+      radial-gradient(60% 80% at 100% 0%, rgb(242 192 138 / 0.35), transparent 70%),
+      var(--lin);
+  }
+
+  @media (min-width: 60rem) {
+    .prices__inner {
+      grid-template-columns: 7fr 5fr;
+      align-items: end;
+      padding: var(--space-xl);
     }
+  }
+
+  .prices__inner h2 {
+    margin-top: var(--space-s);
+    max-width: 16ch;
+  }
+
+  .prices__inner h2 em {
+    color: var(--argile);
+  }
+
+  .prices__text {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
   }
 
   /* ---------- Ressources ---------- */
@@ -649,6 +828,10 @@ const articles = (await visibleArticles()).slice(0, 3);
     justify-content: space-between;
     gap: var(--space-m);
     margin-bottom: var(--space-l);
+  }
+
+  .resources__head h2 em {
+    color: var(--sarcelle);
   }
 
   .resources__grid {

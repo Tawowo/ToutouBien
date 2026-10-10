@@ -114,3 +114,19 @@ test('accueil : aucun élément ne suit le pointeur', async ({ page, isMobile })
   expect(html).not.toContain('uPointer');
   expect(before.length).toBeGreaterThan(0);
 });
+
+test('décodeur : situation, étapes, carnet transmis et retour arrière', async ({ page }) => {
+  await page.goto('/decodeur/');
+  await page.locator('[data-dc-pick="rappel"]').click();
+  await expect(page).toHaveURL(/#rappel$/);
+  const read = page.locator('#rappel');
+  await expect(read.locator('[data-dc-count]')).toHaveText('1');
+  await read.locator('[data-dc-next]').click();
+  await read.locator('label.dc-obs__item').first().click();
+  for (let i = 0; i < 3; i++) await read.locator('[data-dc-next]').click();
+  await expect(read.locator('[data-dc-count]')).toHaveText('5');
+  await expect(read.locator('[data-dc-next]')).toBeDisabled();
+  await expect(read.locator('[data-dc-send]')).toHaveAttribute('href', /sujet=rappel&note=/);
+  await page.goBack();
+  await expect(page.locator('[data-dc-choices]')).toBeVisible();
+});

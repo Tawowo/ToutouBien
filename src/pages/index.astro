@@ -14,10 +14,10 @@ import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
 import { EXPERIENCES } from '~/content/explorer';
 import { site } from '~/config/site';
 import { resolve } from '~/lib/fields';
-import { TOPICS, joinFr } from '~/lib/wizard';
+import { joinFr } from '~/lib/wizard';
+import { SITUATIONS } from '~/lib/decodeur';
 import { visibleArticles } from '~/lib/articles';
 
-const topics = TOPICS.filter((t) => t.teaser);
 const name = resolve(site.educator.displayName);
 const intro = resolve(site.educator.intro);
 const purpose = resolve(site.firstMeeting.purpose);
@@ -33,7 +33,7 @@ const signals = [
 ---
 <Base
   title="ToutouBien"
-  description="ToutouBien accompagne les propriétaires de chiens au quotidien : comprendre son chien, retrouver des balades sereines et une vie de famille plus simple. Expériences interactives, ressources et premier échange."
+  description="Éducation canine pour toute la famille : ToutouBien vous aide à comprendre ce qui se passe avec votre chien avant de chercher à le changer. Décodeur du quotidien, expériences interactives, ressources et premier échange."
   headerTheme="dark"
 >
   <FlairHero />
@@ -45,7 +45,7 @@ const signals = [
       <p class="eyebrow">L’esprit ToutouBien</p>
       <SplitTitle id="manifesto-title" class="manifesto__statement" text="Un chien ne vient pas avec un mode d’emploi. *Ses réactions ont souvent leurs raisons* : encore faut-il les comprendre." />
       <div class="manifesto__aside">
-        <p class="lede">L’idée n’est pas de « corriger » votre chien, mais de vous aider à mieux le lire, à ajuster quelques habitudes et à retrouver une relation qui fait du bien à toute la famille.</p>
+        <p class="lede">L’idée n’est pas de « corriger » votre chien, mais de comprendre ensemble, en famille, ce qui se passe, puis d’ajuster quelques habitudes, en sachant toujours pourquoi.</p>
         <a class="link-arrow" href="/approche/">Découvrir l’approche <Icon name="arrow" /></a>
       </div>
       <Plate id="accueil-balade" class="manifesto__plate parallax" shape="arch" sizes="(min-width: 60rem) 30vw, 80vw" />
@@ -87,22 +87,23 @@ const signals = [
     </div>
   </section>
 
-  <!-- Situations -->
+  <!-- Le décodeur du quotidien : l'expérience signature -->
   <section class="section topics" aria-labelledby="topics-title">
     <div class="page">
       <div class="topics__head">
-        <p class="eyebrow">Vous reconnaissez-vous&nbsp;?</p>
-        <SplitTitle id="topics-title" text="De quoi aimeriez-vous *parler* ?" />
-        <p class="lede">Des situations que vivent beaucoup de familles. Choisissez celle qui vous parle&nbsp;: elle sera présélectionnée dans le formulaire.</p>
+        <p class="eyebrow">Le décodeur du quotidien</p>
+        <SplitTitle id="topics-title" text="Derrière chaque situation, *plusieurs histoires* possibles." />
+        <p class="lede">Choisissez ce que vous vivez. En cinq temps&nbsp;: quoi observer, ce que cela peut vouloir dire, les questions à se poser, et quand demander de l’aide. Gratuit, sans diagnostic, rien n’est enregistré.</p>
+        <a class="link-arrow" href="/decodeur/">Ouvrir le décodeur <Icon name="arrow" /></a>
       </div>
       <ol class="topics__list" role="list">
         {
-          topics.map((topic, i) => (
+          SITUATIONS.map((s, i) => (
             <li class="reveal">
-              <a class="topic" href={`/parlons-de-votre-chien/?sujet=${topic.value}`}>
+              <a class="topic" href={`/decodeur/#${s.id}`}>
                 <span class="topic__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
-                <span class="topic__label">{topic.label}</span>
-                <span class="topic__teaser">{topic.teaser}</span>
+                <span class="topic__label">{s.title}</span>
+                <span class="topic__teaser">{s.voice}</span>
                 <Icon name="arrow" class="topic__arrow" />
               </a>
             </li>
@@ -129,7 +130,7 @@ const signals = [
           }
         </div>
         <p class="lab__caption" aria-live="polite" data-lab-caption>{signals[0]!.text}</p>
-        <a class="btn btn--lagon" href="/explorer/" data-magnetic>Voir les trois expériences <Icon name="arrow" class="btn__arrow" /></a>
+        <a class="btn btn--lagon" href="/explorer/">Voir les trois expériences <Icon name="arrow" class="btn__arrow" /></a>
       </div>
       <div class="lab__stage">
         <DogFigure class="lab__dog" label="Chien illustré : sa posture change selon l’attitude choisie" />

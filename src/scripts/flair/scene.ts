@@ -171,6 +171,12 @@ export class FlairScene {
     this.tier = opts.tier;
     this.renderer = new WebGLRenderer({ canvas: opts.canvas, antialias: false, alpha: true, powerPreference: 'high-performance' });
     this.renderer.setClearColor(0x000000, 0);
+    // Contexte WebGL perdu (pilote, mémoire, onglet en arrière-plan) : retour à la version statique.
+    opts.canvas.addEventListener('webglcontextlost', (e) => {
+      e.preventDefault();
+      this.stop();
+      opts.onFallback();
+    });
     const colors = { uDeep: { value: new Color('#119693') }, uMid: { value: new Color('#9ad3cd') }, uLight: { value: new Color('#effbf8') } };
     this.material = new ShaderMaterial({
       vertexShader: vertex,
@@ -274,10 +280,14 @@ export class FlairScene {
     const dt = Math.min((now - this.last) / 1000, 0.05);
     this.last = now;
     // Ressort amorti critique : réactif, sans dépassement, identique dans les deux sens.
+    // Sous-pas de 1/120 s : le ressort reste stable même si une image dure longtemps.
     const omega = 9;
-    const a = omega * omega * (this.raw - this.p) - 2 * omega * this.v;
-    this.v += a * dt;
-    this.p += this.v * dt;
+    for (let left = dt; left > 0; left -= 1 / 120) {
+      const h = Math.min(left, 1 / 120);
+      const a = omega * omega * (this.raw - this.p) - 2 * omega * this.v;
+      this.v += a * h;
+      this.p += this.v * h;
+    }
     if (Math.abs(this.raw - this.p) < 1e-4 && Math.abs(this.v) < 1e-4) {
       this.p = this.raw;
       this.v = 0;
@@ -339,5 +349,6 @@ export class FlairScene {
     this.material.dispose();
     this.dustMaterial.dispose();
     this.renderer.dispose();
+    this.renderer.forceContextLoss();
   }
 }

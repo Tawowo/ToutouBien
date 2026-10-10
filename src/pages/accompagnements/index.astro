@@ -19,14 +19,11 @@ import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
   </section>
 
   <section class="section section--tight paths" aria-label="Les accompagnements">
-    <div class="page paths__wrap" data-hover-list>
-      <div class="paths__preview" data-hover-preview aria-hidden="true">
-        {ACCOMPAGNEMENTS.map((a) => <PlateArt motif={a.motif} class={`paths__art paths__art--${a.slug}`} />)}
-      </div>
+    <div class="page paths__wrap">
     <ol class="paths__list" role="list">
       {
         ACCOMPAGNEMENTS.map((a) => (
-          <li data-hover-item={a.slug}>
+          <li>
             <a class="path" href={`/accompagnements/${a.slug}/`}>
               <span class="path__num">{a.num}</span>
               <span class="path__title">{a.label}</span>
@@ -50,7 +47,7 @@ import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
       <div class="unsure__text">
         <p class="lede">Le questionnaire d’orientation vous propose les pages, articles et expériences les plus utiles pour votre situation. Il ne pose aucun diagnostic.</p>
         <div class="unsure__actions">
-          <a class="btn btn--lagon" href="/orientation/" data-magnetic>Par où commencer&nbsp;? <Icon name="arrow" class="btn__arrow" /></a>
+          <a class="btn btn--lagon" href="/orientation/">Par où commencer&nbsp;? <Icon name="arrow" class="btn__arrow" /></a>
           <a class="unsure__link" href="/deroulement/">Comment se déroule un accompagnement</a>
         </div>
       </div>
@@ -59,11 +56,6 @@ import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
 
   <Faq scope="accompagnement" />
 </Base>
-
-<script>
-  import { initHoverPreview } from '~/scripts/hover-preview';
-  initHoverPreview();
-</script>
 
 <style>
   .acc-hero {
@@ -188,42 +180,10 @@ import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
   }
 
   /* Aperçu flottant (souris) */
-  .paths__preview {
-    display: none;
-  }
 
-  :global(.has-hover-preview) .paths__preview {
-    display: block;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 22rem;
-    aspect-ratio: 4 / 5;
-    border-radius: var(--radius-arch);
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0;
-    transform: translate(calc(var(--px, 0px) - 50%), calc(var(--py, 0px) - 50%)) scale(0.85) rotate(-4deg);
-    transition: opacity 300ms ease, transform 500ms var(--ease-out);
-  }
 
-  :global(.is-previewing) .paths__preview {
-    opacity: 1;
-    transform: translate(calc(var(--px, 0px) - 50%), calc(var(--py, 0px) - 50%)) scale(1) rotate(0deg);
-  }
 
-  .paths__preview :global(.paths__art) {
-    opacity: 0;
-    transition: opacity 300ms ease;
-  }
 
-  .paths__preview[data-active='chiot'] :global(.paths__art--chiot),
-  .paths__preview[data-active='chien-adulte'] :global(.paths__art--chien-adulte),
-  .paths__preview[data-active='quotidien'] :global(.paths__art--quotidien),
-  .paths__preview[data-active='comprendre'] :global(.paths__art--comprendre) {
-    opacity: 1;
-  }
 
   .unsure__grid {
     display: grid;

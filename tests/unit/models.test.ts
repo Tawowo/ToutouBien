@@ -165,3 +165,29 @@ describe('séquence d’accueil', async () => {
     expect(timeline(0.6)).toEqual(timeline(0.6));
   });
 });
+
+describe('décodeur du quotidien', async () => {
+  const { SITUATIONS, carnetNote, STEPS } = await import('~/lib/decodeur');
+  const { ACCOMPAGNEMENTS } = await import('~/content/accompagnements');
+  it('chaque situation est complète et ne renvoie qu’à des contenus existants', async () => {
+    const slugs = (await getCollection('blog')).map((a) => a.id);
+    const topics = TOPICS.map((t) => t.value);
+    expect(STEPS).toHaveLength(5);
+    for (const s of SITUATIONS) {
+      expect(s.meanings.length).toBeGreaterThanOrEqual(3); // jamais une explication unique
+      expect(s.care.length).toBeGreaterThan(0);
+      expect(topics).toContain(s.topic);
+      expect(ACCOMPAGNEMENTS.map((a) => a.slug)).toContain(s.accompagnement);
+      s.articles.forEach((id) => expect(slugs).toContain(id));
+      expect(new Set(s.observe.map((o) => o.id)).size).toBe(s.observe.length);
+    }
+  });
+
+  it('la note transmise ne reprend que les points cochés', () => {
+    const s = SITUATIONS[0]!;
+    expect(carnetNote(s, [])).toBe(`Situation : ${s.title.toLowerCase()}.`);
+    const n = carnetNote(s, [s.observe[0]!.id]);
+    expect(n).toContain(s.observe[0]!.label.toLowerCase());
+    expect(n).not.toContain(s.observe[1]!.label.toLowerCase());
+  });
+});

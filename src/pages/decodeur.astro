@@ -1,0 +1,826 @@
+---
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import Icon from '~/components/Icon.astro';
+import { SITUATIONS, STEPS } from '~/lib/decodeur';
+import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
+import { EXPERIENCES } from '~/content/explorer';
+import { visibleArticles } from '~/lib/articles';
+
+const visible = await visibleArticles();
+const titleOf = (id: string) => visible.find((a) => a.id === id)?.data.title;
+const acc = (slug: string) => ACCOMPAGNEMENTS.find((a) => a.slug === slug)!;
+const exp = (id: string | undefined) => EXPERIENCES.find((e) => e.id === id);
+---
+<Base
+  title="Le décodeur du quotidien"
+  description="Une situation qui vous questionne avec votre chien ? Observez-la en cinq temps : ce qu’il faut regarder, les explications possibles, les bonnes questions, et quand demander de l’aide. Gratuit, sans diagnostic, rien n’est enregistré."
+  headerTheme="dark"
+>
+  <section class="dc-hero on-dark grain-dark" aria-labelledby="dc-title">
+    <div class="page dc-hero__inner">
+      <p class="eyebrow enter">Le décodeur du quotidien</p>
+      <SplitTitle as="h1" id="dc-title" text="Derrière chaque situation, *plusieurs histoires* possibles." now />
+      <p class="lede enter" data-i="3">Choisissez ce que vous vivez avec votre chien. En cinq temps, vous saurez quoi observer, ce que cela peut vouloir dire, et quelles questions vous poser, seul·e ou en famille.</p>
+      <ul class="dc-promise enter" data-i="4" role="list">
+        <li><Icon name="check" /> Aucun diagnostic : des pistes pour mieux observer</li>
+        <li><Icon name="check" /> Rien n’est enregistré ni envoyé</li>
+        <li><Icon name="check" /> Un carnet à imprimer ou à joindre à une demande</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="dc on-dark" aria-label="Choisir une situation" data-decodeur>
+    <div class="page">
+      <ul class="dc-choices" role="list" data-dc-choices>
+        {
+          SITUATIONS.map((s, i) => (
+            <li>
+              <a class="dc-choice" href={`#${s.id}`} data-dc-pick={s.id}>
+                <span class="label">{String(i + 1).padStart(2, '0')}</span>
+                <span class="dc-choice__title">{s.title}</span>
+                <span class="dc-choice__voice">{s.voice}</span>
+                <Icon name="arrow" class="dc-choice__arrow" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      {
+        SITUATIONS.map((s) => {
+          const a = acc(s.accompagnement);
+          const e = exp(s.explorer);
+          const reads = s.articles.map((id) => ({ id, title: titleOf(id) })).filter((r) => r.title);
+          return (
+            <article class="dc-read" id={s.id} data-dc-read={s.id} aria-labelledby={`${s.id}-title`}>
+              <header class="dc-read__head">
+                <button type="button" class="dc-back" data-dc-close>
+                  <Icon name="arrow-left" /> Toutes les situations
+                </button>
+                <h2 id={`${s.id}-title`} class="dc-read__title" tabindex="-1">{s.title}</h2>
+              </header>
+
+              <ol class="dc-rail" role="list" aria-hidden="true">
+                {STEPS.map((st, k) => (
+                  <li data-dc-dot={k}>
+                    <span class="dc-rail__num">{k + 1}</span>
+                    <span class="dc-rail__label">{st.label}</span>
+                  </li>
+                ))}
+              </ol>
+
+              <div class="dc-steps">
+                <section class="dc-step" data-dc-step="0" aria-labelledby={`${s.id}-s0`}>
+                  <p class="label">1 · {STEPS[0].label}</p>
+                  <h3 id={`${s.id}-s0`} class="dc-voice">{s.voice}</h3>
+                  <p>Beaucoup de familles vivent cette situation. Elle a rarement une seule explication : prenons le temps de la regarder avant de chercher une solution.</p>
+                </section>
+
+                <section class="dc-step" data-dc-step="1" aria-labelledby={`${s.id}-s1`}>
+                  <p class="label">2 · {STEPS[1].label}</p>
+                  <h3 id={`${s.id}-s1`}>Ce qui mérite d’être noté</h3>
+                  <p class="dc-hint">Cochez ce que vous pouvez décrire : ces points rejoindront votre carnet.</p>
+                  <ul class="dc-obs" role="list">
+                    {s.observe.map((o) => (
+                      <li>
+                        <label class="dc-obs__item">
+                          <input type="checkbox" value={o.id} data-dc-obs />
+                          <span class="dc-obs__box" aria-hidden="true"><Icon name="check" /></span>
+                          <span>
+                            <strong>{o.label}</strong>
+                            <small>{o.why}</small>
+                          </span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section class="dc-step" data-dc-step="2" aria-labelledby={`${s.id}-s2`}>
+                  <p class="label">3 · {STEPS[2].label}</p>
+                  <h3 id={`${s.id}-s2`}>Plusieurs pistes, jamais une seule</h3>
+                  <ul class="dc-means" role="list">
+                    {s.meanings.map((m) => (
+                      <li>{m}</li>
+                    ))}
+                  </ul>
+                  <p class="dc-caution">Ces pistes sont générales. Seule l’observation de votre chien, dans sa vie, permet d’y voir clair.</p>
+                </section>
+
+                <section class="dc-step" data-dc-step="3" aria-labelledby={`${s.id}-s3`}>
+                  <p class="label">4 · {STEPS[3].label}</p>
+                  <h3 id={`${s.id}-s3`}>À se poser, en famille</h3>
+                  <ol class="dc-qs" role="list">
+                    {s.questions.map((q, k) => (
+                      <li>
+                        <span aria-hidden="true">{String(k + 1).padStart(2, '0')}</span> {q}
+                      </li>
+                    ))}
+                  </ol>
+                  <div class="dc-first">
+                    <p class="label">Une idée simple à essayer</p>
+                    <p>{s.first}</p>
+                  </div>
+                </section>
+
+                <section class="dc-step" data-dc-step="4" aria-labelledby={`${s.id}-s4`}>
+                  <p class="label">5 · {STEPS[4].label}</p>
+                  <h3 id={`${s.id}-s4`}>Aller plus loin</h3>
+                  <div class="dc-care" role="note">
+                    <p class="label">Quand demander de l’aide</p>
+                    <ul role="list">
+                      {s.care.map((c) => (
+                        <li>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <ul class="dc-next" role="list">
+                    {reads.map((r) => (
+                      <li>
+                        <a href={`/blog/${r.id}/`}>
+                          <span class="label">À lire</span> {r.title} <Icon name="arrow" />
+                        </a>
+                      </li>
+                    ))}
+                    {e && (
+                      <li>
+                        <a href={e.href}>
+                          <span class="label">À manipuler</span> {e.title} <Icon name="arrow" />
+                        </a>
+                      </li>
+                    )}
+                    <li>
+                      <a href={`/accompagnements/${a.slug}/`}>
+                        <span class="label">Accompagnement</span> {a.label} <Icon name="arrow" />
+                      </a>
+                    </li>
+                  </ul>
+                  <div class="dc-actions">
+                    <a class="btn btn--lagon" href={`/parlons-de-votre-chien/?sujet=${s.topic}`} data-dc-send>
+                      Ajouter à ma demande <Icon name="arrow" class="btn__arrow" />
+                    </a>
+                    <button type="button" class="btn btn--ghost" data-dc-print>Imprimer mon carnet</button>
+                  </div>
+                </section>
+              </div>
+
+              <nav class="dc-nav" aria-label="Étapes" data-dc-nav hidden>
+                <button type="button" class="dc-nav__btn" data-dc-prev><Icon name="arrow-left" /> Précédent</button>
+                <p class="dc-nav__count" aria-live="polite"><span data-dc-count>1</span> / {STEPS.length}</p>
+                <button type="button" class="dc-nav__btn dc-nav__btn--next" data-dc-next>Suivant <Icon name="arrow" /></button>
+              </nav>
+            </article>
+          );
+        })
+      }
+
+      <section class="dc-print" aria-hidden="true" data-dc-carnet></section>
+      <p class="dc-privacy">Vos coches restent dans cette page et disparaissent quand vous la quittez. Le décodeur aide à observer ; il ne remplace ni l’avis d’un vétérinaire, ni un accompagnement.</p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { initDecodeur } from '~/scripts/decodeur';
+  initDecodeur();
+</script>
+
+<style>
+  .dc-hero {
+    padding-block: var(--space-xl) var(--space-l);
+  }
+
+  .dc-hero__inner {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .dc-hero h1 {
+    font-size: var(--step-5);
+    line-height: 0.98;
+    max-width: 18ch;
+  }
+
+  .dc-hero h1 :global(em) {
+    color: var(--lagon);
+  }
+
+  .dc-hero .lede {
+    max-width: 56ch;
+  }
+
+  .dc-promise {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs) var(--space-l);
+    padding: 0;
+    list-style: none;
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  .dc-promise li {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  .dc-promise :global(svg) {
+    width: 1rem;
+    height: 1rem;
+    color: var(--lagon);
+  }
+
+  .dc {
+    display: flow-root;
+    padding-bottom: var(--space-xl);
+    background: var(--nuit);
+  }
+
+  .dc-choices {
+    display: grid;
+    gap: var(--space-s);
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .dc-choice {
+    position: relative;
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+    height: 100%;
+    padding: var(--space-m) var(--space-m) var(--space-xl);
+    border-radius: var(--radius-l);
+    border: 1px solid rgb(255 255 255 / 0.12);
+    background: linear-gradient(160deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.01));
+    color: var(--craie) !important;
+    text-decoration: none;
+    transition: transform var(--dur) var(--ease-out), border-color var(--dur) ease, background-color var(--dur) ease;
+  }
+
+  .dc-choice:hover {
+    transform: translateY(-4px);
+    border-color: rgb(154 211 205 / 0.55);
+  }
+
+  .dc-choice__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.05;
+  }
+
+  .dc-choice__voice {
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+    font-style: italic;
+  }
+
+  .dc-choice__arrow {
+    position: absolute;
+    right: var(--space-m);
+    bottom: var(--space-m);
+    width: 1.3rem;
+    height: 1.3rem;
+    color: var(--lagon);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .dc-choice:hover .dc-choice__arrow {
+    transform: translateX(0.3rem);
+  }
+
+  /* Lecture d'une situation */
+  .dc-read {
+    display: grid;
+    gap: var(--space-l);
+    margin-top: var(--space-xl);
+    scroll-margin-top: 6rem;
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: var(--nuit-2);
+    border: 1px solid rgb(255 255 255 / 0.08);
+  }
+
+  @media (min-width: 64rem) {
+    .dc-read {
+      grid-template-columns: 16rem minmax(0, 1fr);
+      grid-template-areas: 'head head' 'rail steps' 'rail nav';
+      padding: var(--space-xl);
+      column-gap: var(--space-xl);
+    }
+
+    .dc-read__head {
+      grid-area: head;
+    }
+
+    .dc-rail {
+      grid-area: rail;
+    }
+
+    .dc-steps {
+      grid-area: steps;
+    }
+
+    .dc-nav {
+      grid-area: nav;
+    }
+  }
+
+  .dc-read__head {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+  }
+
+  .dc-read__title {
+    font-size: var(--step-4);
+    outline: none;
+  }
+
+  .dc-back {
+    display: none;
+    gap: 0.4rem;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 0.9rem;
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--craie-douce);
+    font: inherit;
+    font-size: var(--step--1);
+    cursor: pointer;
+  }
+
+  .dc-back:hover {
+    color: var(--craie);
+    border-color: var(--lagon);
+  }
+
+  .dc-back :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .dc-rail {
+    display: none;
+  }
+
+  .dc-steps {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .dc-step {
+    display: grid;
+    gap: var(--space-s);
+    align-content: start;
+    max-width: 46rem;
+  }
+
+  .dc-step h3 {
+    font-size: var(--step-3);
+  }
+
+  .dc-step > p:not(.label) {
+    color: var(--craie-douce);
+  }
+
+  .dc-voice {
+    font-style: italic;
+    color: var(--lagon);
+  }
+
+  .dc-hint,
+  .dc-caution {
+    font-size: var(--step--1);
+  }
+
+  .dc-obs {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dc-obs__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.7rem 1fr;
+    gap: var(--space-s);
+    padding: 0.9rem 1rem;
+    border-radius: var(--radius-m);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    cursor: pointer;
+    transition: border-color var(--dur) ease, background-color var(--dur) ease;
+  }
+
+  .dc-obs__item:hover {
+    border-color: rgb(255 255 255 / 0.3);
+  }
+
+  .dc-obs__item input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .dc-obs__item strong {
+    display: block;
+    font-weight: 600;
+    color: var(--craie);
+  }
+
+  .dc-obs__item small {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--craie-douce);
+    font-size: var(--step--1);
+  }
+
+  .dc-obs__box {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0.1rem;
+    border-radius: 0.4rem;
+    border: 1.5px solid rgb(255 255 255 / 0.4);
+    color: transparent;
+    transition: background-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  }
+
+  .dc-obs__box :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .dc-obs__item:has(input:checked) {
+    border-color: var(--lagon);
+    background: rgb(154 211 205 / 0.08);
+  }
+
+  .dc-obs__item:has(input:checked) .dc-obs__box {
+    background: var(--lagon);
+    border-color: var(--lagon);
+    color: var(--nuit);
+  }
+
+  .dc-obs__item:has(input:focus-visible) {
+    outline: 3px solid var(--lagon);
+    outline-offset: 2px;
+  }
+
+  .dc-means {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dc-means li {
+    position: relative;
+    padding: 0.9rem 1rem 0.9rem 2.6rem;
+    border-radius: var(--radius-m);
+    background: rgb(255 255 255 / 0.04);
+    color: var(--craie);
+  }
+
+  .dc-means li::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 1.35rem;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--lagon);
+  }
+
+  .dc-caution {
+    color: var(--craie-douce);
+  }
+
+  .dc-qs {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dc-qs li {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    color: var(--craie);
+    font-size: var(--step-1);
+    font-family: var(--font-display);
+    line-height: 1.2;
+  }
+
+  .dc-qs li span {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--lagon);
+    padding-top: 0.3rem;
+  }
+
+  .dc-first,
+  .dc-care {
+    display: grid;
+    gap: 0.4rem;
+    padding: var(--space-m);
+    border-radius: var(--radius-m);
+    border-left: 2px solid var(--lagon);
+    background: rgb(154 211 205 / 0.06);
+  }
+
+  .dc-care {
+    border-left-color: var(--lueur);
+  }
+
+  .dc-care ul {
+    display: grid;
+    gap: 0.3rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dc-next {
+    display: grid;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+  }
+
+  .dc-next a {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-s);
+    align-items: center;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+    color: var(--craie) !important;
+    text-decoration: none;
+  }
+
+  .dc-next a .label {
+    grid-column: 1 / -1;
+  }
+
+  @media (min-width: 48rem) {
+    .dc-next a {
+      grid-template-columns: 8.5rem 1fr auto;
+    }
+
+    .dc-next a .label {
+      grid-column: auto;
+    }
+  }
+
+  .dc-next a:hover {
+    color: var(--lagon) !important;
+  }
+
+  .dc-next :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .dc-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+  }
+
+  .dc-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-s);
+    padding-top: var(--space-m);
+    border-top: 1px solid rgb(255 255 255 / 0.12);
+  }
+
+  .dc-nav[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 30rem) {
+    .dc-read {
+      padding: var(--space-m);
+    }
+
+    .dc-nav__btn {
+      padding: 0 0.9rem;
+    }
+  }
+
+  .dc-nav__btn {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    min-height: 2.9rem;
+    padding: 0 1.2rem;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--craie);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--dur) ease, color var(--dur) ease, border-color var(--dur) ease;
+  }
+
+  .dc-nav__btn:hover {
+    border-color: var(--lagon);
+  }
+
+  .dc-nav__btn--next {
+    background: var(--lagon);
+    border-color: var(--lagon);
+    color: var(--nuit);
+  }
+
+  .dc-nav__btn[disabled] {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .dc-nav__btn :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .dc-nav__count {
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    color: var(--craie-douce);
+  }
+
+  .dc-privacy {
+    margin-top: var(--space-l);
+    max-width: 62ch;
+    font-size: var(--step--1);
+    color: var(--craie-douce);
+  }
+
+  .dc-print {
+    display: none;
+  }
+
+  /* ===== Mode interactif ===== */
+  :global(.is-live) .dc-read {
+    display: none;
+  }
+
+  :global(.is-live) .dc-read.is-open {
+    display: grid;
+  }
+
+  :global(.is-live).has-open .dc-choices {
+    display: none;
+  }
+
+  :global(.is-live).has-open .dc-read.is-open {
+    margin-top: var(--space-l);
+  }
+
+  :global(.is-live) .dc-back {
+    display: inline-flex;
+  }
+
+  :global(.is-live) .dc-step {
+    display: none;
+  }
+
+  :global(.is-live) .dc-step.is-current {
+    display: grid;
+    animation: dc-in 520ms var(--ease-out) both;
+  }
+
+  @keyframes dc-in {
+    from {
+      opacity: 0;
+      transform: translateX(1.5rem);
+    }
+  }
+
+  :global(.is-live) .dc-step.is-current.is-back {
+    animation-name: dc-in-back;
+  }
+
+  @keyframes dc-in-back {
+    from {
+      opacity: 0;
+      transform: translateX(-1.5rem);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    :global(.is-live) .dc-rail {
+      position: relative;
+      display: grid;
+      align-content: start;
+      gap: var(--space-m);
+      padding: 0;
+      list-style: none;
+    }
+
+    :global(.is-live) .dc-rail::before {
+      content: '';
+      position: absolute;
+      left: 0.95rem;
+      top: 1rem;
+      bottom: 1rem;
+      width: 1px;
+      background: rgb(255 255 255 / 0.15);
+    }
+
+    .dc-rail li {
+      position: relative;
+      display: grid;
+      grid-template-columns: 2rem 1fr;
+      gap: var(--space-s);
+      align-items: center;
+      color: var(--craie-douce);
+      font-size: var(--step--1);
+      transition: color var(--dur) ease;
+    }
+
+    .dc-rail__num {
+      display: grid;
+      place-items: center;
+      width: 1.9rem;
+      height: 1.9rem;
+      border-radius: 50%;
+      border: 1px solid rgb(255 255 255 / 0.25);
+      background: var(--nuit-2);
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      transition: background-color var(--dur) ease, color var(--dur) ease, border-color var(--dur) ease, transform var(--dur) var(--ease-out);
+    }
+
+    .dc-rail li[data-state='done'] .dc-rail__num {
+      background: var(--lagon);
+      border-color: var(--lagon);
+      color: var(--nuit);
+    }
+
+    .dc-rail li[data-state='current'] {
+      color: var(--craie);
+    }
+
+    .dc-rail li[data-state='current'] .dc-rail__num {
+      border-color: var(--lagon);
+      transform: scale(1.15);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.is-live) .dc-step.is-current {
+      animation: none;
+    }
+  }
+
+  @media print {
+    :global(.site-header),
+    :global(.site-footer),
+    :global(.skip-link),
+    .dc-hero,
+    .dc-choices,
+    .dc-read,
+    .dc-privacy {
+      display: none !important;
+    }
+
+    :global(body::after) {
+      display: none;
+    }
+
+    .dc {
+      background: #fff !important;
+      color: #000;
+    }
+
+    .dc-print {
+      display: block;
+      color: #000;
+      font-size: 11pt;
+    }
+
+    .dc-print :global(h2) {
+      font-size: 18pt;
+      margin-bottom: 8pt;
+    }
+
+    .dc-print :global(h3) {
+      font-size: 12pt;
+      margin: 10pt 0 4pt;
+    }
+  }
+</style>

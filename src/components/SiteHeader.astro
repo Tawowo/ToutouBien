@@ -36,7 +36,7 @@ let n = 0;
     </nav>
 
     <div class="site-header__actions">
-      <a href={CTA_NAV.href} class:list={['btn btn--sm header-cta', theme === 'dark' && 'btn--lagon']} data-magnetic>
+      <a href={CTA_NAV.href} class:list={['btn btn--sm header-cta', theme === 'dark' && 'btn--lagon']}>
         <span>{CTA_NAV.label}</span>
         <Icon name="arrow" class="btn__arrow" />
       </a>
@@ -399,11 +399,19 @@ let n = 0;
     overflow: hidden;
   }
 
-  @media (max-width: 63.99rem) {
+  .quick-nav a,
+  .header-cta {
+    white-space: nowrap;
+  }
+
+  /* Les liens rapides n'apparaissent que s'ils tiennent sur une ligne ; le menu complet reste disponible. */
+  @media (max-width: 74.99rem) {
     .quick-nav {
       display: none;
     }
+  }
 
+  @media (max-width: 47.99rem) {
     .header-cta {
       display: none;
     }

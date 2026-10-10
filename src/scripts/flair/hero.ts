@@ -126,6 +126,11 @@ export function initFlairHero(): void {
     else if (visible) scene.start();
   });
 
+  // Préférence « réduire les animations » activée pendant la visite : version statique immédiate.
+  matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+    if (e.matches) toStatic();
+  });
+
   addEventListener('scroll', onScroll, { passive: true });
   new ResizeObserver(() => {
     scene?.resize();

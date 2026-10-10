@@ -12,8 +12,9 @@ export interface NavGroup {
 /** Liens visibles en permanence dans l'en-tête (grand écran). */
 export const PRIMARY_NAV: NavItem[] = [
   { href: '/accompagnements/', label: 'Accompagnements' },
-  { href: '/approche/', label: 'L’approche' },
+  { href: '/decodeur/', label: 'Le décodeur' },
   { href: '/explorer/', label: 'Explorer' },
+  { href: '/approche/', label: 'L’approche' },
   { href: '/tarifs/', label: 'Tarifs' },
 ];
 
@@ -42,10 +43,12 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Comprendre',
     items: [
+      { href: '/decodeur/', label: 'Le décodeur du quotidien' },
       { href: '/explorer/', label: 'Explorer : expériences interactives' },
       { href: '/ressources/', label: 'Ressources et articles' },
       { href: '/orientation/', label: 'Par où commencer ?' },
       { href: '/faq/', label: 'Questions fréquentes' },
+      { href: '/questions/', label: 'Les questions que l’on n’ose pas poser' },
       { href: '/contact/', label: 'Contact' },
     ],
   },

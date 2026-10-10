@@ -437,7 +437,6 @@ a:hover {
   isolation: isolate;
   overflow: hidden;
   transition: color var(--dur) ease, border-color var(--dur) ease, transform var(--dur) var(--ease-out);
-  translate: var(--mx, 0) var(--my, 0);
 }
 
 /* Remplissage qui monte depuis le bas au survol. */

@@ -15,6 +15,7 @@ const PAGES = [
   '/faq/',
   '/questions/',
   '/orientation/',
+  '/decodeur/',
   '/explorer/',
   '/explorer/flair/',
   '/explorer/distance/',

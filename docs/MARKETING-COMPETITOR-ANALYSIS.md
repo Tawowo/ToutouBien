@@ -392,7 +392,7 @@ Constat appuyé sur les comptages de la section 3 :
 
 | Facteur d'uniformité | Observation | Effet probable pour le propriétaire |
 | --- | --- | --- |
-| Même mot-clé de méthode | 20/54 « positive », 8/54 « bienveillante » ; au total 27/54 emploient au moins un mot de la famille positive/bienveillante/douce/respect/sans violence | Impossible de départager sur la méthode |
+| Même mot-clé de méthode | 20/54 « positive », 8/54 « bienveillante » ; au total 26/54 emploient au moins un mot de la famille positive/bienveillante/douce/respect/sans violence | Impossible de départager sur la méthode |
 | Même parcours | 21/54 « bilan puis séances » | Les offres paraissent identiques |
 | Même liste de sujets | Rappel, marche en laisse, propreté, mordillements, solitude, socialisation (récurrents) | Aucune spécialité perçue |
 | Même construction de nom | 12 « Cani-/Cyno- », 9 « Educ-/Edu- » | Faible mémorisation |

@@ -75,6 +75,15 @@ Rédigés pour le site : ils ne contiennent ni chiffre, ni promesse, ni qualific
 | « Face à face, à la même hauteur » | À propos | Lecture du logo |
 | Questions fréquentes « problème », « préparer », « morsure » | FAQ | La réponse sur la morsure cite une obligation légale (déclaration en mairie, surveillance vétérinaire, évaluation comportementale) : faire relire |
 | Textes du formulaire, du message de confirmation et du message d'orientation en cas de blessure | Parlons de votre chien | |
+| « L'idée n'est pas de "corriger" votre chien, mais de comprendre ensemble, en famille, ce qui se passe, puis d'ajuster quelques habitudes, en sachant toujours pourquoi. » | Accueil, manifeste (V3) | Promesse implicite : expliquer le pourquoi et impliquer la famille. **À valider selon sa pratique** |
+| Chapitres de l'accueil : « Dehors, il lit le monde avec son nez » ; « Apprendre à se lire, l'un l'autre » + « Un accompagnement qui part de votre quotidien… » | Accueil (scène animée) | Ton et promesse |
+| **Décodeur du quotidien** : 6 situations, observations, pistes, questions, signaux « quand demander de l'aide », idées à essayer (`src/lib/decodeur.ts`) | /decodeur/ + accueil | **Relecture complète indispensable** : contenu pédagogique, prudence, cohérence avec sa méthode ; la situation « réagit aux autres chiens » est à retirer si elle ne traite pas la réactivité |
+| Parcours d'orientation : questions, reformulations, orientation vers un accompagnement (`src/lib/orientation.ts`) | /orientation/ | Logique d'orientation et message de prudence |
+| « Les questions que l'on n'ose pas poser » (10 réponses) | /questions/ | Réponse « morsure » (obligation de déclaration en mairie, suivi vétérinaire) à faire relire ; ton |
+| Six principes de l'approche (`src/content/approche.ts`) | /approche/ | **Doivent refléter sa méthode réelle** |
+| Textes de la page Tarifs (« communiqués directement sur simple demande », bonnes questions à poser) | /tarifs/ | Accepte-t-elle cette formule en attendant de publier ses prix ? |
+| Page Accessibilité | /accessibilite/ | Date, contact, éventuel audit |
+| Proposition de valeur et positionnement « famille » | `docs/BRAND-POSITIONING.md` | Validation stratégique |
 | Voix : « vous », « nous » dans le formulaire, « l'éducatrice » ailleurs | Partout | Préfère-t-elle le « je » ? Le passage au « je » est simple une fois son nom confirmé |
 
 ## Articles (statut `review`, non publiés)

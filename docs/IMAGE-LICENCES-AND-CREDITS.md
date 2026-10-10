@@ -2,7 +2,31 @@
 
 ## État actuel (vérifié)
 
-**Aucune photographie n'est utilisée sur le site.** Tentatives de téléchargement depuis Unsplash, Pexels, Wikimedia Commons, Flickr, Openverse, Pixabay, StockSnap, Burst et rawpixel : toutes **refusées par la politique réseau de la session** (HTTP 403 au proxy). Les pages de licence de ces sources étaient elles aussi inaccessibles. Plutôt que de référencer des images impossibles à voir ou de licence non vérifiable, le choix a été de livrer un site complet sans photo, prêt à les recevoir.
+**Aucune photographie n'est utilisée sur le site à ce jour** (vérification renouvelée le 10/10/2026 : tous les hôtes de photos libres restent refusés par la politique réseau de cet environnement, erreur 403 du proxy sur commons.wikimedia.org, upload.wikimedia.org, unsplash, pexels, openverse, flickr, pixabay).
+
+### Chaîne prête à l'emploi (V3)
+
+- `scripts/photos/manifest.json` associe chaque emplacement d'illustration (`illus-balade`, `illus-flair`,
+  `illus-rencontre-chiens`, `illus-maison`, `illus-chiot`) à des fichiers Wikimedia Commons **candidats**,
+  repérés par recherche web (titres et licences vus dans les résultats de recherche, **non vérifiés**).
+- `node scripts/photos/fetch-photos.mjs` interroge l'API Commons pour chaque candidat, **refuse** toute
+  licence non compatible (NC, ND, inconnue, GFDL seule), tout fichier trop petit ou non photographique,
+  télécharge le premier candidat valide, l'optimise et écrit les crédits vérifiés dans
+  `src/content/photo-credits.json`. `--dry-run` vérifie sans télécharger.
+- Le composant `Plate` affiche alors la photo et sa légende « Photo d'illustration : auteur, licence »
+  avec lien vers la source ; sans photo, la composition graphique reste affichée.
+- Chaîne testée de bout en bout avec une image de test générée localement (puis supprimée) : la photo
+  remplace l'illustration et le crédit s'affiche.
+- La galerie (`src/assets/photos/galerie/` + `src/content/galerie.json`) est réservée aux photos
+  authentiques de Mme Petitgand ; elle n'apparaît sur « À propos » que si des photos avec texte
+  alternatif existent.
+
+Pour activer : autoriser `commons.wikimedia.org` et `upload.wikimedia.org` dans les réglages réseau de
+l'environnement (ou lancer le script sur une machine connectée), puis relire chaque image retenue.
+
+### Historique
+
+Tentatives de téléchargement depuis Unsplash, Pexels, Wikimedia Commons, Flickr, Openverse, Pixabay, StockSnap, Burst et rawpixel : toutes **refusées par la politique réseau de la session** (HTTP 403 au proxy). Les pages de licence de ces sources étaient elles aussi inaccessibles. Plutôt que de référencer des images impossibles à voir ou de licence non vérifiable, le choix a été de livrer un site complet sans photo, prêt à les recevoir.
 
 | Visuel utilisé | Nature | Auteur | Licence / droits |
 | --- | --- | --- | --- |
@@ -10,7 +34,8 @@
 | Compositions graphiques (chemin, horizon, herbes) | SVG créés pour ce site | Créées pour le projet | Propriété de l'activité |
 | Compositions « rencontre » et « portrait » | Recadrages de l'emblème du logo | Dérivées du logo | Comme le logo |
 | Icônes au trait | SVG créés pour ce site | Créées pour le projet | Propriété de l'activité |
-| Polices Fraunces, Instrument Sans | Fontsource (npm) | The Fraunces Project Authors, The Instrument Sans Project Authors | SIL OFL 1.1 (vérifiée dans les fichiers `LICENSE` installés) |
+| Polices Instrument Serif, Instrument Sans, DM Mono | Fontsource (npm) | The Instrument Serif / Instrument Sans Project Authors, Colophon (DM Mono) | SIL OFL 1.1 (fichiers `LICENSE` des paquets installés) |
+| Étude au trait du chien (`DogFigure`) | SVG créé pour ce site | Créée pour le projet | Propriété de l'activité |
 
 ## Comment ajouter une photo
 
@@ -29,6 +54,11 @@
 | `educatrice-portrait` | Accueil + À propos | La personne qui accompagne | Portrait naturel de l'éducatrice, idéalement avec un chien | 4/5 vertical | « Portrait de l'éducatrice de ToutouBien. » (à personnaliser avec son nom) | **Photo authentique uniquement.** Jamais d'image de banque |
 | `accompagnement-domicile` | L'accompagnement, « Chez vous » | Travailler dans le cadre de vie | Chien au repos près de sa famille, ou discussion avec le chien présent | 4/3, lumière de fenêtre | « Un chien se repose près de sa famille dans le salon. » | Une image de banque ne doit pas être présentée comme un client |
 | `accompagnement-exterieur` | L'accompagnement, « Dehors » | Apprendre là où les situations se présentent | Balade en parc, laisse longue ou détendue | 4/3, horizon bas | « Une personne et son chien se promènent dans un parc. » | — |
+| `illus-balade` | Accompagnement « Mieux comprendre son chien » | La balade partagée | Personne et chien qui marchent, laisse détendue | 4/5 en arche | « Une personne promène son chien en laisse sur un chemin. » | Photo libre, jamais présentée comme un client |
+| `illus-flair` | Explorer « Le monde par le nez » | Flairer est un besoin | Chien qui renifle l'herbe | 4/3 | « Un chien blanc renifle l'herbe au bord d'un chemin. » | Idem |
+| `illus-rencontre-chiens` | Accompagnement « Le chien adulte » | Lire une rencontre | Deux chiens qui se saluent calmement | 4/5 en arche | « Deux chiens se saluent en se reniflant dans un parc. » | Rencontre calme uniquement |
+| `illus-maison` | Accompagnement « Difficultés du quotidien » | Le calme à la maison | Chien allongé à l'intérieur | 4/5 en arche | « Un chien noir se repose, allongé sur le sol d'une cuisine. » | Idem |
+| `illus-chiot` | Accompagnement « L'arrivée d'un chiot » | Le repos du chiot | Chiot endormi | 4/5 en arche | « Un chiot beagle endormi. » | Idem |
 | `apropos-atelier` | À propos (affiché **seulement** si une photo existe) | L'éducatrice au travail | Échange avec un propriétaire, chien détendu | 3/2 | « L'éducatrice échange avec un propriétaire et son chien. » | Photo authentique **avec accord écrit** des personnes visibles |
 
 ## Photos utilisées

@@ -268,6 +268,17 @@ const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
     opacity: 0;
   }
 
+  /* Repli en cours de visite : le logo dessiné suit directement le défilement. */
+  .cine[data-lite='true'] .cine__static {
+    transition: none;
+  }
+
+  .cine[data-lite='true'] .cine__canvas {
+    visibility: hidden;
+    opacity: 0;
+    transition: none;
+  }
+
   /* Chaque bloc suit la progression lissée (--a), exactement comme les particules. */
   :global(.can-cine) .cine:not([data-mode='static']) .cine__block {
     --a: 0;

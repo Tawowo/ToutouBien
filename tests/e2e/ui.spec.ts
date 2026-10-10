@@ -130,3 +130,17 @@ test('décodeur : situation, étapes, carnet transmis et retour arrière', async
   await page.goBack();
   await expect(page.locator('[data-dc-choices]')).toBeVisible();
 });
+
+test('accueil : une perte du contexte WebGL ne fait pas sauter la page', async ({ page }) => {
+  await page.goto('/?quality=low');
+  const section = page.locator('[data-cine]');
+  await expect(section).toHaveAttribute('data-ready', 'true', { timeout: 15000 });
+  const before = await section.evaluate((el) => (el as HTMLElement).offsetHeight);
+  await page.evaluate(() => {
+    const c = document.querySelector<HTMLCanvasElement>('[data-cine] canvas')!;
+    c.getContext('webgl2')?.getExtension('WEBGL_lose_context')?.loseContext();
+  });
+  await expect(section).toHaveAttribute('data-lite', 'true');
+  expect(await section.evaluate((el) => (el as HTMLElement).offsetHeight)).toBe(before);
+  await expect(page.locator('#cine-title')).toBeVisible();
+});

@@ -69,7 +69,7 @@ export function readCapabilities(): Capabilities {
     software = /swiftshader|llvmpipe|softpipe|software/i.test(renderer);
     gl?.getExtension('WEBGL_lose_context')?.loseContext();
   } catch {
-    webgl2 = false;
+    // Pas de WebGL 2 : la version statique s'affiche.
   }
   return {
     webgl2,

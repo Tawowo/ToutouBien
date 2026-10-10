@@ -15,9 +15,8 @@ export function initFlairHero(): void {
   const canvas = section?.querySelector<HTMLCanvasElement>('canvas');
   if (!section || !canvas) return;
 
-  const tier = tierFromQuery(location.search) ?? pickTier(readCapabilities());
-  section.dataset.tier = tier;
-  if (tier === 'fallback') {
+  // Même décision que le script en ligne de Base.astro (avant le premier rendu) : pas de décalage.
+  if (!document.documentElement.classList.contains('can-cine')) {
     section.dataset.mode = 'static';
     return;
   }
@@ -57,20 +56,23 @@ export function initFlairHero(): void {
       const shown = a > 0.02;
       if (el.inert === shown) el.inert = !shown;
     }
+    if (!scene && section.dataset.lite === 'true') svg.style.opacity = String(1 - t.walk * 0.75);
     const chapter = String(t.chapter);
     if (section.dataset.chapter !== chapter) section.dataset.chapter = chapter;
   };
 
-  const toStatic = () => {
-    section.dataset.mode = 'static';
-    Object.values(blocks).forEach((el) => {
-      if (el) {
-        el.inert = false;
-        el.style.removeProperty('--a');
-      }
-    });
+  /**
+   * Repli en cours de visite (appareil trop lent, contexte WebGL perdu, échec de chargement,
+   * préférence de mouvement réduit activée) : on garde la mise en scène défilante et la
+   * synchronisation des textes, seules les particules cèdent la place au logo dessiné.
+   * La hauteur de la section ne change pas : aucun saut de page.
+   */
+  const toLite = () => {
+    section.dataset.ready = 'false';
+    section.dataset.lite = 'true';
     scene?.dispose();
     scene = null;
+    apply(progress());
   };
 
   const onScroll = () => {
@@ -80,6 +82,13 @@ export function initFlairHero(): void {
   };
 
   const load = async () => {
+    // Le test des capacités (création d'un contexte d'essai) a lieu ici, au repos du navigateur.
+    const tier = tierFromQuery(location.search) ?? pickTier(readCapabilities());
+    section.dataset.tier = tier;
+    if (tier === 'fallback') {
+      toLite();
+      return;
+    }
     try {
       const { FlairScene } = await import('./scene');
       scene = new FlairScene({
@@ -88,13 +97,13 @@ export function initFlairHero(): void {
         emblemBox: { x: vb.x, y: vb.y, w: vb.width, h: vb.height },
         tier,
         onProgress: apply,
-        onFallback: toStatic,
+        onFallback: toLite,
       });
       section.dataset.ready = 'true';
       scene.setProgress(progress());
       if (visible && !document.hidden) scene.start();
     } catch {
-      toStatic();
+      toLite();
     }
   };
 
@@ -128,7 +137,7 @@ export function initFlairHero(): void {
 
   // Préférence « réduire les animations » activée pendant la visite : version statique immédiate.
   matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
-    if (e.matches) toStatic();
+    if (e.matches) toLite();
   });
 
   addEventListener('scroll', onScroll, { passive: true });

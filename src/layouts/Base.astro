@@ -39,7 +39,7 @@ const structured = [organizationLd(base), websiteLd(base), ...jsonLd];
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script is:inline>(function(d){d.classList.replace('no-js','js');try{var q=new URLSearchParams(location.search).get('quality');var c=navigator.connection;var ok=q?q!=='fallback':!matchMedia('(prefers-reduced-motion: reduce)').matches&&!(c&&c.saveData);if(ok)d.classList.add('can-cine');}catch(e){}})(document.documentElement);</script>
+    <script is:inline>(function(d){d.classList.replace('no-js','js');try{const q=new URLSearchParams(location.search).get('quality');const c=navigator.connection;const ok=q?q!=='fallback':!matchMedia('(prefers-reduced-motion: reduce)').matches&&!(c&&c.saveData);if(ok)d.classList.add('can-cine');}catch{/* mode statique par défaut */}})(document.documentElement);</script>
     <link rel="preload" href={serifUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={instrumentUrl} as="font" type="font/woff2" crossorigin />
     <title>{fullTitle}</title>

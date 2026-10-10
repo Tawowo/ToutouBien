@@ -31,6 +31,8 @@ Prérequis : Node.js ≥ 22.12.
 | `npm run verify` | Lint + types + tests unitaires + build |
 | `npm run check:launch` | **Contrôle de mise en ligne** : échoue tant qu'un élément bloquant manque |
 | `node scripts/screenshots.mjs <url> <dossier> [largeur] [hauteur]` | Captures pleine page et détection des débordements |
+| `node scripts/photos/fetch-photos.mjs [--dry-run]` | Télécharge les photos libres après vérification de leur licence (réseau requis) |
+| URL `?quality=high\|medium\|low\|fallback` | Force le niveau de la scène d'accueil (tests, démonstration) |
 
 Pour Playwright sur une autre machine : `npx playwright install chromium`.
 
@@ -87,6 +89,8 @@ Les deux formulaires (« Parlons de votre chien » et Contact) envoient les dema
 Le blog, les catégories, le menu « Ressources », le sitemap et les articles liés se mettent à jour automatiquement. S'il n'y a aucun article publié, ces pages ne sont pas générées.
 
 ### Ajouter une photo
+
+Photos libres : autoriser `commons.wikimedia.org` et `upload.wikimedia.org`, puis `node scripts/photos/fetch-photos.mjs` (licences vérifiées automatiquement ; `--dry-run` pour vérifier sans télécharger). Photos de Mme Petitgand : `src/assets/photos/galerie/` (voir le LISEZMOI du dossier).
 Déposer `src/assets/photos/<identifiant>.jpg` pour l'un des emplacements de `src/content/photos.ts`, puis renseigner son crédit. Voir `docs/IMAGE-LICENCES-AND-CREDITS.md`.
 
 ### Modifier la FAQ
@@ -101,8 +105,12 @@ src/
   lib/           fields.ts (statuts), wizard.ts (parcours), submit.ts (envoi), seo.ts (JSON-LD)…
   components/    SiteHeader, SiteFooter, Plate/PlateArt (photos et illustrations), Fil (signature), …
   layouts/       Base.astro (métadonnées, SEO, CSP)
-  pages/         accueil, accompagnement, a-propos, parlons-de-votre-chien, contact, ressources, blog, légal, 404, robots.txt
-  scripts/       wizard.ts, contact.ts (amélioration progressive)
+  pages/         accueil, accompagnements (+4), approche, déroulement, premier-rendez-vous, tarifs, faq, questions,
+                 orientation, decodeur, explorer (+flair, distance, signaux), a-propos, contact,
+                 parlons-de-votre-chien, ressources, blog, légal, accessibilité, 404, robots.txt
+  scripts/       flair/ (scène WebGL : timeline, scene, quality, shapes, hero), explorer/, decodeur.ts,
+                 orientation.ts, prep.ts, wizard.ts, contact.ts (amélioration progressive)
+scripts/photos/  manifest.json + fetch-photos.mjs (photos libres à licence vérifiée via l'API Commons)
   styles/        global.css (système de design)
   assets/brand/  logo fourni + déclinaisons vectorisées
 tests/           unit/ (Vitest), e2e/ (Playwright), launch/ (contrôle de mise en ligne)
@@ -119,7 +127,15 @@ Site statique : tout hébergeur de fichiers statiques convient. Build : `npm run
 | --- | --- |
 | [PROJECT-AUDIT](docs/PROJECT-AUDIT.md) | État initial, ressources, contraintes de l'environnement |
 | [CREATIVE-AND-TECHNICAL-RESEARCH](docs/CREATIVE-AND-TECHNICAL-RESEARCH.md) | Références, techniques évaluées, sources |
-| [ART-DIRECTION](docs/ART-DIRECTION.md) | Pistes comparées, direction « Le fil », système de design |
+| [ART-DIRECTION](docs/ART-DIRECTION.md) | Charte V3 issue du logo : couleurs, typographie, mouvement, règles |
+| [VISUAL-QUALITY-REVIEW](docs/VISUAL-QUALITY-REVIEW.md) | Grille de 12 critères, défauts trouvés et corrigés, captures avant/après |
+| [RESEARCH-ROUND-2](docs/RESEARCH-ROUND-2.md) · [RESEARCH-CREATIVE-BENCHMARK](docs/RESEARCH-CREATIVE-BENCHMARK.md) | Dépôts étudiés, licences, patterns retenus |
+| [BRAND-POSITIONING](docs/BRAND-POSITIONING.md) | Audit, positionnements comparés, proposition de valeur, système de mémorisation |
+| [MARKETING-COMPETITOR-ANALYSIS](docs/MARKETING-COMPETITOR-ANALYSIS.md) | 123 références, observations, opportunités |
+| [MARKETING-STRATEGY](docs/MARKETING-STRATEGY.md) | Publics, parcours, conversion, SEO, local, canaux, partenariats, budget |
+| [EDITORIAL-GUIDELINES](docs/EDITORIAL-GUIDELINES.md) | Ton, vocabulaire, format « cinq temps », règles |
+| [CONTENT-CALENDAR-90-DAYS](docs/CONTENT-CALENDAR-90-DAYS.md) · [LAUNCH-CAMPAIGN](docs/LAUNCH-CAMPAIGN.md) | Calendrier et contenus prêts à relire |
+| [MARKETING-ROADMAP-90-DAYS](docs/MARKETING-ROADMAP-90-DAYS.md) · [MARKETING-METRICS](docs/MARKETING-METRICS.md) | Plan d'action et indicateurs |
 | [IMAGE-LICENCES-AND-CREDITS](docs/IMAGE-LICENCES-AND-CREDITS.md) | Registre photo, licences, photos à demander |
 | [CONTENT-VALIDATION](docs/CONTENT-VALIDATION.md) | Registre des informations à fournir et des textes à relire |
 | [SEO-STRATEGY](docs/SEO-STRATEGY.md) | SEO technique, local, éditorial |

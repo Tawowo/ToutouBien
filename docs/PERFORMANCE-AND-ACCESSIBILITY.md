@@ -1,5 +1,28 @@
 # Performance et accessibilité
 
+> **Mesures V3 (10/10/2026)** — Lighthouse 13.5, profil mobile (CPU ralenti ×4), build de production servi
+> localement. Le WebGL de cet environnement est un rendu **logiciel** (SwiftShader) : le TBT de l'accueil
+> est surestimé par rapport à un appareil doté d'une carte graphique.
+
+| Page | Performance | Accessibilité | Bonnes pratiques | SEO* | LCP | TBT | CLS | Poids |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Accueil | 89 | 100 | 100 | 66 | 1,6 s | 450 ms | 0,001 | 268 Ko |
+| Décodeur | 99 | 100 | 100 | 66 | 1,8 s | 0 ms | 0,001 | 139 Ko |
+| Le monde par le nez | 100 | 100 | 100 | 66 | 1,7 s | 20 ms | 0 | 133 Ko |
+| Accompagnements | 100 | 100 | 100 | 66 | 1,7 s | 0 ms | 0,002 | 125 Ko |
+| Tarifs | 100 | 100 | 100 | 66 | 1,7 s | 0 ms | 0,012 | 124 Ko |
+
+\* SEO 66 : l'indexation est **volontairement désactivée** avant validation (robots + `noindex`).
+
+Avant corrections, l'accueil mesurait **56** (CLS 0,386, TBT 1 360 ms). Gains obtenus par : décision du mode
+de la scène avant le premier rendu, chargement de three.js et test des capacités au repos du navigateur,
+palier léger sur téléphone et en rendu logiciel, repli sans saut de page, rendu suspendu hors écran.
+
+---
+
+## Historique (V1-V2)
+
+
 ## Mesures de performance (laboratoire)
 
 Lighthouse 13.5 en local (`astro preview`), Chromium sans interface. **Ce sont des mesures de laboratoire** (réseau et processeur simulés), pas des données réelles d'utilisateurs : celles-ci viendront de la Search Console après la mise en ligne.

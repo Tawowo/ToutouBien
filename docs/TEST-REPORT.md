@@ -1,5 +1,26 @@
 # Rapport de tests
 
+> **État V3 (10/10/2026)** — résultats réels de la dernière exécution, sur build de production.
+
+| Vérification | Commande | Résultat |
+| --- | --- | --- |
+| Lint | `npm run lint` | 0 erreur |
+| Types (Astro + TypeScript strict) | `npm run check` | 0 erreur, 0 avertissement |
+| Tests unitaires (Vitest) | `npm test` | **50 réussis** (modèles : orientation, signaux, flair, distance, qualité 3D, séquence d'accueil, décodeur, parcours de lecture ; champs ; envoi ; formulaire) |
+| Tests de bout en bout (Playwright, bureau 1366 × 860 + Pixel 7) | `npm run test:e2e` | **191 réussis, 0 échec**, 1 ignoré (test souris sur mobile) |
+| Accessibilité automatique (axe-core, WCAG 2.2 AA) | inclus dans e2e | 0 violation sur 24 pages × 2 formats |
+| Liens internes | inclus dans e2e + script de parcours du build | 0 lien cassé |
+
+Nouveaux tests V3 : chaque odeur du « monde par le nez » (trouvée, re-sélectionnée, réinitialisée) ;
+absence d'effet lié au pointeur ; décodeur (situation, étapes, note transmise, retour arrière) ; perte du
+contexte WebGL sans saut de page ; FAQ (recherche, état vide) ; questions ; orientation complète ;
+checklist du premier rendez-vous ; minutage de l'accueil (paliers, un seul texte visible, réversibilité).
+
+---
+
+## Historique (V1-V2)
+
+
 *Exécutés le 9 octobre 2026 dans l'environnement de développement (Linux, Node 22.22, Chromium 141 via Playwright 1.56). Les résultats ci-dessous sont ceux réellement obtenus lors de la dernière exécution.*
 
 ## Synthèse

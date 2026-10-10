@@ -16,7 +16,7 @@ const articles = (await visibleArticles()).filter((a) => a.data.category === cat
 <Base title={`${category.label} — articles`} description={category.description}>
   <section class="cat-hero">
     <div class="page cat-hero__inner">
-      <a class="cat-hero__back" href="/blog/"><Icon name="arrow-left" /> Tout le carnet</a>
+      <a class="cat-hero__back" href="/blog/"><Icon name="arrow-left" /> Tout le blog</a>
       <p class="eyebrow enter">Thème</p>
       <h1 class="enter" data-i="1">{category.label}</h1>
       <p class="lede enter" data-i="2">{category.description}</p>

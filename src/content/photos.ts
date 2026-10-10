@@ -78,6 +78,17 @@ export const PHOTO_SLOTS = {
     motif: 'portrait',
     caution: 'Uniquement une photo authentique fournie par l’éducatrice. Jamais d’image de banque.',
   },
+  'educatrice-avec-chien': {
+    id: 'educatrice-avec-chien',
+    page: 'Qui suis-je — avec son chien',
+    message: 'La relation qu’elle vit au quotidien avec son propre chien.',
+    situation: 'L’éducatrice avec son chien, complices, en extérieur ou chez elle.',
+    framing: 'Plan moyen, à hauteur du chien, lumière naturelle.',
+    ratio: 1,
+    alt: 'L’éducatrice de ToutouBien avec son chien.',
+    motif: 'rencontre',
+    caution: 'Photo authentique uniquement, fournie par l’éducatrice.',
+  },
   'accompagnement-domicile': {
     id: 'accompagnement-domicile',
     page: 'L’accompagnement — chez vous',

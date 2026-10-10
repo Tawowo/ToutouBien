@@ -144,3 +144,72 @@ test('accueil : une perte du contexte WebGL ne fait pas sauter la page', async (
   expect(await section.evaluate((el) => (el as HTMLElement).offsetHeight)).toBe(before);
   await expect(page.locator('#cine-title')).toBeVisible();
 });
+
+test('accueil : le sélecteur de chemin répond au clic et au clavier', async ({ page }) => {
+  await page.goto('/');
+  const group = page.getByRole('radiogroup').first();
+  await group.scrollIntoViewIfNeeded();
+  const first = group.getByRole('radio').first();
+  await first.click();
+  await expect(first).toHaveAttribute('aria-checked', 'true');
+  const panel = page.locator('[data-ch-panel="chiot"]');
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole('link', { name: /Affiner en quatre questions/ })).toHaveAttribute('href', /\/orientation\/\?stage=/);
+  await page.keyboard.press('ArrowDown');
+  const second = group.getByRole('radio').nth(1);
+  await expect(second).toHaveAttribute('aria-checked', 'true');
+  await expect(second).toBeFocused();
+  await expect(page.locator('[data-ch-panel="chien-adulte"]')).toBeVisible();
+});
+
+test('accueil : les histoires changent de situation et mènent au dossier', async ({ page }) => {
+  await page.goto('/');
+  const tabs = page.getByRole('tablist', { name: 'Situations' });
+  await tabs.scrollIntoViewIfNeeded();
+  const tab = tabs.getByRole('tab').nth(2);
+  await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected', 'true');
+  const panel = page.locator('#st-panel-solitude');
+  await expect(panel).toBeVisible();
+  await panel.getByRole('link', { name: /Lire le dossier/ }).click();
+  await expect(page).toHaveURL(/\/dossiers\/solitude\/$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/seul/);
+});
+
+test('galerie : visionneuse au clavier, compteur, fermeture et retour du focus', async ({ page }) => {
+  await page.goto('/galerie/');
+  const thumbs = page.locator('[data-lb]');
+  const n = await thumbs.count();
+  expect(n).toBeGreaterThan(1);
+  await thumbs.first().click();
+  const dialog = page.locator('dialog.lb');
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('[data-lb-count]')).toHaveText(`1 / ${n}`);
+  await page.keyboard.press('ArrowRight');
+  await expect(dialog.locator('[data-lb-count]')).toHaveText(`2 / ${n}`);
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  await expect(dialog.locator('[data-lb-count]')).toHaveText(`${n} / ${n}`);
+  await dialog.getByRole('button', { name: 'Image suivante' }).click();
+  await expect(dialog.locator('[data-lb-count]')).toHaveText(`1 / ${n}`);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(thumbs.first()).toBeFocused();
+  await thumbs.nth(1).click();
+  await dialog.getByRole('button', { name: 'Fermer la visionneuse' }).click();
+  await expect(dialog).toBeHidden();
+});
+
+test('dossiers : la liste mène à chaque dossier, la carte suit la lecture', async ({ page }) => {
+  await page.goto('/dossiers/');
+  const cards = page.locator('.dl__card');
+  await expect(cards).toHaveCount(6);
+  await cards.first().click();
+  await expect(page).toHaveURL(/\/dossiers\/laisse\/$/);
+  const map = page.getByRole('navigation', { name: 'Les cinq temps du dossier' });
+  await map.locator('a[href="#d-questions"]').click();
+  await expect(map.locator('a[href="#d-questions"]')).toHaveAttribute('aria-current', 'step');
+  await expect(page.getByRole('link', { name: /Préparer un échange/ })).toHaveAttribute('href', /sujet=marche-en-laisse/);
+  await page.getByRole('link', { name: /Dossier suivant/ }).click();
+  await expect(page).toHaveURL(/\/dossiers\/rappel\/$/);
+});

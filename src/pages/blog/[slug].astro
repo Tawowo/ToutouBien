@@ -36,7 +36,7 @@ const jsonLd = draft || !d.publishDate
       articleLd({ base, path, title: d.title, description: d.description, published: d.publishDate, updated: d.updatedDate, image: cover ? new URL(cover.src, base).toString() : undefined }),
       breadcrumbLd(base, [
         { name: 'Accueil', path: '/' },
-        { name: 'Ressources', path: '/ressources/' },
+        { name: 'Blog', path: '/blog/' },
         { name: d.title, path },
       ]),
     ];
@@ -49,7 +49,7 @@ const jsonLd = draft || !d.publishDate
       <div class="page article__head-inner">
         <nav class="crumbs" aria-label="Fil d’Ariane">
           <ol role="list">
-            <li><a href="/ressources/">Ressources</a></li>
+            <li><a href="/blog/">Blog</a></li>
             <li><a href={`/blog/categorie/${d.category}/`}>{categoryLabel(d.category)}</a></li>
           </ol>
         </nav>

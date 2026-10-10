@@ -20,7 +20,12 @@ const PAGES = [
   '/explorer/flair/',
   '/explorer/distance/',
   '/explorer/signaux/',
-  '/a-propos/',
+  '/qui-suis-je/',
+  '/blog/',
+  '/dossiers/',
+  '/dossiers/laisse/',
+  '/dossiers/chiot/',
+  '/galerie/',
   '/parlons-de-votre-chien/',
   '/contact/',
   '/mentions-legales/',
@@ -87,11 +92,33 @@ test('page 404 dédiée', async ({ page }) => {
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
 });
 
-test('sans article publié, la section ressources n’est ni générée ni proposée', async ({ page, request }) => {
+test('sans article publié : le blog présente la rubrique sans inventer d’actualité', async ({ page, request }) => {
   expect((await request.get('/ressources/')).status()).toBe(404);
-  expect((await request.get('/blog/')).status()).toBe(404);
+  const res = await page.goto('/blog/');
+  expect(res?.status()).toBe(200);
+  await expect(page.getByRole('heading', { level: 2, name: /en cours de relecture/ })).toBeVisible();
+  await expect(page.locator('[data-post]')).toHaveCount(0);
+  await expect(page.locator('time')).toHaveCount(0);
   await page.goto('/');
   await expect(page.locator('a[href="/ressources/"]')).toHaveCount(0);
+});
+
+test('l’ancienne adresse /a-propos/ redirige vers /qui-suis-je/', async ({ page }) => {
+  await page.goto('/a-propos/');
+  await expect(page).toHaveURL(/\/qui-suis-je\/$/);
+});
+
+test('navigation principale : les rubriques et le contact sont accessibles', async ({ page, isMobile }) => {
+  await page.goto('/');
+  if (isMobile) {
+    await page.getByRole('button', { name: 'Menu' }).click();
+    const menu = page.getByRole('navigation', { name: 'Menu complet' });
+    for (const name of ['Les dossiers', 'Blog', 'Galerie', 'Qui suis-je', 'Contact']) await expect(menu.getByRole('link', { name, exact: false }).first()).toBeVisible();
+  } else {
+    const nav = page.getByRole('navigation', { name: 'Accès rapide' });
+    for (const name of ['Accompagnements', 'Comprendre', 'Blog', 'Galerie', 'Qui suis-je']) await expect(nav.getByRole('link', { name })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Contact' }).first()).toBeVisible();
+  }
 });
 
 test('robots.txt et sitemap', async ({ request }) => {

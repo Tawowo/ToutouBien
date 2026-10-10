@@ -1,0 +1,745 @@
+---
+/**
+ * Un dossier « Comprendre la situation ». La carte du dossier (les cinq temps) reste visible
+ * pendant la lecture et s'allume à mesure que l'on avance ; les pistes d'explication se
+ * dessinent en constellation. Aucun diagnostic, aucun cas client : des repères généraux.
+ */
+import Base from '~/layouts/Base.astro';
+import Icon from '~/components/Icon.astro';
+import Draft from '~/components/Draft.astro';
+import Plate from '~/components/Plate.astro';
+import type { PhotoSlotId } from '~/content/photos';
+import { SITUATIONS, STEPS, type Situation } from '~/lib/decodeur';
+import { accompagnement } from '~/content/accompagnements';
+import { EXPERIENCES } from '~/content/explorer';
+import { visibleArticles } from '~/lib/articles';
+import { breadcrumbLd } from '~/lib/seo';
+
+export function getStaticPaths() {
+  return SITUATIONS.map((s, i) => ({ params: { id: s.id }, props: { s, prev: SITUATIONS[i - 1], next: SITUATIONS[i + 1] } }));
+}
+
+interface Props {
+  s: Situation;
+  prev?: Situation;
+  next?: Situation;
+}
+const { s, prev, next } = Astro.props;
+const acc = accompagnement(s.accompagnement);
+const exp = EXPERIENCES.find((e) => e.id === s.explorer);
+const articles = (await visibleArticles()).filter((a) => s.articles.includes(a.id));
+const base = Astro.site ?? new URL('https://toutoubien.example');
+const path = `/dossiers/${s.id}/`;
+const index = SITUATIONS.indexOf(s) + 1;
+
+const C = 200;
+const R = 140;
+// Rayons irréguliers : une constellation, pas un schéma géométrique.
+const JITTER = [1, 0.74, 0.92, 0.68, 0.86];
+const pos = (i: number, n: number) => {
+  const a = -Math.PI / 2 + (i / n) * Math.PI * 2 + 0.45;
+  const r = R * (JITTER[i % JITTER.length] ?? 1);
+  return { x: C + Math.cos(a) * r, y: C + Math.sin(a) * r };
+};
+// Photo d'illustration (ou composition graphique) associée à chaque dossier.
+const PLATE: Record<string, PhotoSlotId> = { laisse: 'illus-balade', rappel: 'illus-flair', solitude: 'illus-maison', visites: 'illus-maison', chiens: 'illus-rencontre-chiens', chiot: 'illus-chiot' };
+const ids = STEPS.map((st) => `d-${st.id}`);
+---
+<Base
+  title={`${s.title} — comprendre la situation`}
+  description={`${s.title} : ce qu’il est utile d’observer, les explications possibles, les questions à se poser et quand demander de l’aide. Un dossier ToutouBien, sans diagnostic.`}
+  jsonLd={[breadcrumbLd(base, [{ name: 'Accueil', path: '/' }, { name: 'Dossiers', path: '/dossiers/' }, { name: s.title, path }])]}
+>
+  <header class="dd-hero on-dark" data-sky="0.8">
+    <div class="page dd-hero__inner">
+      <nav class="crumbs" aria-label="Fil d’Ariane">
+        <ol role="list">
+          <li><a href="/">Accueil</a></li>
+          <li><a href="/dossiers/">Dossiers</a></li>
+          <li aria-current="page">{s.title}</li>
+        </ol>
+      </nav>
+      <p class="eyebrow enter">Dossier {String(index).padStart(2, '0')}{acc ? ` · ${acc.title}` : ''}</p>
+      <h1 class="enter" data-i="1">{s.title}</h1>
+      <p class="dd-hero__voice enter" data-i="2">{s.voice}</p>
+      <Draft label="Dossier à relire"><p>Contenu pédagogique rédigé pour le site, à valider par Mme Petitgand.</p></Draft>
+    </div>
+  </header>
+
+  <div class="page dd" data-dossier>
+    <nav class="dd-map" aria-label="Les cinq temps du dossier">
+      <ol role="list">
+        {STEPS.map((st, i) => (
+          <li>
+            <a href={`#${ids[i]}`} data-dd-link={ids[i]}>
+              <span class="dd-map__star" aria-hidden="true"></span>
+              <span class="dd-map__num">{String(i + 1).padStart(2, '0')}</span>
+              <span>{st.label}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+
+    <div class="dd-body">
+      <section id={ids[0]} class="dd-sec" data-dd-sec aria-labelledby={`${ids[0]}-t`}>
+        <p class="label">01 · {STEPS[0].label}</p>
+        <h2 id={`${ids[0]}-t`}>Une situation <em>fréquente</em>.</h2>
+        <div class="dd-intro">
+          <p class="lede">{s.voice.replace(/[«»]/g, '').trim()} Beaucoup de familles vivent cette situation. Elle a rarement une seule explication&nbsp;: la regarder calmement aide déjà à y voir plus clair.</p>
+          <Plate id={PLATE[s.id] ?? 'illus-balade'} ratio={1} shape="round" class="dd-intro__plate" sizes="(min-width: 62rem) 20rem, 70vw" />
+        </div>
+      </section>
+
+      <section id={ids[1]} class="dd-sec" data-dd-sec aria-labelledby={`${ids[1]}-t`}>
+        <p class="label">02 · {STEPS[1].label}</p>
+        <h2 id={`${ids[1]}-t`}>Ce qu’il est <em>utile de noter</em>.</h2>
+        <ol class="dd-obs" role="list">
+          {s.observe.map((o, i) => (
+            <li class="reveal" data-i={i}>
+              <span class="dd-obs__num" aria-hidden="true">{i + 1}</span>
+              <strong>{o.label}</strong>
+              <span>{o.why}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section id={ids[2]} class="dd-sec dd-sec--sky on-dark" data-dd-sec data-sky="0.7" aria-labelledby={`${ids[2]}-t`}>
+        <p class="label">03 · {STEPS[2].label}</p>
+        <h2 id={`${ids[2]}-t`}>Plusieurs pistes, <em>jamais une seule</em>.</h2>
+        <div class="dd-const" data-dd-const>
+          <svg viewBox="0 0 400 400" aria-hidden="true" focusable="false">
+            <circle cx={C} cy={C} r={R} class="dd-const__orbit" />
+            {s.meanings.map((_, i) => {
+              const p = pos(i, s.meanings.length);
+              return <line x1={C} y1={C} x2={p.x} y2={p.y} pathLength="1" class="dd-const__ray" data-i={i} />;
+            })}
+            {s.meanings.map((_, i) => {
+              const p = pos(i, s.meanings.length);
+              return (
+                <g class="dd-const__star" data-i={i}>
+                  <circle cx={p.x} cy={p.y} r="22" class="dd-const__halo" />
+                  <circle cx={p.x} cy={p.y} r="13" class="dd-const__disc" />
+                  <text x={p.x} y={p.y + 4.5} text-anchor="middle">{i + 1}</text>
+                </g>
+              );
+            })}
+            <circle cx={C} cy={C} r="34" class="dd-const__halo" />
+            <circle cx={C} cy={C} r="8" class="dd-const__core" />
+          </svg>
+          <ol class="dd-mean" role="list">
+            {s.meanings.map((m, i) => (
+              <li data-i={i}><span class="dd-mean__num" aria-hidden="true">{i + 1}</span>{m}</li>
+            ))}
+          </ol>
+        </div>
+        <p class="dd-note">Ces pistes sont générales. Seule une observation de votre chien, dans son contexte, permet d’y voir clair.</p>
+      </section>
+
+      <section id={ids[3]} class="dd-sec" data-dd-sec aria-labelledby={`${ids[3]}-t`}>
+        <p class="label">04 · {STEPS[3].label}</p>
+        <h2 id={`${ids[3]}-t`}>Les bonnes <em>questions</em>.</h2>
+        <ul class="dd-q" role="list">
+          {s.questions.map((q, i) => <li class="reveal" data-i={i}>{q}</li>)}
+        </ul>
+      </section>
+
+      <section id={ids[4]} class="dd-sec" data-dd-sec aria-labelledby={`${ids[4]}-t`}>
+        <p class="label">05 · {STEPS[4].label}</p>
+        <h2 id={`${ids[4]}-t`}>Et <em>ensuite</em>&nbsp;?</h2>
+        <div class="dd-next">
+          <div class="dd-first">
+            <span class="label">Une première idée, sans risque</span>
+            <p>{s.first}</p>
+          </div>
+          <div class="dd-care" role="note">
+            <span class="label">Quand demander de l’aide rapidement</span>
+            <ul role="list">{s.care.map((c) => <li>{c}</li>)}</ul>
+          </div>
+        </div>
+
+        <h3 class="dd-res-title">Pour aller plus loin</h3>
+        <ul class="dd-res" role="list">
+          <li><a href={`/decodeur/#${s.id}`}><span class="label">Outil</span><strong>Observer avec le décodeur</strong><span>Cochez ce que vous remarquez et gardez une note pour en parler.</span><Icon name="arrow" /></a></li>
+          {exp && <li><a href={exp.href}><span class="label">Expérience interactive</span><strong>{exp.title}</strong><span>{exp.question}</span><Icon name="arrow" /></a></li>}
+          {acc && <li><a href={`/accompagnements/${acc.slug}/`}><span class="label">Accompagnement</span><strong>{acc.title}</strong><span>{acc.short}</span><Icon name="arrow" /></a></li>}
+          {articles.map((a) => <li><a href={`/blog/${a.id}/`}><span class="label">Blog</span><strong>{a.data.title}</strong><span>{a.data.description}</span><Icon name="arrow" /></a></li>)}
+        </ul>
+
+        <div class="dd-cta">
+          <p>Envie d’en parler pour votre chien&nbsp;?</p>
+          <a class="btn" href={`/parlons-de-votre-chien/?sujet=${s.topic}`}>Préparer un échange <Icon name="arrow" class="btn__arrow" /></a>
+        </div>
+      </section>
+
+      <nav class="dd-pager" aria-label="Autres dossiers">
+        {prev ? <a href={`/dossiers/${prev.id}/`} rel="prev"><Icon name="arrow-left" /><span><span class="label">Dossier précédent</span>{prev.title}</span></a> : <span />}
+        {next ? <a href={`/dossiers/${next.id}/`} rel="next" class="dd-pager__next"><span><span class="label">Dossier suivant</span>{next.title}</span><Icon name="arrow" /></a> : <a href="/dossiers/" class="dd-pager__next"><span><span class="label">Retour</span>Tous les dossiers</span><Icon name="arrow" /></a>}
+      </nav>
+    </div>
+  </div>
+</Base>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-dossier]');
+  if (root) {
+    const secs = Array.from(root.querySelectorAll<HTMLElement>('[data-dd-sec]'));
+    const links = Array.from(root.querySelectorAll<HTMLAnchorElement>('[data-dd-link]'));
+    const seen = new Set<string>();
+    const setCurrent = (id: string) => {
+      const k = secs.findIndex((s) => s.id === id);
+      links.forEach((l, i) => {
+        l.classList.toggle('is-done', i <= k);
+        if (i === k) l.setAttribute('aria-current', 'step');
+        else l.removeAttribute('aria-current');
+      });
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => e.isIntersecting && seen.add(e.target.id));
+        const current = secs.filter((s) => seen.has(s.id) && s.getBoundingClientRect().top < innerHeight * 0.5).pop();
+        if (current) setCurrent(current.id);
+      },
+      { rootMargin: '-35% 0px -50% 0px' },
+    );
+    secs.forEach((s) => io.observe(s));
+    const cons = root.querySelector('[data-dd-const]');
+    if (cons) {
+      const io2 = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            cons.classList.add('is-in');
+            io2.disconnect();
+          }
+        },
+        { threshold: 0.35 },
+      );
+      io2.observe(cons);
+      // Survoler une piste allume son étoile.
+      cons.querySelectorAll<HTMLElement>('.dd-mean li').forEach((li) => {
+        const star = cons.querySelector(`.dd-const__star[data-i="${li.dataset.i}"]`);
+        li.addEventListener('pointerenter', () => star?.classList.add('is-lit'));
+        li.addEventListener('pointerleave', () => star?.classList.remove('is-lit'));
+      });
+    }
+  }
+</script>
+
+<style>
+  .dd-hero {
+    padding-block: var(--space-xl) var(--space-2xl);
+    background: radial-gradient(110% 100% at 15% 0%, #134a46, var(--nuit) 65%);
+  }
+
+  .dd-hero__inner {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .dd-hero h1 {
+    font-size: var(--step-6);
+    line-height: 0.95;
+    max-width: 16ch;
+    color: var(--craie);
+  }
+
+  .dd-hero__voice {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--lagon);
+  }
+
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding: 0;
+    list-style: none;
+    font-size: var(--step--1);
+    color: var(--craie-douce);
+  }
+
+  .crumbs li + li::before {
+    content: '/';
+    margin-right: 0.4rem;
+    opacity: 0.5;
+  }
+
+  .crumbs a {
+    color: inherit;
+  }
+
+  .dd {
+    display: grid;
+    gap: var(--space-xl);
+    padding-block: var(--space-xl);
+  }
+
+  @media (min-width: 62rem) {
+    .dd {
+      grid-template-columns: 15rem minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .dd-map {
+    position: sticky;
+    top: calc(var(--header-h, 5rem) + var(--space-m));
+  }
+
+  .dd-map ol {
+    position: relative;
+    display: grid;
+    gap: 0.2rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .dd-map ol::before {
+    content: '';
+    position: absolute;
+    left: 0.55rem;
+    top: 1rem;
+    bottom: 1rem;
+    width: 1px;
+    background: color-mix(in oklab, var(--sarcelle) 30%, transparent);
+  }
+
+  .dd-map a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.1rem auto 1fr;
+    gap: 0.6rem;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--encre-douce);
+    text-decoration: none;
+    font-size: var(--step--1);
+    transition: color var(--dur) ease;
+  }
+
+  .dd-map__star {
+    width: 0.65rem;
+    height: 0.65rem;
+    margin-left: 0.23rem;
+    border-radius: 50%;
+    background: var(--papier);
+    border: 1.5px solid var(--sarcelle);
+    transition: background-color 400ms ease, box-shadow 500ms ease, transform 500ms var(--ease-out);
+  }
+
+  .dd-map__num {
+    font-family: var(--font-mono);
+    color: var(--sarcelle);
+  }
+
+  .dd-map a.is-done .dd-map__star {
+    background: var(--sarcelle);
+  }
+
+  .dd-map a[aria-current='step'] {
+    color: var(--encre);
+    font-weight: 600;
+  }
+
+  .dd-map a[aria-current='step'] .dd-map__star {
+    transform: scale(1.35);
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--turquoise) 40%, transparent);
+  }
+
+  @media (max-width: 61.99rem) {
+    .dd-map {
+      top: var(--header-h, 4.5rem);
+      z-index: 5;
+      margin-inline: calc(var(--gutter, 1rem) * -1);
+      padding: 0.3rem var(--gutter, 1rem);
+      background: color-mix(in oklab, var(--papier) 92%, transparent);
+      backdrop-filter: blur(8px);
+      overflow-x: auto;
+    }
+
+    .dd-map ol {
+      grid-auto-flow: column;
+      grid-auto-columns: max-content;
+      gap: var(--space-s);
+    }
+
+    .dd-map ol::before {
+      display: none;
+    }
+
+    .dd-map a span:last-child {
+      display: none;
+    }
+
+    .dd-map a {
+      grid-template-columns: auto auto;
+    }
+
+    .dd-map a[aria-current='step'] span:last-child {
+      display: inline;
+    }
+
+    .dd-map a[aria-current='step'] {
+      grid-template-columns: auto auto auto;
+    }
+  }
+
+  .dd-body {
+    display: grid;
+    gap: var(--space-2xl);
+    min-width: 0;
+  }
+
+  .dd-sec {
+    display: grid;
+    gap: var(--space-m);
+    scroll-margin-top: calc(var(--header-h, 5rem) + 3.5rem);
+  }
+
+  .dd-sec h2 em {
+    color: var(--sarcelle);
+  }
+
+  .dd-intro {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  .dd-intro :global(.dd-intro__plate) {
+    width: min(100%, 18rem);
+    justify-self: center;
+  }
+
+  @media (min-width: 48rem) {
+    .dd-intro {
+      grid-template-columns: 1fr minmax(12rem, 20rem);
+    }
+  }
+
+  .dd-obs {
+    display: grid;
+    gap: var(--space-s);
+    padding: 0;
+    list-style: none;
+  }
+
+  .dd-obs li {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    gap: 0.2rem var(--space-s);
+    padding: var(--space-m);
+    border-radius: var(--radius-l);
+    background: var(--blanc);
+  }
+
+  .dd-obs__num {
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    background: var(--nuit);
+    color: var(--lagon);
+    font-family: var(--font-mono);
+  }
+
+  .dd-obs li span:last-child {
+    color: var(--encre-douce);
+    font-size: var(--step--1);
+  }
+
+  .dd-sec--sky {
+    padding: var(--space-xl) var(--space-l);
+    border-radius: var(--radius-xl, 2rem);
+    background: radial-gradient(100% 120% at 50% 0%, #144743, var(--nuit) 70%);
+    color: var(--craie);
+  }
+
+  .dd-sec--sky h2 em {
+    color: var(--lagon);
+  }
+
+  .dd-const {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  @media (min-width: 48rem) {
+    .dd-const {
+      grid-template-columns: minmax(14rem, 26rem) 1fr;
+    }
+  }
+
+  .dd-const svg {
+    width: 100%;
+    max-width: 26rem;
+    justify-self: center;
+    overflow: visible;
+  }
+
+  .dd-const__orbit {
+    fill: none;
+    stroke: rgb(154 211 205 / 0.15);
+    stroke-dasharray: 2 6;
+  }
+
+  .dd-const__ray {
+    stroke: var(--lagon);
+    stroke-width: 1.2;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+
+  .dd-const__halo {
+    fill: rgb(154 211 205 / 0.14);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 500ms var(--ease-out), fill 400ms ease;
+  }
+
+  .dd-const__disc {
+    fill: var(--nuit);
+    stroke: var(--lagon);
+    stroke-width: 1.5;
+  }
+
+  .dd-const__star text {
+    fill: var(--craie);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .dd-const__core {
+    fill: var(--lueur);
+  }
+
+  .dd-const__star.is-lit .dd-const__halo {
+    transform: scale(1.5);
+    fill: rgb(154 211 205 / 0.32);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .dd-const:not(.is-in) .dd-const__ray {
+      stroke-dashoffset: 1;
+    }
+
+    :global(.js) .dd-const:not(.is-in) .dd-const__star {
+      opacity: 0;
+    }
+
+    .dd-const__ray {
+      transition: stroke-dashoffset 1s var(--ease-out);
+    }
+
+    .dd-const__star {
+      transition: opacity 600ms ease;
+    }
+
+    .dd-const__ray[data-i='1'],
+    .dd-const__star[data-i='1'] {
+      transition-delay: 180ms;
+    }
+
+    .dd-const__ray[data-i='2'],
+    .dd-const__star[data-i='2'] {
+      transition-delay: 360ms;
+    }
+
+    .dd-const__ray[data-i='3'],
+    .dd-const__star[data-i='3'] {
+      transition-delay: 540ms;
+    }
+
+    .dd-const__ray[data-i='4'],
+    .dd-const__star[data-i='4'] {
+      transition-delay: 720ms;
+    }
+
+    .dd-const__star:not(.is-lit) .dd-const__halo {
+      animation: dd-breathe 3.6s ease-in-out infinite;
+    }
+  }
+
+  @keyframes dd-breathe {
+    50% {
+      transform: scale(1.18);
+    }
+  }
+
+  .dd-mean {
+    display: grid;
+    gap: var(--space-s);
+    padding: 0;
+    list-style: none;
+  }
+
+  .dd-mean li {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: var(--space-s);
+    align-items: baseline;
+  }
+
+  .dd-mean__num {
+    font-family: var(--font-mono);
+    color: var(--lagon);
+  }
+
+  .dd-note {
+    font-size: var(--step--1);
+    color: var(--craie-douce);
+  }
+
+  .dd-q {
+    display: grid;
+    gap: var(--space-m);
+    padding: 0;
+    list-style: none;
+  }
+
+  .dd-q li {
+    padding-left: var(--space-m);
+    border-left: 2px solid var(--turquoise);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-1);
+  }
+
+  .dd-next {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  @media (min-width: 48rem) {
+    .dd-next {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .dd-first,
+  .dd-care {
+    display: grid;
+    gap: var(--space-xs);
+    align-content: start;
+    padding: var(--space-m);
+    border-radius: var(--radius-l);
+  }
+
+  .dd-first {
+    background: color-mix(in oklab, var(--turquoise) 22%, var(--blanc));
+  }
+
+  .dd-care {
+    background: var(--blanc);
+    border: 1.5px solid color-mix(in oklab, var(--sarcelle) 35%, transparent);
+  }
+
+  .dd-care ul {
+    display: grid;
+    gap: 0.4rem;
+    padding-left: 1.1rem;
+  }
+
+  .dd-res-title {
+    margin-top: var(--space-m);
+  }
+
+  .dd-res {
+    display: grid;
+    gap: var(--space-s);
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .dd-res a {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    height: 100%;
+    padding: var(--space-m) var(--space-xl) var(--space-m) var(--space-m);
+    border-radius: var(--radius-l);
+    background: var(--blanc);
+    color: var(--encre) !important;
+    text-decoration: none;
+    font-size: var(--step--1);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .dd-res a:hover {
+    transform: translateY(-3px);
+  }
+
+  .dd-res strong {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--step-1);
+  }
+
+  .dd-res :global(svg) {
+    position: absolute;
+    right: var(--space-m);
+    top: var(--space-m);
+    width: 1.2rem;
+    height: 1.2rem;
+    color: var(--sarcelle);
+  }
+
+  .dd-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-m);
+    padding: var(--space-m) var(--space-l);
+    border-radius: var(--radius-pill);
+    background: var(--nuit);
+    color: var(--craie);
+  }
+
+  .dd-cta p {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+  }
+
+  .dd-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-m);
+    padding-top: var(--space-l);
+    border-top: 1px solid color-mix(in oklab, var(--encre) 12%, transparent);
+  }
+
+  .dd-pager a {
+    display: flex;
+    gap: var(--space-s);
+    align-items: center;
+    color: var(--encre) !important;
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+  }
+
+  .dd-pager a > span {
+    display: grid;
+  }
+
+  .dd-pager__next {
+    justify-content: end;
+    text-align: right;
+  }
+
+  .dd-pager :global(svg) {
+    flex: none;
+    width: 1.3rem;
+    height: 1.3rem;
+    color: var(--sarcelle);
+  }
+</style>

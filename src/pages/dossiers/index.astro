@@ -1,0 +1,288 @@
+---
+/**
+ * « Comprendre les situations » : les dossiers pédagogiques. Chaque dossier part d'une situation
+ * vécue par beaucoup de familles et la déplie en cinq temps, sans diagnostic ni cas client.
+ * Les contenus viennent du décodeur (src/lib/decodeur.ts) : une seule source à relire.
+ */
+import Base from '~/layouts/Base.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import Icon from '~/components/Icon.astro';
+import Draft from '~/components/Draft.astro';
+import { SITUATIONS, STEPS } from '~/lib/decodeur';
+import { accompagnement } from '~/content/accompagnements';
+
+const C = 60;
+const star = (i: number, n: number, r = 40) => {
+  const a = -Math.PI / 2 + (i / n) * Math.PI * 2 + 0.4;
+  return { x: C + Math.cos(a) * r, y: C + Math.sin(a) * r };
+};
+---
+<Base title="Comprendre les situations" description="Des dossiers pour comprendre les situations fréquentes avec un chien : tirer en laisse, le rappel, la solitude, les visites, les rencontres avec d’autres chiens, le chiot qui mordille. Observer, comprendre, se poser les bonnes questions.">
+  <section class="dh on-dark" data-sky="1.1" data-sky-links>
+    <div class="page dh__inner">
+      <p class="eyebrow enter">Les dossiers</p>
+      <SplitTitle as="h1" text="Comprendre *avant* de chercher une solution." now />
+      <p class="lede enter" data-i="3">Six situations que beaucoup de familles connaissent. Pour chacune, ce qu’il est utile d’observer, les explications possibles (toujours plusieurs), les questions à se poser et les signaux qui justifient de demander de l’aide.</p>
+      <Draft label="Contenus à relire"><p>Ces dossiers sont des contenus pédagogiques rédigés pour le site, à valider par Mme Petitgand avant publication définitive.</p></Draft>
+
+      <ol class="dh__method" role="list" aria-label="Les cinq temps d’un dossier">
+        {STEPS.map((s, i) => (
+          <li class="reveal" data-i={i}>
+            <span class="dh__dot" aria-hidden="true"></span>
+            <span class="label">{String(i + 1).padStart(2, '0')}</span>
+            {s.label}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="dl-title">
+    <div class="page">
+      <h2 id="dl-title" class="sr-only">Les dossiers</h2>
+      <ul class="dl" role="list">
+        {SITUATIONS.map((s, k) => {
+          const acc = accompagnement(s.accompagnement);
+          const n = s.meanings.length;
+          return (
+            <li class="dl__item reveal">
+              <a class="dl__card" href={`/dossiers/${s.id}/`}>
+                <svg class="dl__sky" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                  {s.meanings.map((_, i) => {
+                    const p = star(i, n);
+                    return <line x1={C} y1={C} x2={p.x} y2={p.y} pathLength="1" class="dl__ray" />;
+                  })}
+                  {s.meanings.map((_, i) => {
+                    const p = star(i, n);
+                    return <circle cx={p.x} cy={p.y} r="3.2" class="dl__star" />;
+                  })}
+                  <circle cx={C} cy={C} r="5" class="dl__core" />
+                </svg>
+                <span class="label">Dossier {String(k + 1).padStart(2, '0')}{acc ? ` · ${acc.title}` : ''}</span>
+                <span class="dl__title">{s.title}</span>
+                <span class="dl__voice">{s.voice}</span>
+                <span class="dl__meta">{n} pistes · {s.questions.length} questions <Icon name="arrow" /></span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section on-lin dx" aria-labelledby="dx-title">
+    <div class="page dx__grid">
+      <div>
+        <h2 id="dx-title">Votre situation <em>n’y est pas</em>&nbsp;?</h2>
+        <p class="lede">Chaque chien est différent : ces dossiers donnent des repères généraux. Pour parler de la vôtre, quelques questions suffisent.</p>
+      </div>
+      <div class="dx__links">
+        <a class="btn" href="/parlons-de-votre-chien/">Parlons de votre chien <Icon name="arrow" class="btn__arrow" /></a>
+        <a class="link-arrow" href="/decodeur/">Observer avec le décodeur <Icon name="arrow" /></a>
+        <a class="link-arrow" href="/blog/">Lire le blog <Icon name="arrow" /></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .dh {
+    padding-block: var(--space-2xl) var(--space-xl);
+    background: radial-gradient(120% 90% at 80% 0%, #12403d, var(--nuit) 60%);
+  }
+
+  .dh__inner {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .dh h1 {
+    font-size: var(--step-6);
+    line-height: 0.95;
+    max-width: 13ch;
+    color: var(--craie);
+  }
+
+  .dh h1 :global(em) {
+    color: var(--lagon);
+  }
+
+  .dh .lede {
+    max-width: 58ch;
+  }
+
+  .dh__method {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--space-s);
+    margin-top: var(--space-l);
+    padding: 0;
+    list-style: none;
+    color: var(--craie);
+    font-size: var(--step--1);
+  }
+
+  .dh__method::before {
+    content: '';
+    position: absolute;
+    left: 0.45rem;
+    right: 0;
+    top: 0.45rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--lagon), rgb(154 211 205 / 0.1));
+  }
+
+  .dh__method li {
+    position: relative;
+    display: grid;
+    gap: 0.2rem;
+    padding-top: 1.6rem;
+  }
+
+  .dh__dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: var(--lueur);
+    box-shadow: 0 0 0 5px rgb(154 211 205 / 0.15), 0 0 14px rgb(154 211 205 / 0.7);
+  }
+
+  @media (max-width: 47.99rem) {
+    .dh__method {
+      grid-template-columns: 1fr;
+    }
+
+    .dh__method::before {
+      top: 0.45rem;
+      bottom: 0.45rem;
+      left: 0.44rem;
+      right: auto;
+      width: 1px;
+      height: auto;
+      background: linear-gradient(180deg, var(--lagon), rgb(154 211 205 / 0.1));
+    }
+
+    .dh__method li {
+      padding: 0 0 0 1.8rem;
+    }
+  }
+
+  .dl {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 60rem) {
+    .dl {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .dl__card {
+    position: relative;
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    height: 100%;
+    padding: var(--space-l) var(--space-m) var(--space-m);
+    border-radius: var(--radius-l);
+    background: var(--blanc);
+    color: var(--encre) !important;
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  }
+
+  .dl__card:hover,
+  .dl__card:focus-visible {
+    transform: translateY(-4px);
+    box-shadow: 0 1.4rem 3rem -1.6rem rgb(8 40 38 / 0.45);
+  }
+
+  .dl__sky {
+    width: 8rem;
+    height: 8rem;
+    margin-bottom: var(--space-xs);
+    border-radius: 50%;
+    background: radial-gradient(circle, #164b47, var(--nuit) 72%);
+  }
+
+  .dl__ray {
+    stroke: var(--lagon);
+    stroke-width: 1;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0.65;
+    opacity: 0.7;
+    transition: stroke-dashoffset 900ms var(--ease-out);
+  }
+
+  .dl__card:hover .dl__ray,
+  .dl__card:focus-visible .dl__ray {
+    stroke-dashoffset: 0;
+  }
+
+  .dl__star {
+    fill: var(--lueur);
+  }
+
+  .dl__core {
+    fill: var(--turquoise);
+  }
+
+  .dl__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.05;
+  }
+
+  .dl__voice {
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--encre-douce);
+  }
+
+  .dl__meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: auto;
+    padding-top: var(--space-s);
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+
+  .dl__meta :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--sarcelle);
+  }
+
+  .dx__grid {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .dx__grid {
+      grid-template-columns: 3fr 2fr;
+    }
+  }
+
+  .dx h2 em {
+    color: var(--sarcelle);
+  }
+
+  .dx__links {
+    display: grid;
+    gap: var(--space-s);
+    justify-items: start;
+  }
+</style>

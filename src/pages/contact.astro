@@ -1,6 +1,6 @@
 ---
 import Base from '~/layouts/Base.astro';
-import PageIntro from '~/components/PageIntro.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
 import TextField from '~/components/TextField.astro';
 import Icon from '~/components/Icon.astro';
 import Draft from '~/components/Draft.astro';
@@ -23,7 +23,24 @@ const configured = Boolean(formConfig);
   description="Contacter ToutouBien pour parler de votre chien : formulaire guidé, message libre et coordonnées."
   quietFooter
 >
-  <PageIntro eyebrow="Contact" title="Écrire, <em>tout simplement</em>" lede="Pour parler de votre chien, le plus simple est le parcours guidé. Pour toute autre question, un message libre fait très bien l’affaire." />
+  <section class="ch-hero on-dark" data-sky="0.9" data-sky-links>
+    <div class="page ch-hero__inner">
+      <div>
+        <p class="eyebrow enter">Contact</p>
+        <SplitTitle as="h1" text="Écrire, *tout simplement*." now />
+        <p class="lede enter" data-i="3">Pour parler de votre chien, le plus simple est le parcours guidé. Pour toute autre question, un message libre fait très bien l’affaire.</p>
+      </div>
+      <svg class="ch-hero__trail" viewBox="0 0 320 220" aria-hidden="true" focusable="false">
+        <path d="M20 190 C 90 180, 110 120, 170 120 S 250 60, 300 30" pathLength="1" class="ch-hero__path" />
+        <circle cx="20" cy="190" r="5" class="ch-hero__star" />
+        <circle cx="170" cy="120" r="4" class="ch-hero__star ch-hero__star--mid" />
+        <g class="ch-hero__letter">
+          <rect x="278" y="14" width="40" height="28" rx="4" />
+          <path d="M280 17 L298 31 L316 17" />
+        </g>
+      </svg>
+    </div>
+  </section>
 
   <section class="section section--tight contact">
     <div class="page contact__grid">
@@ -104,6 +121,24 @@ const configured = Boolean(formConfig);
     </div>
   </section>
 
+  <section class="section ch-next on-lin" aria-labelledby="ch-next-title">
+    <div class="page">
+      <h2 id="ch-next-title">La suite, <em>pas à pas</em></h2>
+      <ol class="ch-steps" role="list">
+        <li class="reveal" data-i="0"><span class="ch-steps__dot" aria-hidden="true"></span><span class="label">01</span><strong>Votre message arrive à ToutouBien</strong><span>Il est lu par une personne : aucune réponse automatique ne se fait passer pour quelqu’un.</span></li>
+        <li class="reveal" data-i="1"><span class="ch-steps__dot" aria-hidden="true"></span><span class="label">02</span><strong>Une réponse vous est apportée</strong><span>Par le moyen de contact que vous avez indiqué, pour faire connaissance ou préciser votre demande.</span></li>
+        <li class="reveal" data-i="2"><span class="ch-steps__dot" aria-hidden="true"></span><span class="label">03</span><strong>Vous décidez de la suite</strong><span>Un premier rendez-vous, une simple réponse, ou rien de plus : vous restez libre.</span></li>
+      </ol>
+      <Draft label="Délai de réponse à confirmer"><p>Indiquer ici le délai habituel de réponse une fois confirmé par Mme Petitgand.</p></Draft>
+      <ul class="ch-links" role="list">
+        <li><a class="link-arrow" href="/premier-rendez-vous/">Le premier rendez-vous <Icon name="arrow" /></a></li>
+        <li><a class="link-arrow" href="/qui-suis-je/">Qui suis-je <Icon name="arrow" /></a></li>
+        <li><a class="link-arrow" href="/dossiers/">Comprendre les situations <Icon name="arrow" /></a></li>
+        <li><a class="link-arrow" href="/tarifs/">Les tarifs <Icon name="arrow" /></a></li>
+      </ul>
+    </div>
+  </section>
+
   <Faq scope="contact" title="Avant d’écrire" />
 </Base>
 
@@ -113,6 +148,169 @@ const configured = Boolean(formConfig);
 </script>
 
 <style>
+  .ch-hero {
+    padding-block: var(--space-xl);
+    background: radial-gradient(120% 100% at 85% 10%, #134a46, var(--nuit) 62%);
+  }
+
+  .ch-hero__inner {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  @media (min-width: 56rem) {
+    .ch-hero__inner {
+      grid-template-columns: 3fr 2fr;
+    }
+  }
+
+  .ch-hero h1 {
+    margin-block: var(--space-s);
+    font-size: var(--step-6);
+    line-height: 0.95;
+    color: var(--craie);
+  }
+
+  .ch-hero h1 :global(em) {
+    color: var(--lagon);
+  }
+
+  .ch-hero__trail {
+    width: 100%;
+    max-width: 22rem;
+    justify-self: center;
+    overflow: visible;
+  }
+
+  .ch-hero__path {
+    fill: none;
+    stroke: var(--lagon);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    filter: drop-shadow(0 0 5px rgb(154 211 205 / 0.7));
+  }
+
+  .ch-hero__star {
+    fill: var(--lueur);
+  }
+
+  .ch-hero__letter rect {
+    fill: var(--nuit);
+    stroke: var(--lagon);
+    stroke-width: 1.5;
+  }
+
+  .ch-hero__letter path {
+    fill: none;
+    stroke: var(--lagon);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .ch-hero__path {
+      animation: ch-draw 2.4s 0.4s var(--ease-out) both;
+    }
+
+    .ch-hero__star--mid {
+      animation: ch-pop 0.6s 1.4s var(--ease-out) both;
+    }
+
+    .ch-hero__letter {
+      animation: ch-pop 0.7s 2.3s var(--ease-out) both, ch-float 5s 3s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+  }
+
+  @keyframes ch-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes ch-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+  }
+
+  @keyframes ch-float {
+    50% {
+      transform: translateY(-6px) rotate(-3deg);
+    }
+  }
+
+  .ch-next h2 em {
+    color: var(--sarcelle);
+  }
+
+  .ch-steps {
+    position: relative;
+    display: grid;
+    gap: var(--space-l);
+    margin-block: var(--space-l);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 52rem) {
+    .ch-steps {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .ch-steps::before {
+      content: '';
+      position: absolute;
+      top: 0.45rem;
+      left: 0.45rem;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, var(--sarcelle), color-mix(in oklab, var(--sarcelle) 10%, transparent));
+    }
+  }
+
+  .ch-steps li {
+    position: relative;
+    display: grid;
+    gap: 0.3rem;
+    padding-top: 1.8rem;
+    font-size: var(--step--1);
+  }
+
+  .ch-steps strong {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--step-1);
+  }
+
+  .ch-steps__dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: var(--sarcelle);
+    box-shadow: 0 0 0 5px color-mix(in oklab, var(--turquoise) 35%, transparent);
+  }
+
+  .ch-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s) var(--space-l);
+    margin-top: var(--space-l);
+    padding: 0;
+    list-style: none;
+  }
+
   .contact__grid {
     display: grid;
     gap: var(--space-xl);

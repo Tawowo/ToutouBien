@@ -1,0 +1,553 @@
+---
+/**
+ * « Qui suis-je » : la présentation de Mme Petitgand.
+ * Aucune information n'est inventée : chaque bloc affiche le contenu confirmé dans
+ * src/config/site.ts ; en préproduction, les contenus manquants apparaissent comme des
+ * emplacements à remplir (composant Draft), invisibles en production.
+ */
+import Base from '~/layouts/Base.astro';
+import Gallery from '~/components/Gallery.astro';
+import Plate from '~/components/Plate.astro';
+import Draft from '~/components/Draft.astro';
+import Icon from '~/components/Icon.astro';
+import SplitTitle from '~/components/SplitTitle.astro';
+import Emblem from '~/assets/brand/emblem.svg';
+import { site } from '~/config/site';
+import { resolve, draftsVisible } from '~/lib/fields';
+import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
+import { PRINCIPLES } from '~/content/approche';
+
+const e = site.educator;
+const name = resolve(e.displayName);
+const role = resolve(e.role);
+const intro = resolve(e.intro);
+const story = resolve(e.story);
+const vision = resolve(e.vision);
+const methods = resolve(e.methods);
+const values = resolve(e.values);
+const qualifications = resolve(e.qualifications);
+const experience = resolve(e.experience);
+const showDrafts = draftsVisible();
+const publicName = name && !name.draft ? name.value : undefined;
+const chapters = [
+  { key: 'story', title: 'Avant ToutouBien', field: story, note: e.story.note },
+  { key: 'experience', title: 'Mon expérience', field: experience, note: e.experience.note },
+  { key: 'vision', title: 'Ma vision', field: vision, note: e.vision.note },
+  { key: 'methods', title: 'Ma façon de travailler', field: methods, note: e.methods.note },
+] as const;
+const shownChapters = chapters.filter((c) => (c.field && !c.field.draft) || showDrafts);
+const toAsk = [
+  'Nom d’usage public et intitulé exact du métier',
+  'Deux ou trois phrases de présentation, à la première personne',
+  'Votre parcours : comment vous êtes venue à l’éducation canine',
+  'Votre expérience (sans chiffre que vous ne pourriez pas justifier)',
+  'Votre vision de la relation humain-chien',
+  'Les méthodes et outils que vous utilisez, et ceux que vous n’utilisez pas',
+  'Trois ou quatre valeurs, avec une phrase chacune',
+  'Diplômes, attestations (ACACED…), formations, avec justificatifs',
+  'Un portrait et une photo de vous avec votre chien (et son prénom, si vous le souhaitez)',
+];
+---
+<Base
+  title="Qui suis-je"
+  description="La personne derrière ToutouBien : une éducatrice qui accompagne les familles et leur chien, chez elles ou en extérieur, pour comprendre avant d’agir et avancer ensemble."
+>
+  <section class="me-hero" data-sky="0.5">
+    <div class="page me-hero__grid">
+      <div class="me-hero__text">
+        <p class="eyebrow enter">Qui suis-je</p>
+        <SplitTitle as="h1" text="Derrière ToutouBien, *une rencontre*." now />
+        {publicName && <p class="me-hero__name enter" data-i="3">{publicName}{role && !role.draft ? `, ${role.value.toLowerCase()}` : ''}</p>}
+        {name?.draft && <Draft label="Nom et titre à confirmer"><p class="me-hero__name">{name.value}{role ? `, ${role.value.toLowerCase()}` : ''}</p></Draft>}
+        {
+          intro && !intro.draft ? (
+            <p class="lede enter" data-i="4">{intro.value}</p>
+          ) : (
+            <p class="lede enter" data-i="4">ToutouBien, c’est une éducatrice qui se déplace pour rencontrer les familles et leur chien là où ils vivent, chez eux ou en extérieur. Parce qu’on comprend souvent mieux un chien dans son environnement.</p>
+          )
+        }
+        {showDrafts && !intro && <Draft label="Présentation à fournir"><p>{e.intro.note}</p></Draft>}
+        <div class="me-hero__actions enter" data-i="5">
+          <a class="btn" href="/contact/">Me contacter <Icon name="arrow" class="btn__arrow" /></a>
+          <a class="link-arrow" href="/approche/">Mon approche <Icon name="arrow" /></a>
+        </div>
+      </div>
+      <div class="me-hero__photos">
+        <Plate id="educatrice-portrait" class="me-hero__portrait" shape="arch" priority sizes="(min-width: 60rem) 28vw, 70vw" />
+        <Plate id="educatrice-avec-chien" class="me-hero__duo" shape="round" sizes="(min-width: 60rem) 16vw, 40vw" />
+      </div>
+    </div>
+  </section>
+
+  {
+    shownChapters.length > 0 && (
+      <section class="section me-story" aria-labelledby="story-title">
+        <div class="page me-story__grid">
+          <div class="me-story__head">
+            <p class="eyebrow">Mon parcours</p>
+            <h2 id="story-title">Le chemin <em>jusqu’ici</em></h2>
+          </div>
+          <ol class="me-story__list" role="list">
+            {shownChapters.map((c, i) => (
+              <li class="me-story__item reveal">
+                <span class="me-story__star" aria-hidden="true" />
+                <p class="label">{String(i + 1).padStart(2, '0')}</p>
+                <h3>{c.title}</h3>
+                {c.field && !c.field.draft ? (
+                  Array.isArray(c.field.value) ? c.field.value.map((p) => <p>{p}</p>) : <p>{c.field.value}</p>
+                ) : (
+                  <Draft label="À fournir"><p>{c.note}</p></Draft>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section emblem-story on-dark" aria-labelledby="emblem-title" data-sky="1">
+    <div class="page emblem-story__grid">
+      <div class="emblem-story__art reveal" aria-hidden="true">
+        <Emblem class="emblem-story__emblem" />
+      </div>
+      <div class="emblem-story__text">
+        <p class="eyebrow reveal">Une histoire de regard</p>
+        <h2 id="emblem-title" class="reveal">Face à face, <em>à la même hauteur</em></h2>
+        <p class="lede reveal">Une femme et un chien qui se regardent, réunis dans un cœur. Le logo de ToutouBien résume l’idée qui guide l’accompagnement&nbsp;: une relation se construit dans les deux sens, avec attention.</p>
+        <p class="emblem-story__tagline reveal">«&nbsp;{site.tagline.value}&nbsp;»</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section me-approach" aria-labelledby="approach-title">
+    <div class="page">
+      <div class="me-approach__head">
+        <p class="eyebrow">Mon approche</p>
+        <h2 id="approach-title">Comprendre avant d’agir, <em>en famille</em></h2>
+        <p class="lede">Les grands principes de l’accompagnement, tels qu’ils sont présentés sur ce site.</p>
+        {showDrafts && <Draft label="À valider"><p>Ces principes (src/content/approche.ts) doivent refléter votre pratique réelle.</p></Draft>}
+      </div>
+      <ul class="me-approach__list" role="list">
+        {PRINCIPLES.slice(0, 3).map((p, i) => (
+          <li class="reveal" data-i={i}>
+            <span class="label">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{p.word}</h3>
+            <p>{p.tagline}</p>
+          </li>
+        ))}
+      </ul>
+      <a class="link-arrow" href="/approche/">Les six principes en détail <Icon name="arrow" /></a>
+    </div>
+  </section>
+
+  {
+    values && !values.draft && (
+      <section class="section values on-lin" aria-labelledby="values-title">
+        <div class="page">
+          <h2 id="values-title" class="reveal">Ce qui <em>compte</em> pour moi</h2>
+          <ul class="values__list" role="list">
+            {values.value.map((v) => (
+              <li class="reveal">
+                <h3>{v.title}</h3>
+                <p>{v.text}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section me-publics on-lin" aria-labelledby="publics-title">
+    <div class="page">
+      <p class="eyebrow">Les familles que j’accompagne</p>
+      <h2 id="publics-title">Quatre <em>chemins</em></h2>
+      <ul class="me-publics__list" role="list">
+        {ACCOMPAGNEMENTS.map((a) => (
+          <li>
+            <a href={`/accompagnements/${a.slug}/`} class="me-publics__item">
+              <span class="label">{a.num}</span>
+              <span class="me-publics__title">{a.label}</span>
+              <span class="me-publics__short">{a.short}</span>
+              <Icon name="arrow" class="me-publics__arrow" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {
+    (qualifications && !qualifications.draft) || showDrafts ? (
+      <section class="section section--tight me-quals" aria-labelledby="quals-title">
+        <div class="page me-quals__grid">
+          <div>
+            <p class="eyebrow">Qualifications</p>
+            <h2 id="quals-title">Formations et <em>attestations</em></h2>
+            <p class="me-quals__key">En France, l’exercice professionnel auprès des chiens nécessite notamment une attestation de connaissances (ACACED). Les formations et diplômes complètent cette obligation.</p>
+          </div>
+          {qualifications && !qualifications.draft ? (
+            <ul class="me-quals__list" role="list">{qualifications.value.map((q) => <li><Icon name="check" /> {q}</li>)}</ul>
+          ) : (
+            <Draft label="À fournir, avec justificatifs"><p>{e.qualifications.note}</p></Draft>
+          )}
+        </div>
+      </section>
+    ) : null
+  }
+
+  <Gallery title="En images" />
+
+  {
+    showDrafts && (
+      <section class="section section--tight">
+        <div class="page">
+          <Draft label="Informations à demander à Mme Petitgand">
+            <ul>{toAsk.map((t) => <li>{t}</li>)}</ul>
+          </Draft>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section me-cta on-dark" aria-labelledby="me-cta-title" data-sky="1.2" data-sky-links>
+    <div class="page me-cta__inner">
+      <h2 id="me-cta-title">Et si l’on faisait <em>connaissance</em>&nbsp;?</h2>
+      <p class="lede">Une question, une situation, ou simplement l’envie d’en parler&nbsp;: écrivez-moi.</p>
+      <div class="me-cta__actions">
+        <a class="btn btn--lagon" href="/parlons-de-votre-chien/">Parlons de votre chien <Icon name="arrow" class="btn__arrow" /></a>
+        <a class="link-arrow" href="/contact/">Toutes les façons de me joindre <Icon name="arrow" /></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .me-hero {
+    padding-block: var(--space-xl);
+    background: linear-gradient(180deg, var(--lin), var(--papier));
+  }
+
+  .me-hero__grid {
+    display: grid;
+    gap: var(--space-xl);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .me-hero__grid {
+      grid-template-columns: 6fr 5fr;
+    }
+  }
+
+  .me-hero__text {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .me-hero h1 {
+    font-size: var(--step-6);
+    line-height: 0.95;
+    max-width: 12ch;
+  }
+
+  .me-hero h1 :global(em) {
+    color: var(--sarcelle);
+  }
+
+  .me-hero__name {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--sarcelle);
+  }
+
+  .me-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  .me-hero__photos {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 26rem);
+    padding-bottom: 3rem;
+  }
+
+  .me-hero__photos :global(.me-hero__portrait) {
+    width: 82%;
+  }
+
+  .me-hero__photos :global(.me-hero__duo) {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 42%;
+    border: 6px solid var(--papier);
+    box-shadow: 0 1.5rem 3rem -1.5rem rgb(20 33 32 / 0.45);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .me-hero__photos :global(.me-hero__duo) {
+      animation: me-float 9s ease-in-out infinite;
+    }
+  }
+
+  @keyframes me-float {
+    50% {
+      transform: translateY(-0.6rem);
+    }
+  }
+
+  .me-story__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .me-story__grid {
+      grid-template-columns: 4fr 7fr;
+    }
+  }
+
+  .me-story__head h2 em,
+  .me-approach__head h2 em,
+  .me-publics h2 em,
+  .me-quals h2 em {
+    color: var(--sarcelle);
+  }
+
+  .me-story__list {
+    position: relative;
+    display: grid;
+    gap: var(--space-l);
+    padding: 0 0 0 2.4rem;
+    list-style: none;
+  }
+
+  /* Le fil du parcours, ponctué d'étoiles. */
+  .me-story__list::before {
+    content: '';
+    position: absolute;
+    left: 0.55rem;
+    top: 0.6rem;
+    bottom: 0.6rem;
+    width: 1px;
+    background: linear-gradient(var(--turquoise), color-mix(in oklab, var(--turquoise) 15%, transparent));
+  }
+
+  .me-story__item {
+    position: relative;
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .me-story__star {
+    position: absolute;
+    left: -2.25rem;
+    top: 0.3rem;
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    background: var(--turquoise);
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--turquoise) 18%, transparent);
+  }
+
+  .me-story__item h3 {
+    font-size: var(--step-2);
+  }
+
+  .emblem-story {
+    padding-block: var(--space-2xl);
+    background: var(--nuit);
+  }
+
+  .emblem-story__grid {
+    display: grid;
+    gap: var(--space-xl);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .emblem-story__grid {
+      grid-template-columns: 5fr 7fr;
+    }
+  }
+
+  .emblem-story__art {
+    justify-self: center;
+    width: min(100%, 22rem);
+  }
+
+  .emblem-story__art :global(svg) {
+    width: 100%;
+    height: auto;
+    color: var(--lagon);
+    filter: drop-shadow(0 0 2.5rem rgb(17 150 147 / 0.35));
+  }
+
+  .emblem-story__text {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .emblem-story h2 em {
+    color: var(--lagon);
+  }
+
+  .emblem-story__tagline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--lagon);
+  }
+
+  .me-approach__head {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 44rem;
+  }
+
+  .me-approach__list {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin-block: var(--space-l);
+    padding: 0;
+    list-style: none;
+  }
+
+  .me-approach__list li {
+    display: grid;
+    gap: var(--space-2xs);
+    padding: var(--space-l);
+    border-radius: var(--radius-l);
+    background: var(--blanc);
+    border: 1px solid color-mix(in oklab, var(--encre) 8%, transparent);
+  }
+
+  .me-approach__list h3 {
+    font-size: var(--step-3);
+  }
+
+  .me-approach__list p {
+    color: var(--encre-douce);
+  }
+
+  .values__list {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .me-publics__list {
+    display: grid;
+    margin-top: var(--space-l);
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+  }
+
+  .me-publics__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 0.2rem var(--space-s);
+    padding: var(--space-m) 3rem var(--space-m) 0;
+    border-bottom: 1px solid color-mix(in oklab, var(--encre) 14%, transparent);
+    color: var(--encre) !important;
+    text-decoration: none;
+  }
+
+  @media (min-width: 56rem) {
+    .me-publics__item {
+      grid-template-columns: 4rem 1fr 1fr;
+      align-items: baseline;
+    }
+  }
+
+  .me-publics__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    transition: transform var(--dur) var(--ease-out), color var(--dur) ease;
+  }
+
+  .me-publics__short {
+    color: var(--encre-douce);
+    grid-column: 2;
+  }
+
+  @media (min-width: 56rem) {
+    .me-publics__short {
+      grid-column: auto;
+    }
+  }
+
+  .me-publics__arrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 1.4rem;
+    height: 1.4rem;
+    transform: translateY(-50%);
+    color: var(--sarcelle);
+  }
+
+  .me-publics__item:hover .me-publics__title {
+    transform: translateX(0.4rem);
+    color: var(--sarcelle);
+  }
+
+  .me-quals__grid {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  @media (min-width: 60rem) {
+    .me-quals__grid {
+      grid-template-columns: 5fr 6fr;
+    }
+  }
+
+  .me-quals__key {
+    margin-top: var(--space-s);
+    color: var(--encre-douce);
+    font-size: var(--step--1);
+    max-width: 46ch;
+  }
+
+  .me-quals__list {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .me-cta {
+    padding-block: var(--space-2xl);
+    background: var(--nuit);
+  }
+
+  .me-cta__inner {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+  }
+
+  .me-cta h2 em {
+    color: var(--lagon);
+  }
+
+  .me-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+</style>

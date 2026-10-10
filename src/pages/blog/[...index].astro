@@ -1,98 +1,504 @@
 ---
+/**
+ * Le blog. Toujours publié : en production, seuls les articles validés (`published`) apparaissent ;
+ * tant qu'il n'y en a aucun, la page présente la rubrique sans inventer d'actualité.
+ * En préproduction, les articles en relecture sont affichés et marqués « démonstration ».
+ */
 import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
-import ArticleIndex from '~/components/ArticleIndex.astro';
+import Plate from '~/components/Plate.astro';
 import Icon from '~/components/Icon.astro';
-import { CATEGORIES } from '~/lib/categories';
-import { visibleArticles } from '~/lib/articles';
+import Draft from '~/components/Draft.astro';
+import { Image } from 'astro:assets';
+import { CATEGORIES, categoryLabel } from '~/lib/categories';
+import { isDraftArticle, readingMinutes, formatDate, visibleArticles } from '~/lib/articles';
+import { coverSlot } from '~/lib/covers';
 
 export async function getStaticPaths() {
-  const articles = await visibleArticles();
-  return articles.length ? [{ params: { index: undefined } }] : [];
+  return [{ params: { index: undefined } }];
 }
 
 const articles = await visibleArticles();
 const used = CATEGORIES.filter((c) => articles.some((a) => a.data.category === c.id));
+const [lead, ...rest] = articles;
+const FORMATS = { article: 'Article', fiche: 'Fiche pratique', guide: 'Guide' } as const;
+const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const PAGE = 7;
+const hasDemo = articles.some(isDraftArticle);
 ---
-<Base title="Blog" description="Le carnet de ToutouBien : des articles, guides et fiches pratiques pour mieux comprendre son chien et vivre un quotidien plus serein.">
-  <section class="bl-hero">
-    <div class="page bl-hero__inner">
-      <p class="eyebrow enter">Le carnet</p>
-      <SplitTitle as="h1" text="Lire, *comprendre*, essayer." now />
-      <div class="bl-hero__row enter" data-i="3">
-        {
-          used.length > 1 && (
-            <nav class="bl-themes" aria-label="Thèmes">
-              <ul role="list">
-                <li><a href="/blog/" aria-current="page">Tout</a></li>
-                {used.map((c) => <li><a href={`/blog/categorie/${c.id}/`}>{c.label}</a></li>)}
-              </ul>
-            </nav>
-          )
-        }
-        <a class="link-arrow" href="/ressources/">Chercher dans la bibliothèque <Icon name="arrow" /></a>
-      </div>
+<Base title="Blog" description="Le blog de ToutouBien : des repères concrets pour mieux comprendre son chien au quotidien, en promenade, à la maison et dès l’arrivée d’un chiot.">
+  <section class="bh" data-sky="0.6">
+    <div class="page bh__inner">
+      <p class="eyebrow enter">Le blog</p>
+      <SplitTitle as="h1" text="Des repères pour *mieux se comprendre*." now />
+      <p class="lede enter" data-i="3">Des articles, des guides et des fiches pratiques, écrits pour éclairer les questions du quotidien. Ils donnent des repères généraux et ne remplacent pas un échange autour de votre chien.</p>
+      {hasDemo && <Draft label="Contenus de démonstration"><p>Les articles marqués « à relire » sont des démonstrations rédigées pour le site. Ils ne seront publiés qu’après validation par Mme Petitgand.</p></Draft>}
     </div>
   </section>
-  <section class="section section--tight">
-    <div class="page">
-      <h2 class="sr-only">Articles</h2>
-      <ArticleIndex articles={articles} />
+
+  {
+    articles.length === 0 ? (
+      <section class="section">
+        <div class="page bl-empty">
+          <h2>Les premiers articles sont <em>en cours de relecture</em>.</h2>
+          <p class="lede">En attendant, les dossiers et le décodeur répondent déjà aux questions les plus fréquentes.</p>
+          <ul class="bl-empty__cats" role="list">
+            {CATEGORIES.map((c) => (
+              <li>
+                <span class="label">Bientôt</span>
+                <strong>{c.label}</strong>
+                <span>{c.description}</span>
+              </li>
+            ))}
+          </ul>
+          <div class="bl-empty__links">
+            <a class="btn" href="/dossiers/">Les dossiers <Icon name="arrow" class="btn__arrow" /></a>
+            <a class="link-arrow" href="/decodeur/">Le décodeur du quotidien <Icon name="arrow" /></a>
+          </div>
+        </div>
+      </section>
+    ) : (
+      <section class="section section--tight bl" aria-label="Articles" data-blog data-page={PAGE}>
+        <div class="page">
+          {lead && (
+            <a class:list={['bl-lead', 'reveal']} href={`/blog/${lead.id}/`} data-post data-cat={lead.data.category} data-text={fold(`${lead.data.title} ${lead.data.description}`)}>
+              <span class="bl-lead__cover">
+                {lead.data.cover ? <Image src={lead.data.cover} alt={lead.data.coverAlt ?? ''} widths={[600, 1000]} sizes="(min-width: 60rem) 55vw, 92vw" /> : <Plate id={coverSlot(lead.data.category)} ratio={4 / 3} shape="rect" reveal={false} sizes="(min-width: 60rem) 55vw, 92vw" />}
+              </span>
+              <span class="bl-lead__body">
+                <span class="label">
+                  À la une · {FORMATS[lead.data.format]} · {categoryLabel(lead.data.category)}
+                  {isDraftArticle(lead) && <span class="draft-badge">Démonstration · à relire</span>}
+                </span>
+                <span class="bl-lead__title">{lead.data.title}</span>
+                <span class="bl-lead__desc">{lead.data.description}</span>
+                <span class="bl-lead__foot">
+                  {lead.data.publishDate && <time datetime={lead.data.publishDate.toISOString()}>{formatDate(lead.data.publishDate)}</time>}
+                  <span>{readingMinutes(lead.body)} min de lecture</span>
+                  <Icon name="arrow" />
+                </span>
+              </span>
+            </a>
+          )}
+
+          <div class="bl-tools" data-blog-tools hidden>
+            <label class="bl-search">
+              <span class="sr-only">Rechercher un article</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
+              <input type="search" placeholder="Rechercher : rappel, chiot, solitude…" data-blog-q autocomplete="off" />
+            </label>
+            {used.length > 1 && (
+              <div class="bl-cats" role="group" aria-label="Catégories">
+                {used.map((c) => <button type="button" class="chip" aria-pressed="false" data-blog-cat={c.id}>{c.label}</button>)}
+              </div>
+            )}
+            <p class="bl-count" aria-live="polite" data-blog-count></p>
+          </div>
+
+          <ul class="bl-grid" role="list" data-blog-list>
+            {rest.map((a, i) => (
+              <li class:list={['bl-card', i === 0 && 'bl-card--wide', 'reveal']} data-post data-cat={a.data.category} data-text={fold(`${a.data.title} ${a.data.description} ${categoryLabel(a.data.category)}`)}>
+                <a href={`/blog/${a.id}/`}>
+                  <span class="bl-card__cover">
+                    {a.data.cover ? <Image src={a.data.cover} alt={a.data.coverAlt ?? ''} widths={[400, 800]} sizes="(min-width: 60rem) 33vw, 92vw" /> : <Plate id={coverSlot(a.data.category)} ratio={i === 0 ? 3 / 2 : 4 / 3} shape="rect" reveal={false} sizes="(min-width: 60rem) 33vw, 92vw" />}
+                  </span>
+                  <span class="label">
+                    {FORMATS[a.data.format]} · {categoryLabel(a.data.category)}
+                    {isDraftArticle(a) && <span class="draft-badge">Démonstration · à relire</span>}
+                  </span>
+                  <span class="bl-card__title">{a.data.title}</span>
+                  <span class="bl-card__desc">{a.data.description}</span>
+                  <span class="bl-card__foot">{readingMinutes(a.body)} min de lecture <Icon name="arrow" /></span>
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <div class="bl-empty-filter" data-blog-none hidden>
+            <p>Aucun article ne correspond.</p>
+            <button type="button" class="btn btn--ghost btn--sm" data-blog-reset>Effacer la recherche</button>
+          </div>
+          <div class="bl-more" data-blog-more-wrap hidden>
+            <button type="button" class="btn btn--ghost" data-blog-more>Voir plus d’articles</button>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section bl-next on-lin" aria-labelledby="bl-next-title">
+    <div class="page bl-next__grid">
+      <h2 id="bl-next-title">Une situation <em>précise</em>&nbsp;?</h2>
+      <a class="bl-next__card" href="/dossiers/"><span class="label">Comprendre</span><strong>Les dossiers</strong><span>Six situations du quotidien, expliquées pas à pas.</span><Icon name="arrow" /></a>
+      <a class="bl-next__card" href="/decodeur/"><span class="label">Outil</span><strong>Le décodeur</strong><span>Observer en cinq temps, et préparer un échange.</span><Icon name="arrow" /></a>
     </div>
   </section>
 </Base>
 
+<script>
+  const root = document.querySelector<HTMLElement>('[data-blog]');
+  if (root) {
+    const fold = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+    const page = Number(root.dataset.page || 6);
+    const tools = root.querySelector<HTMLElement>('[data-blog-tools]')!;
+    const q = root.querySelector<HTMLInputElement>('[data-blog-q]')!;
+    const cats = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-blog-cat]'));
+    const posts = Array.from(root.querySelectorAll<HTMLElement>('[data-blog-list] [data-post]'));
+    const lead = root.querySelector<HTMLElement>('.bl-lead');
+    const count = root.querySelector<HTMLElement>('[data-blog-count]')!;
+    const none = root.querySelector<HTMLElement>('[data-blog-none]')!;
+    const moreWrap = root.querySelector<HTMLElement>('[data-blog-more-wrap]')!;
+    let limit = page;
+    tools.hidden = false;
+    const update = () => {
+      const terms = fold(q.value).split(/\s+/).filter(Boolean);
+      const active = cats.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.blogCat!);
+      const match = (el: HTMLElement) => terms.every((t) => el.dataset.text!.includes(t)) && (!active.length || active.includes(el.dataset.cat!));
+      const filtering = terms.length > 0 || active.length > 0;
+      // En filtrant, l'article à la une rejoint la liste des résultats.
+      if (lead) lead.hidden = filtering && !match(lead);
+      const matching = posts.filter(match);
+      posts.forEach((p) => (p.hidden = true));
+      matching.forEach((p, i) => (p.hidden = !filtering && i >= limit));
+      const total = matching.length + (lead && !lead.hidden ? 1 : 0);
+      count.textContent = filtering ? `${total} article${total > 1 ? 's' : ''}` : '';
+      none.hidden = total > 0;
+      moreWrap.hidden = filtering || matching.length <= limit;
+    };
+    cats.forEach((c) =>
+      c.addEventListener('click', () => {
+        c.setAttribute('aria-pressed', String(c.getAttribute('aria-pressed') !== 'true'));
+        update();
+      }),
+    );
+    q.addEventListener('input', update);
+    root.querySelector('[data-blog-more]')?.addEventListener('click', () => {
+      const first = posts[limit];
+      limit += page;
+      update();
+      first?.querySelector('a')?.focus();
+    });
+    root.querySelector('[data-blog-reset]')?.addEventListener('click', () => {
+      q.value = '';
+      cats.forEach((c) => c.setAttribute('aria-pressed', 'false'));
+      update();
+      q.focus();
+    });
+    update();
+  }
+</script>
+
 <style>
-  .bl-hero {
-    padding-block: var(--space-xl) var(--space-m);
+  .bh {
+    padding-block: var(--space-xl) var(--space-l);
+    background: linear-gradient(180deg, var(--lin), var(--papier));
   }
 
-  .bl-hero__inner {
+  .bh__inner {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .bh h1 {
+    font-size: var(--step-6);
+    line-height: 0.95;
+    max-width: 14ch;
+  }
+
+  .bh h1 :global(em) {
+    color: var(--sarcelle);
+  }
+
+  .bh .lede {
+    max-width: 56ch;
+  }
+
+  .bl-lead {
     display: grid;
     gap: var(--space-l);
-  }
-
-  .bl-hero h1 {
-    font-size: var(--step-6);
-    line-height: 0.9;
-  }
-
-  .bl-hero h1 :global(em) {
-    color: var(--accent);
-  }
-
-  .bl-hero__row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-m);
-    justify-content: space-between;
     align-items: center;
+    margin-bottom: var(--space-xl);
+    color: var(--encre) !important;
+    text-decoration: none;
   }
 
-  .bl-themes ul {
+  @media (min-width: 60rem) {
+    .bl-lead {
+      grid-template-columns: 7fr 5fr;
+    }
+  }
+
+  .bl-lead__cover {
+    display: block;
+    overflow: hidden;
+    border-radius: 12rem var(--radius-l) var(--radius-l) var(--radius-l);
+  }
+
+  .bl-lead__cover :global(.plate),
+  .bl-card__cover :global(.plate) {
+    border-radius: 0;
+    transition: transform 1.2s var(--ease-out);
+  }
+
+  .bl-lead:hover .bl-lead__cover :global(.plate),
+  .bl-card a:hover .bl-card__cover :global(.plate) {
+    transform: scale(1.04);
+  }
+
+  .bl-lead__body {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .bl-lead__title {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    line-height: 1;
+  }
+
+  .bl-lead__desc {
+    font-size: var(--step-1);
+    color: var(--encre-douce);
+  }
+
+  .bl-lead__foot,
+  .bl-card__foot {
+    display: flex;
+    gap: var(--space-m);
+    align-items: center;
+    font-size: var(--step--1);
+    font-weight: 600;
+  }
+
+  .bl-lead__foot :global(svg),
+  .bl-card__foot :global(svg) {
+    width: 1.2rem;
+    height: 1.2rem;
+    color: var(--sarcelle);
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .bl-lead:hover .bl-lead__foot :global(svg),
+  .bl-card a:hover .bl-card__foot :global(svg) {
+    transform: translateX(0.3rem);
+  }
+
+  .bl-tools {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-2xs);
+    gap: var(--space-s) var(--space-m);
+    align-items: center;
+    margin-bottom: var(--space-l);
+    padding-top: var(--space-l);
+    border-top: 1px solid color-mix(in oklab, var(--encre) 12%, transparent);
+  }
+
+  .bl-tools[hidden] {
+    display: none;
+  }
+
+  .bl-search {
+    position: relative;
+    flex: 1 1 18rem;
+    max-width: 26rem;
+  }
+
+  .bl-search svg {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    width: 1.2rem;
+    height: 1.2rem;
+    transform: translateY(-50%);
+    fill: none;
+    stroke: var(--encre-douce);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+
+  .bl-search input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0 1rem 0 2.8rem;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid color-mix(in oklab, var(--encre) 20%, transparent);
+    background: var(--blanc);
+    font: inherit;
+    color: var(--encre);
+  }
+
+  .bl-search input:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .bl-cats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .chip {
+    min-height: 2.6rem;
+    padding: 0 1rem;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid color-mix(in oklab, var(--encre) 20%, transparent);
+    background: transparent;
+    font: inherit;
+    font-size: var(--step--1);
+    color: var(--encre);
+    cursor: pointer;
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--nuit);
+    border-color: var(--nuit);
+    color: var(--craie);
+  }
+
+  .bl-count {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .bl-grid {
+    display: grid;
+    gap: var(--space-l) var(--space-m);
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    grid-auto-flow: dense;
     padding: 0;
     list-style: none;
   }
 
-  .bl-themes a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.6rem;
-    padding: 0 1.05rem;
-    border: 1.5px solid color-mix(in oklab, var(--encre) 22%, transparent);
-    border-radius: var(--radius-pill);
-    font-size: var(--step--1);
-    color: var(--encre);
+  @media (min-width: 60rem) {
+    .bl-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .bl-card--wide {
+      grid-column: span 2;
+    }
+  }
+
+  .bl-card[hidden] {
+    display: none;
+  }
+
+  .bl-card a {
+    display: grid;
+    gap: 0.55rem;
+    align-content: start;
+    height: 100%;
+    color: var(--encre) !important;
     text-decoration: none;
   }
 
-  .bl-themes a:hover,
-  .bl-themes a[aria-current='page'] {
-    background: var(--nuit);
-    border-color: var(--nuit);
-    color: var(--craie);
+  .bl-card__cover {
+    display: block;
+    overflow: hidden;
+    border-radius: var(--radius-l);
+    margin-bottom: 0.3rem;
+  }
+
+  .bl-card__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1.05;
+  }
+
+  .bl-card__desc {
+    font-size: var(--step--1);
+    color: var(--encre-douce);
+  }
+
+  .bl-more,
+  .bl-empty-filter {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-s);
+    margin-top: var(--space-l);
+  }
+
+  .bl-more[hidden],
+  .bl-empty-filter[hidden] {
+    display: none;
+  }
+
+  .bl-empty {
+    display: grid;
+    gap: var(--space-m);
+  }
+
+  .bl-empty h2 em,
+  .bl-next h2 em {
+    color: var(--sarcelle);
+  }
+
+  .bl-empty__cats {
+    display: grid;
+    gap: var(--space-s);
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    padding: 0;
+    list-style: none;
+  }
+
+  .bl-empty__cats li {
+    display: grid;
+    gap: 0.3rem;
+    padding: var(--space-m);
+    border-radius: var(--radius-l);
+    background: var(--blanc);
+  }
+
+  .bl-empty__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  .bl-next__grid {
+    display: grid;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  @media (min-width: 60rem) {
+    .bl-next__grid {
+      grid-template-columns: 4fr 3fr 3fr;
+    }
+  }
+
+  .bl-next__card {
+    position: relative;
+    display: grid;
+    gap: 0.3rem;
+    padding: var(--space-m) var(--space-xl) var(--space-m) var(--space-m);
+    border-radius: var(--radius-l);
+    background: var(--blanc);
+    color: var(--encre) !important;
+    text-decoration: none;
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .bl-next__card:hover {
+    transform: translateY(-3px);
+  }
+
+  .bl-next__card strong {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--step-2);
+  }
+
+  .bl-next__card :global(svg) {
+    position: absolute;
+    right: var(--space-m);
+    top: 50%;
+    width: 1.3rem;
+    height: 1.3rem;
+    transform: translateY(-50%);
+    color: var(--sarcelle);
   }
 </style>

@@ -42,6 +42,7 @@ export default defineConfig({
   // Anciennes adresses conservées par redirection (aucun lien cassé).
   redirects: {
     '/accompagnement/': '/deroulement/',
+    '/a-propos/': '/qui-suis-je/',
   },
   devToolbar: { enabled: false },
   // Politique de sécurité du contenu : empreintes générées pour les scripts et styles

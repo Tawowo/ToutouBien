@@ -77,7 +77,9 @@ const items = ACCOMPAGNEMENTS.map((a) => {
     const update = () => {
       ticking = false;
       const p = progress() * n;
-      const idx = Math.min(n - 1, Math.max(0, Math.floor(p + 0.15)));
+      // La scène suivante devient « courante » dès que son iris commence à s'ouvrir : son texte entre avec elle,
+      // au lieu de laisser une zone vide pendant que l'iris recouvre le texte précédent.
+      const idx = Math.min(n - 1, Math.max(0, Math.floor(p + 0.3)));
       scenes.forEach((s, i) => {
         // t : 0 quand la scène commence à s'ouvrir, 1 quand elle est pleinement ouverte.
         const t = i === 0 ? 1 : Math.min(1, Math.max(0, (p - i + 0.35) / 0.5));
@@ -120,7 +122,22 @@ const items = ACCOMPAGNEMENTS.map((a) => {
         requestAnimationFrame(update);
       }
     }, { passive: true });
-    addEventListener('resize', update);
+    // L'iris de chaque scène s'ouvre depuis son étoile, où qu'elle soit (bureau : rail à gauche ; mobile : rail en haut).
+    const sticky = root.querySelector<HTMLElement>('.as__sticky')!;
+    const origins = () => {
+      const box = sticky.getBoundingClientRect();
+      scenes.forEach((s, i) => {
+        const dot = stars[i]?.querySelector('.as__star-dot')?.getBoundingClientRect();
+        if (!dot || !dot.width) return;
+        s.style.setProperty('--ox', `${(dot.left + dot.width / 2 - box.left).toFixed(1)}px`);
+        s.style.setProperty('--oy', `${(dot.top + dot.height / 2 - box.top).toFixed(1)}px`);
+      });
+    };
+    addEventListener('resize', () => {
+      origins();
+      update();
+    });
+    origins();
     update();
   });
 </script>
@@ -180,6 +197,68 @@ const items = ACCOMPAGNEMENTS.map((a) => {
     top: 10%;
     width: 30%;
     z-index: 1;
+  }
+
+  /* Chaque accompagnement a sa propre composition (et non le même gabarit quatre fois). */
+  .as__scene[data-as-scene='1'] .as__plane--main {
+    left: auto;
+    right: 8%;
+    top: 6%;
+    width: 58%;
+  }
+
+  .as__scene[data-as-scene='1'] .as__plane--a {
+    left: auto;
+    right: 0;
+    bottom: 0;
+    width: 30%;
+  }
+
+  .as__scene[data-as-scene='1'] .as__plane--b {
+    right: auto;
+    left: 2%;
+    top: 2%;
+    width: 34%;
+  }
+
+  .as__scene[data-as-scene='2'] .as__plane--main {
+    left: 4%;
+    top: 12%;
+    width: 66%;
+  }
+
+  .as__scene[data-as-scene='2'] .as__plane--a {
+    left: auto;
+    right: 2%;
+    bottom: auto;
+    top: 0;
+    width: 32%;
+  }
+
+  .as__scene[data-as-scene='2'] .as__plane--b {
+    top: auto;
+    right: 6%;
+    bottom: 2%;
+    width: 28%;
+  }
+
+  .as__scene[data-as-scene='3'] .as__plane--main {
+    left: 20%;
+    top: 4%;
+    width: 56%;
+  }
+
+  .as__scene[data-as-scene='3'] .as__plane--a {
+    left: 2%;
+    bottom: 14%;
+    width: 30%;
+  }
+
+  .as__scene[data-as-scene='3'] .as__plane--b {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    width: 32%;
   }
 
   .as__plane :global(.ph__frame) {
@@ -283,7 +362,7 @@ const items = ACCOMPAGNEMENTS.map((a) => {
     gap: var(--space-l);
     padding: 5rem var(--gutter) 2rem calc(var(--gutter) + 3.5rem);
     /* Iris : la scène s'ouvre depuis l'étoile de son numéro. */
-    clip-path: circle(calc(var(--open, 0) * 150%) at 12% 50%);
+    clip-path: circle(calc(var(--open, 0) * 150%) at var(--ox, 12%) var(--oy, 50%));
   }
 
   .as.is-live .as__scene:nth-of-type(1) {
@@ -319,7 +398,26 @@ const items = ACCOMPAGNEMENTS.map((a) => {
 
   /* Profondeur : les plans glissent à des vitesses différentes dans chaque scène. */
   .as.is-live .as__plane--main {
-    transform: translate3d(0, calc((0.5 - var(--local, 0)) * 3rem), 0) scale(calc(1.08 - var(--open, 0) * 0.08));
+    transform: translate3d(calc((0.5 - var(--local, 0)) * var(--mx, 0rem)), calc((0.5 - var(--local, 0)) * var(--my, 3rem)), 0)
+      rotate(calc((1 - var(--open, 0)) * var(--mr, -4deg))) scale(calc(1.08 - var(--open, 0) * 0.08));
+  }
+
+  .as.is-live .as__scene[data-as-scene='1'] {
+    --mx: -3rem;
+    --my: 1rem;
+    --mr: 5deg;
+  }
+
+  .as.is-live .as__scene[data-as-scene='2'] {
+    --mx: 2rem;
+    --my: -2.5rem;
+    --mr: -3deg;
+  }
+
+  .as.is-live .as__scene[data-as-scene='3'] {
+    --mx: 0rem;
+    --my: 4rem;
+    --mr: 3deg;
   }
 
   .as.is-live .as__plane--a {

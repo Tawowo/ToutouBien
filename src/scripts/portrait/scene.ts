@@ -43,12 +43,14 @@ const vertex = /* glsl */ `
     vec3 home = vec3(c + (aUv - 0.5) * uRect.zw, 0.0);
     float lum = dot(aColor, vec3(0.299, 0.587, 0.114));
 
-    // 1. Arrivée : chaque pixel part d'un nuage profond, avec un léger retard propre.
-    float k = ease((uIntro - aRand.z * 0.5) / 0.5);
-    vec3 cloud = vec3(c + (aRand.xy - 0.5) * vec2(uSpan.x * 3.2, uSpan.y * 2.6), -14.0 - aRand.w * 26.0);
+    // 1. Arrivée : chaque pixel part d'un nuage profond et décrit une spirale qui se resserre
+    //    (début lent, accélération, atterrissage doux), avec un léger retard propre.
+    float k = ease((uIntro - aRand.z * 0.48) / 0.52);
+    vec3 cloud = vec3(c + (aRand.xy - 0.5) * vec2(uSpan.x * 3.4, uSpan.y * 2.8), -16.0 - aRand.w * 28.0);
     vec3 p = mix(cloud, home, k);
-    p.z += sin(PI * k) * (1.2 + aRand.y * 2.0);
-
+    vec2 off = p.xy - home.xy;
+    p.xy = home.xy + rot((1.0 - k) * (2.2 + aRand.y * 2.4) * (aRand.w > 0.5 ? 1.0 : -1.0)) * off;
+    p.z += sin(PI * k) * (1.6 + aRand.y * 2.4);
     // 2. Relief : la luminosité devient profondeur ; le centre se bombe doucement.
     float dc = length((aUv - 0.5) * vec2(1.4, 1.0));
     p.z += uRelief * ((lum - 0.5) * 0.7 + (0.55 - dc) * 1.5) * uRect.w * 0.3;
@@ -68,13 +70,13 @@ const vertex = /* glsl */ `
     p.yz = rot(uPitch) * p.yz;
     p += vec3(c, 0.0);
 
-    // 3. Dispersion : décalage propre à chaque pixel, trajectoire en spirale vers le ciel.
+    // 3. Dispersion : décalage propre à chaque pixel ; les étoiles s'enroulent autour du centre (galaxie lente).
     float s = sstep(aRand.x * 0.55, aRand.x * 0.55 + 0.45, uScatter);
     vec3 sky = vec3(aStar.xy * uSpan * 1.05, aStar.z);
+    sky.xy = rot(uScatter * 0.9 * (1.2 - length(aStar.xy))) * sky.xy;
     sky.xy += vec2(sin(uTime * 0.2 + aRand.w * 30.0), cos(uTime * 0.17 + aRand.y * 30.0)) * 0.08;
     vec3 q = mix(p, sky, s);
     q.xy += rot(s * 2.4 * (aRand.y - 0.5)) * vec2(0.0, sin(PI * s) * 1.2);
-
     // 4. Constellation du logo.
     float e = sstep(aRand.z * 0.45, aRand.z * 0.45 + 0.55, uEmblem);
     vec3 emb = vec3(uEmbRect.xy + aEmb * uEmbRect.z, (aRand.w - 0.5) * 0.25);
@@ -85,17 +87,22 @@ const vertex = /* glsl */ `
     gl_Position = projectionMatrix * mv;
 
     float star = max(s, e);
-    vStar = star;
+    vStar = max(star, 1.0 - sstep(0.35, 0.8, k));
     // Couleurs : la photo, puis des étoiles sarcelle et turquoise (palette du logo).
     vec3 starCol = mix(vec3(0.067, 0.588, 0.576), vec3(0.055, 0.373, 0.357), aRand.y);
     starCol = mix(starCol, vec3(0.42, 0.75, 0.72), step(0.86, aRand.w));
     vec3 embCol = mix(vec3(0.043, 0.33, 0.31), vec3(0.067, 0.588, 0.576), aEmb.y * 0.5 + 0.5);
-    vColor = mix(mix(aColor, starCol, s), embCol, e);
+    // Pendant l'arrivée, les pixels voyagent comme des étoiles et prennent la couleur de la photo en se posant.
+    float landed = sstep(0.55, 1.0, k);
+    vec3 photoCol = mix(starCol, aColor, landed);
+    vColor = mix(mix(photoCol, starCol, s), embCol, e);
 
     // Taille : un pixel de photo couvre sa cellule ; une étoile est un point lumineux.
-    float photoSize = uCell * uPx * 1.18;
+    // Mise au point : un pixel qui arrive est plus grand et plus doux, puis se resserre exactement sur sa cellule.
+    float photoSize = uCell * uPx * 1.18 * mix(2.3, 1.0, landed);
+    photoSize = mix((2.0 + aRand.y * 2.0) * uDpr, photoSize, sstep(0.2, 0.7, k));
     float starSize = (2.2 + aRand.y * 3.2) * uDpr * (1.0 + step(0.93, aRand.w) * 1.4);
-    float embSize = (2.6 + aRand.y * 1.8) * uDpr;
+    float embSize = (2.6 + aRand.y * 1.8) * uDpr * (0.85 + 0.3 * sin(uTime * (1.2 + aRand.w) + aRand.x * 40.0));
     float size = mix(mix(photoSize, starSize, s), embSize, e);
     gl_PointSize = size * (10.0 / max(0.5, -mv.z)) ;
     vAlpha = mix(1.0, 0.92, star) * sstep(0.0, 0.25, uIntro + 0.05);

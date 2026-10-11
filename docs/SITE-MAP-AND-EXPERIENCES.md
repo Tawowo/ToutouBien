@@ -4,6 +4,15 @@
 et ce qui a été **réellement testé** (navigateur Chromium via Playwright, bureau 1366–1440 px, tablette 1024 px,
 mobile Pixel 7 / iPhone 13). « Testé auto » = couvert par un test automatisé qui passe ; « vu » = inspecté sur capture.
 
+## Directive finale : calibrage (11/10/2026)
+
+| Expérience | Ce qui a changé |
+| --- | --- |
+| Ouverture | Ordre de départ unique et fiable :<br>– photo voilée dès le premier affichage (jamais d'écran vide) ;<br>– top départ quand la 3D est prête, ou au bout de 1,1 s sans elle ;<br>– sans 3D, la photo fait sa mise au point au rythme du titre.<br>Particules qui arrivent en spirale depuis la profondeur, synchronisées avec les lettres. Fondu de 760 ms entre les pixels et la photo nette. Photo légèrement inclinée vers la souris (ordinateur).<br>Sans 3D ou si le contexte est perdu : la photo recule et se voile pendant que le logo se dessine, sans écran vide. Titre réglé aussi sur la hauteur d'écran. |
+| Travelling | Calage :<br>– la première photo entre à 64 % de la largeur, la dernière finit à 40 % ;<br>– pauses au début et à la fin ;<br>– longueur en `svh`, insensible à la barre d'adresse mobile.<br>Mouvement : arcs et léger grossissement au centre, photos bornées en hauteur. Une seule légende, celle de la photo centrale.<br>Fil d'étoiles : il suit les photos et se dessine jusqu'au centre, chaque étoile s'allume au passage. |
+| Accompagnements | Une composition propre à chaque scène (placement et mouvement des trois plans). L'iris s'ouvre depuis l'étoile de la scène. Le texte de la nouvelle scène entre avec l'iris, sans zone vide. Les scènes masquées sont `inert`. |
+| Curseur truffe | Petite truffe sur ordinateur avec souris seulement :<br>– exacte et sans retard ;<br>– ne capte aucun clic ;<br>– turquoise sur les éléments cliquables, écrasée au clic.<br>Le curseur natif est conservé jusqu'au premier mouvement, ainsi que sur les champs, les fenêtres modales et hors de la fenêtre. Désactivé en contraste forcé et sur écran tactile. |
+
 ## Directive n° 8 : les expériences visuelles
 
 Direction artistique : **« Du regard au lien »** — une vraie photo de chien, des pixels qui deviennent des étoiles,
@@ -54,7 +63,7 @@ palette plus lumineuse, sections sombres réduites. Principales nouveautés :
 
 | Page | Rôle | Expérience visuelle propre | État |
 | --- | --- | --- | --- |
-| `/` Accueil | Donner envie, orienter | Sentier de particules WebGL (three.js) : duo humain + chien qui avance, mots *Observer → Comprendre → Ajuster → Avancer ensemble* synchronisés ; constellation « Par où commencer ? » ; histoires en constellations (6 situations) ; fil lumineux des 5 étapes ; ciels étoilés | Testé auto (sélecteur clic + clavier, histoires → dossier, perte du contexte WebGL, aucun élément ne suit le pointeur, mouvement réduit) ; vu en séquence (captures multi-étapes) |
+| `/` Accueil | Donner envie, orienter | Ouverture « Du regard au lien » (WebGL), travelling photographique ; constellation « Par où commencer ? » ; histoires en constellations (6 situations) ; fil lumineux des 5 étapes ; ciels étoilés | Testé auto (sélecteur clic + clavier, histoires → dossier, perte du contexte WebGL, aucun élément ne suit le pointeur, mouvement réduit) ; vu en séquence (captures multi-étapes) |
 | `/accompagnements/` + 4 pages | Présenter les 4 besoins | Planches en arche, liste numérotée, « Vous reconnaissez-vous ici ? » (sélection de situations) | Testé auto (chargement, axe) ; vu |
 | `/approche/` | Expliquer la méthode | Principes en onglets verticaux, emblème animé, engagements sur fond nuit | Testé auto ; vu |
 | `/deroulement/` | Les étapes | Téléphone illustré + étapes qui défilent | Testé auto ; vu |

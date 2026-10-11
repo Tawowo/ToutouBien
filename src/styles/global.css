@@ -1468,3 +1468,69 @@ html.lb-open {
     transform: translateY(var(--depth-y, 0)) scale(1.18);
   }
 }
+
+/* Curseur « truffe » (src/scripts/nose.ts) : souris uniquement ; le curseur natif n'est masqué
+   qu'une fois la truffe affichée (classe has-nose), et jamais sur les champs de saisie. */
+.nose {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483647;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.has-nose .nose {
+  opacity: 1;
+}
+
+.nose svg {
+  display: block;
+  width: 24px;
+  max-width: none;
+  height: 18px;
+  margin: -9px 0 0 -12px;
+  overflow: visible;
+  fill: var(--encre);
+  filter: drop-shadow(0 0 1.5px rgb(255 255 255 / 0.95)) drop-shadow(0 1px 2px rgb(0 0 0 / 0.25));
+  transform: scale(0.82);
+  transform-origin: 12px 9px;
+  transition: transform 180ms var(--ease-out), fill 180ms ease;
+}
+
+.nose .nose__n {
+  fill: var(--blanc);
+  opacity: 0.22;
+}
+
+.nose .nose__h {
+  fill: none;
+  stroke: var(--blanc);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.nose.is-action svg {
+  fill: var(--turquoise);
+  transform: scale(1.05);
+}
+
+.nose.is-down svg {
+  transform: scale(0.7, 0.62);
+}
+
+.has-nose,
+.has-nose * {
+  cursor: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nose,
+  .nose svg {
+    transition: none;
+  }
+}

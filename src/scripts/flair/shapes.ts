@@ -60,28 +60,3 @@ export function samplePath(d: string, box: ViewBox, n: number, height: number, r
   }
   return out;
 }
-
-/** Nuage de départ, large et profond : la poussière d'où naît la première forme. */
-export function cloud(n: number, rand: () => number): Float32Array {
-  const out = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    const u = rand() * Math.PI * 2;
-    const v = Math.acos(2 * rand() - 1);
-    const r = 5 + Math.pow(rand(), 0.5) * 9;
-    out[i * 3] = r * Math.sin(v) * Math.cos(u) * 1.5;
-    out[i * 3 + 1] = r * Math.cos(v) * 0.8;
-    out[i * 3 + 2] = r * Math.sin(v) * Math.sin(u) - 6;
-  }
-  return out;
-}
-
-/** Poussière d'ambiance répartie dans un grand volume (couche lointaine, parallaxe). */
-export function dust(n: number, rand: () => number): Float32Array {
-  const out = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) {
-    out[i * 3] = (rand() - 0.5) * 34;
-    out[i * 3 + 1] = (rand() - 0.5) * 20;
-    out[i * 3 + 2] = 4 - rand() * 46;
-  }
-  return out;
-}

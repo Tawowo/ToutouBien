@@ -192,7 +192,6 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
     width: 100%;
     height: 100%;
     pointer-events: none;
-    transition: opacity 400ms ease;
   }
 
   .op[data-mode='static'] .op__canvas,
@@ -200,11 +199,55 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
     display: none;
   }
 
-  /* Cinéma : la photo nette n'apparaît qu'une fois composée par les pixels. */
-  :global(.can-cine) .op:not(.is-formed) .op__photo,
+  /* Premier affichage, avant le top départ : la vraie photo, voilée (jamais d'écran vide ni de cadre gris). */
+  :global(.can-cine) .op:not(.is-playing) .op__photo {
+    opacity: 0.55;
+    filter: blur(14px) saturate(0.75);
+    transform: scale(1.025);
+    box-shadow: none;
+  }
+
+  /* Arrivée en 3D : le voile s'efface pendant que les pixels composent la photo par-dessus. */
+  .op.is-gathering:not(.is-formed) .op__photo {
+    opacity: 0;
+    filter: blur(14px) saturate(0.75);
+    transform: scale(1.025);
+    box-shadow: none;
+    transition: opacity 900ms ease;
+  }
+
+  /* Arrivée sans 3D (scène pas prête à temps ou indisponible) : mise au point de la vraie photo, au même rythme que le titre. */
+  .op.is-focusing:not(.is-formed) .op__photo {
+    animation: op-focus 2600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  @keyframes op-focus {
+    from {
+      opacity: 0.55;
+      filter: blur(14px) saturate(0.75);
+      transform: scale(1.025);
+      box-shadow: none;
+    }
+
+    55% {
+      opacity: 1;
+    }
+  }
+
+  /* Photo nette : légère inclinaison vers le pointeur (ordinateur), annulée dès que le défilement commence. */
+  .op.is-formed .op__photo {
+    --tilt: clamp(0, 1 - var(--op-p, 0) * 90, 1);
+    transform: perspective(1400px) rotateY(calc(var(--tx, 0) * 3.2deg * var(--tilt))) rotateX(calc(var(--ty, 0) * -2.4deg * var(--tilt)));
+    transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out), box-shadow 700ms ease;
+  }
+
+  .op .op__photo.is-measuring {
+    transform: none !important;
+    transition: none !important;
+  }
+
   .op.is-rippling .op__photo {
     opacity: 0 !important;
-    box-shadow: none;
   }
 
   /* Le logo : mesuré pour la constellation ; dessiné en SVG seulement en mode allégé. */
@@ -227,6 +270,12 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
 
   .op[data-lite='true'] .op__emblem svg {
     opacity: calc(var(--op-m, 0) * 1);
+  }
+
+  /* Mode allégé : la photo recule et se voile au défilement, le logo se dessine par-dessus. */
+  .op[data-lite='true'].is-formed .op__photo {
+    filter: blur(calc(var(--op-l, 0) * 10px)) saturate(calc(1 - var(--op-l, 0) * 0.4));
+    scale: calc(1 - var(--op-l, 0) * 0.14);
   }
 
   .op__emblem path {
@@ -261,7 +310,7 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
 
   .op__title {
     display: grid;
-    font-size: clamp(2.8rem, 1.6rem + 4.4vw, 6.2rem);
+    font-size: clamp(2.8rem, min(1.6rem + 4.4vw, 11svh), 6.2rem);
     line-height: 0.95;
     perspective: 800px;
   }
@@ -288,9 +337,11 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
 
   /* Chorégraphie des lettres : elles basculent depuis la profondeur, au rythme de l'arrivée des pixels. */
   @media (prefers-reduced-motion: no-preference) {
+    /* Avant le top départ, le titre attend (au plus 1,1 s). Sécurité : sans JavaScript, il apparaît quand même. */
     :global(.can-cine) .op:not(.is-playing) .op-ch,
-    :global(.can-cine) .op:not(.is-playing) .op-in {
+    :global(.can-cine) .op:not(.is-playing) .op-in:not([data-d='0']) {
       opacity: 0;
+      animation: op-safe 800ms 2.6s both;
     }
 
     .op.is-playing .op__first .op-ch {
@@ -307,7 +358,7 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
     }
 
     .op.is-playing .op-in[data-d='0'] {
-      animation-delay: 80ms;
+      animation: none;
     }
 
     .op.is-playing .op-in[data-d='2'] {
@@ -341,6 +392,16 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
     }
   }
 
+  @keyframes op-safe {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
   @keyframes op-in {
     from {
       opacity: 0;
@@ -365,7 +426,7 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
 
   .op__second-title {
     font-family: var(--font-display);
-    font-size: clamp(2.4rem, 1.4rem + 3.6vw, 5rem);
+    font-size: clamp(2.4rem, min(1.4rem + 3.6vw, 9svh), 5rem);
     line-height: 1;
   }
 
@@ -515,6 +576,14 @@ const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
   @media (max-width: 59.99rem) and (max-height: 700px) {
     .op__first .lede {
       display: none;
+    }
+  }
+
+  /* Ordinateur à écran bas : le titre se règle aussi sur la hauteur (voir clamp) et le texte se resserre,
+     pour que les boutons restent dans le premier écran. */
+  @media (min-width: 60rem) and (max-height: 680px) {
+    .op__first .lede {
+      font-size: var(--step-0);
     }
   }
 

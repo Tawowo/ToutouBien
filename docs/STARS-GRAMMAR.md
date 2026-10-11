@@ -4,6 +4,13 @@ Les petites étoiles sont la signature visuelle de ToutouBien. Elles ne décoren
 Ce document fixe quand elles apparaissent, ce qu'elles veulent dire et comment elles bougent, pour que
 le site reste cohérent quand on ajoute une page.
 
+## Directive finale
+
+- **Travelling** : l'étoile marque l'endroit où le fil s'accroche à chaque photo ; elle s'allume quand la photo passe au centre.
+  Le fil se dessine jusqu'au centre de l'écran, pas au-delà.
+- **Accompagnements** : chaque scène s'ouvre depuis son étoile (position mesurée), sur ordinateur comme sur mobile.
+- **Curseur** : la truffe n'est pas une étoile et ne laisse aucune traînée. La signature étoilée reste réservée aux liens entre les chiens.
+
 ## Le principe
 
 **Une étoile = un repère.** Quelque chose que l'on comprend, une étape franchie, une piste à explorer.

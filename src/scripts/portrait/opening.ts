@@ -15,12 +15,24 @@ import { pickTier, readCapabilities, tierFromQuery } from '../flair/quality';
 import type { OpeningScene, OpeningState, Rect } from './scene';
 
 export const INTRO_MS = 2600;
+/** Attente maximale de la scène 3D avant de lancer l'arrivée sans elle (mise au point CSS de la vraie photo). */
+export const GO_WAIT_MS = 1100;
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const sstep = (a: number, b: number, x: number) => {
   const t = clamp01((x - a) / (b - a));
   return t * t * (3 - 2 * t);
 };
 
+/**
+ * États (classes sur la section) :
+ *  - aucun       : premier affichage — photo voilée (floue, atténuée), soleil, sur-titre ; jamais d'écran vide ;
+ *  - is-playing  : top départ unique du titre (lettres) ;
+ *  - is-gathering: arrivée en 3D — le voile s'efface pendant que les pixels composent la photo ;
+ *  - is-focusing : arrivée sans 3D (scène pas prête à temps, ou indisponible) — la vraie photo fait sa mise au point ;
+ *  - is-formed   : photo nette ; le défilement peut reprendre la main.
+ * Le top départ a lieu UNE fois : dès que la scène est prête, ou au plus tard après GO_WAIT_MS.
+ * Une scène arrivée en retard ne rejoue pas d'introduction : elle sert au défilement.
+ */
 export function initOpening(): void {
   const root = document.querySelector<HTMLElement>('[data-opening]');
   if (!root) return;
@@ -30,6 +42,8 @@ export function initOpening(): void {
   const emblemBox = root.querySelector<HTMLElement>('[data-op-emblem]')!;
   const path = root.querySelector<SVGPathElement>('[data-op-emblem-path]')!;
   const sticky = root.querySelector<HTMLElement>('[data-op-sticky]')!;
+  const first = root.querySelector<HTMLElement>('[data-op-first]');
+  const second = root.querySelector<HTMLElement>('[data-op-second]');
 
   // Index des lettres pour la chorégraphie du texte (délais calculés en CSS).
   root.querySelectorAll<HTMLElement>('[data-op-chars]').forEach((line) => {
@@ -42,13 +56,10 @@ export function initOpening(): void {
     root.classList.add('is-playing', 'is-formed');
     return;
   }
-  // Le titre et les particules démarrent ensemble ; si la scène tarde (connexion lente),
-  // la photo apparaît sans attendre et la scène ne servira qu'au défilement.
-  const fallbackTimer = window.setTimeout(() => {
-    root.classList.add('is-playing', 'is-formed');
-  }, 1900);
 
   let scene: OpeningScene | null = null;
+  let started = false;
+  let with3d = false;
   let introStart = performance.now();
   let progress = 0;
   let smooth = 0;
@@ -57,6 +68,24 @@ export function initOpening(): void {
   let frames = 0;
   let slow = 0;
   let last = performance.now();
+  let formedTimer = 0;
+  let formedAt = 0;
+  // Inclinaison au pointeur (ordinateur) : cible et valeur lissée, -1 … 1.
+  const tilt = { x: 0, y: 0, tx: 0, ty: 0 };
+
+  const has = (c: string) => root.classList.contains(c);
+
+  /** Top départ unique de l'arrivée. */
+  const go = (useScene: boolean) => {
+    if (started) return;
+    started = true;
+    with3d = useScene;
+    introStart = performance.now();
+    root.classList.add('is-playing', useScene ? 'is-gathering' : 'is-focusing');
+    if (!useScene) formedTimer = window.setTimeout(() => root.classList.add('is-formed'), INTRO_MS);
+    wake();
+  };
+  const goTimer = window.setTimeout(() => go(false), GO_WAIT_MS);
 
   const readProgress = () => {
     const r = root.getBoundingClientRect();
@@ -73,89 +102,102 @@ export function initOpening(): void {
   const layout = () => {
     if (!scene) return;
     const c = sticky.getBoundingClientRect();
-    // La photo est mesurée sans la transformation d'échelle appliquée au défilement.
-    const prev = photo.style.transform;
-    photo.style.transform = 'none';
+    // Mesure sans l'inclinaison au pointeur, pour que les pixels se posent exactement sur la photo.
+    photo.classList.add('is-measuring');
     const pr = rectIn(photo);
-    photo.style.transform = prev;
+    photo.classList.remove('is-measuring');
     scene.layout(c.width, c.height, pr, rectIn(emblemBox));
   };
 
-  /** État de la scène et des textes pour une progression lissée p et un temps d'intro i. */
+  /** État de la scène pour une progression lissée p et un temps d'intro i. */
   const state = (p: number, i: number): OpeningState => {
-    const relief = sstep(0.04, 0.32, p);
+    const relief = sstep(0.03, 0.3, p);
+    const fade = 1 - sstep(0.36, 0.6, p);
     const out = sstep(0.62, 0.95, p);
     return {
       intro: i,
-      relief: relief * (1 - sstep(0.4, 0.6, p)),
-      scatter: sstep(0.26, 0.58, p),
-      emblem: sstep(0.52, 0.84, p),
-      yaw: (1 - i) * 0.55 + relief * 0.5 * (1 - sstep(0.35, 0.6, p)),
-      pitch: (1 - i) * 0.18 + relief * 0.16 * (1 - sstep(0.35, 0.6, p)),
-      dust: Math.max(0.35 * (1 - i), sstep(0.2, 0.5, p)) * (1 - out * 0.4),
+      relief: relief * fade,
+      scatter: sstep(0.24, 0.58, p),
+      emblem: sstep(0.5, 0.84, p),
+      yaw: (1 - i) * 0.6 + relief * 0.5 * fade + tilt.x * 0.07 * (1 - out),
+      pitch: (1 - i) * 0.2 + relief * 0.15 * fade - tilt.y * 0.05 * (1 - out),
+      dust: Math.max(0.4 * (1 - i), sstep(0.18, 0.5, p)) * (1 - out * 0.4),
     };
   };
 
   const applyText = (p: number) => {
     root.style.setProperty('--op-p', p.toFixed(4));
-    root.style.setProperty('--op-out', sstep(0.06, 0.26, p).toFixed(3));
-    root.style.setProperty('--op-m', sstep(0.56, 0.86, p).toFixed(3));
-    // La vraie photo s'efface dès que les particules reprennent la main.
-    const photoA = 1 - sstep(0.015, 0.08, p);
-    photo.style.opacity = root.classList.contains('is-formed') ? photoA.toFixed(3) : '';
-    const second = root.querySelector<HTMLElement>('[data-op-second]');
-    if (second) {
-      const shown = p > 0.6;
-      if (second.inert === shown) second.inert = !shown;
-    }
-    const first = root.querySelector<HTMLElement>('[data-op-first]');
-    if (first) {
-      const shown = p < 0.3;
-      if (first.inert === shown) first.inert = !shown;
-    }
+    root.style.setProperty('--op-out', sstep(0.05, 0.24, p).toFixed(3));
+    // Sans 3D (mode allégé), rien ne remplit l'écran entre la photo et le logo : la photo se retire donc
+    // lentement (elle recule et se voile) pendant que le logo commence à se dessiner, sans écran vide.
+    const lite = !!root.dataset.lite;
+    const m = lite ? sstep(0.34, 0.74, p) : sstep(0.56, 0.86, p);
+    root.style.setProperty('--op-m', m.toFixed(3));
+    root.style.setProperty('--op-l', lite ? sstep(0.04, 0.5, p).toFixed(3) : '0');
+    // La vraie photo s'efface quand les particules reprennent la main (ou, sans 3D, avant que le logo se dessine).
+    const live = has('is-formed') || has('is-focusing');
+    photo.style.opacity = live ? (1 - (lite ? sstep(0.12, 0.5, p) : sstep(0.012, 0.07, p))).toFixed(3) : '';
+    const shownSecond = m > 0.12;
+    if (second && second.inert === shownSecond) second.inert = !shownSecond;
+    const shownFirst = p < 0.3;
+    if (first && first.inert === shownFirst) first.inert = !shownFirst;
   };
 
   const toLite = () => {
-    window.clearTimeout(fallbackTimer);
-    root.classList.add('is-playing');
+    window.clearTimeout(goTimer);
     cancelAnimationFrame(raf);
+    raf = 0;
     scene?.dispose();
     scene = null;
     root.dataset.lite = 'true';
-    root.classList.add('is-formed');
     canvas.style.opacity = '0';
+    if (!started) go(false);
+    else if (!has('is-formed')) {
+      // Arrivée 3D interrompue : la vraie photo termine l'arrivée par une mise au point.
+      root.classList.remove('is-gathering');
+      root.classList.add('is-focusing');
+      window.clearTimeout(formedTimer);
+      formedTimer = window.setTimeout(() => root.classList.add('is-formed'), INTRO_MS * 0.5);
+    }
   };
 
   const frame = (now: number) => {
     raf = 0;
-    if (!scene || !visible) return;
+    if (!scene || !visible || !started) return;
     if (scene.lost) return toLite();
-    const i = clamp01((now - introStart) / INTRO_MS);
-    // Lissage critique simple : suit le défilement sans à-coups, dans les deux sens.
-    smooth += (progress - smooth) * Math.min(1, (now - last) / 1000 * 9);
-    const dt = now - last;
+    const i = with3d ? clamp01((now - introStart) / INTRO_MS) : 1;
+    const raw = now - last;
+    const dt = Math.min(64, raw);
     last = now;
-    if (i < 1 && ++frames > 8) {
-      if (dt > 70) slow++;
-      if (slow > 12) return toLite();
+    // Lissage exponentiel indépendant de la cadence : suit le défilement sans à-coups, dans les deux sens.
+    smooth += (progress - smooth) * (1 - Math.exp(-dt / 110));
+    tilt.x += (tilt.tx - tilt.x) * (1 - Math.exp(-dt / 180));
+    tilt.y += (tilt.ty - tilt.y) * (1 - Math.exp(-dt / 180));
+    if (with3d && i < 1 && ++frames > 8) {
+      if (raw > 70) slow++;
+      if (slow > 14) return toLite();
     }
-    if (i >= 1 && !root.classList.contains('is-formed')) root.classList.add('is-formed');
+    if (with3d && i >= 1 && !has('is-formed')) {
+      root.classList.add('is-formed');
+      formedAt = now;
+    }
     applyText(smooth);
-    const s = state(smooth, i);
-    // Pendant que la vraie photo est affichée et que rien ne bouge, on ne dessine plus rien.
-    const idle = i >= 1 && smooth < 0.012 && Math.abs(progress - smooth) < 0.0005 && !scene.rippleActive;
+    const settling = Math.abs(progress - smooth) > 0.0004;
+    // Photo nette affichée et rien ne bouge : plus aucun rendu WebGL.
+    // Les pixels restent affichés le temps que la photo nette finisse d'apparaître dessous (fondu de 700 ms).
+    const crossfading = with3d && now - formedAt < 760;
+    const idle = i >= 1 && has('is-formed') && !crossfading && smooth < 0.008 && !settling && !scene.rippleActive;
     canvas.style.opacity = idle ? '0' : '1';
-    if (!idle) scene.render(s);
-    if (!idle || Math.abs(progress - smooth) > 0.0005) raf = requestAnimationFrame(frame);
+    if (!idle) scene.render(state(smooth, i));
+    if (!idle || settling) raf = requestAnimationFrame(frame);
   };
-  const wake = () => {
-    if (!raf && visible && scene) {
+  function wake() {
+    if (!raf && visible && scene && started) {
       last = performance.now();
       raf = requestAnimationFrame(frame);
     }
-  };
+  }
 
-  // Le texte se chorégraphie tout de suite ; la scène se charge à côté.
   const caps = readCapabilities();
   const tier = tierFromQuery(location.search) ?? pickTier(caps);
   if (tier === 'fallback') {
@@ -172,12 +214,12 @@ export function initOpening(): void {
       scene = s;
       layout();
       root.dataset.ready = 'true';
-      window.clearTimeout(fallbackTimer);
-      // Scène prête à temps : titre et pixels démarrent au même instant. Sinon, pas de seconde intro.
-      introStart = root.classList.contains('is-formed') ? performance.now() - INTRO_MS : performance.now();
-      root.classList.add('is-playing');
       progress = readProgress();
-      wake();
+      smooth = progress;
+      if (!started) {
+        window.clearTimeout(goTimer);
+        go(true);
+      } else wake();
     })
     .catch(() => toLite());
 
@@ -199,13 +241,38 @@ export function initOpening(): void {
     wake();
   });
 
+  // Ordinateur : la photo s'incline très légèrement vers le pointeur (rien ne suit le curseur).
+  if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let pending = false;
+    sticky.addEventListener('pointermove', (e) => {
+      const r = photo.getBoundingClientRect();
+      tilt.tx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width * 0.9)));
+      tilt.ty = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height * 0.9)));
+      if (!pending) {
+        pending = true;
+        requestAnimationFrame(() => {
+          pending = false;
+          root.style.setProperty('--tx', tilt.tx.toFixed(3));
+          root.style.setProperty('--ty', tilt.ty.toFixed(3));
+        });
+      }
+      if (smooth > 0.008) wake();
+    });
+    sticky.addEventListener('pointerleave', () => {
+      tilt.tx = 0;
+      tilt.ty = 0;
+      root.style.setProperty('--tx', '0');
+      root.style.setProperty('--ty', '0');
+    });
+  }
+
   // Toucher la photo : une onde la traverse (la vraie photo s'efface le temps de l'onde).
   photo.addEventListener('click', (e) => {
-    if (!scene || !root.classList.contains('is-formed')) return;
+    if (!scene || !has('is-formed') || smooth > 0.02) return;
     const c = sticky.getBoundingClientRect();
     scene.ripple(e.clientX - c.left, e.clientY - c.top);
     root.classList.add('is-rippling');
-    window.setTimeout(() => root.classList.remove('is-rippling'), 2200);
+    window.setTimeout(() => root.classList.remove('is-rippling'), 2300);
     wake();
   });
   applyText(readProgress());

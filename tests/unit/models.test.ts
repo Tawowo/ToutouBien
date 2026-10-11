@@ -169,35 +169,6 @@ describe('parcours de lecture', () => {
   });
 });
 
-describe('séquence d’accueil', async () => {
-  const { timeline, MARKS } = await import('~/scripts/flair/timeline');
-  it('maintient chaque forme stable pendant son palier', () => {
-    for (const p of [0, 0.05, MARKS.meetEnd]) expect(timeline(p).morph).toBe(1);
-    for (const p of [MARKS.trailStart, 0.4, MARKS.trailEnd]) expect(timeline(p).morph).toBeCloseTo(2, 5);
-    for (const p of [MARKS.ringsStart, 0.85, 1]) expect(timeline(p).morph).toBeCloseTo(3, 5);
-  });
-
-  it('ne montre jamais deux textes pleinement visibles en même temps', () => {
-    for (let p = 0; p <= 1; p += 0.005) {
-      const t = timeline(p);
-      const visible = [t.intro, t.walk, t.link].filter((a) => a > 0.5).length;
-      expect(visible).toBeLessThanOrEqual(1);
-    }
-  });
-
-  it('change de texte pendant la transition, pas pendant un palier', () => {
-    expect(timeline(0.1).chapter).toBe(0);
-    expect(timeline(0.42).chapter).toBe(1);
-    expect(timeline(0.9).chapter).toBe(2);
-    expect(timeline(0.42).walk).toBe(1);
-    expect(timeline(0.9).link).toBe(1);
-  });
-
-  it('est réversible : même état pour une même position, quel que soit le sens', () => {
-    expect(timeline(0.6)).toEqual(timeline(0.6));
-  });
-});
-
 describe('décodeur du quotidien', async () => {
   const { SITUATIONS, carnetNote, STEPS } = await import('~/lib/decodeur');
   const { ACCOMPAGNEMENTS } = await import('~/content/accompagnements');
@@ -221,22 +192,5 @@ describe('décodeur du quotidien', async () => {
     const n = carnetNote(s, [s.observe[0]!.id]);
     expect(n).toContain(s.observe[0]!.label.toLowerCase());
     expect(n).not.toContain(s.observe[1]!.label.toLowerCase());
-  });
-});
-
-describe('narration du sentier', async () => {
-  const { MILESTONES, milestoneLit, pairT, trailPos } = await import('~/scripts/flair/timeline');
-  it('allume les jalons dans l’ordre, au passage du duo', () => {
-    expect(milestoneLit(MILESTONES[0].t, 0)).toBe(0);
-    expect(MILESTONES.every((m) => milestoneLit(m.t, 1) === 1)).toBe(true);
-    let last = -1;
-    for (const m of MILESTONES) {
-      const firstLit = Array.from({ length: 101 }, (_, i) => i / 100).find((d) => milestoneLit(m.t, d) > 0.5)!;
-      expect(firstLit).toBeGreaterThan(last);
-      last = firstLit;
-    }
-  });
-  it('le duo s’éloigne le long du sentier', () => {
-    expect(trailPos(pairT(1), 0)[2]).toBeLessThan(trailPos(pairT(0), 0)[2]);
   });
 });

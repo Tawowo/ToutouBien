@@ -106,13 +106,19 @@ test('le monde par le nez : chaque odeur se trouve, se re-sélectionne et se ré
 test('accueil : aucun élément ne suit le pointeur', async ({ page, isMobile }) => {
   test.skip(isMobile, 'souris uniquement');
   await page.goto('/');
-  const box = async () => page.locator('[data-op-photo]').boundingBox();
+  const box = async () => (await page.locator('[data-op-photo]').boundingBox())!;
   await page.waitForTimeout(3200);
   const before = await box();
   await page.mouse.move(900, 400);
   await page.mouse.move(1000, 450, { steps: 5 });
-  // La photo principale ne bouge pas avec la souris.
-  expect(await box()).toEqual(before);
+  await page.waitForTimeout(400);
+  // La photo s'incline légèrement vers la souris mais reste à sa place : elle ne la suit pas.
+  const after = await box();
+  expect(Math.abs(after.x + after.width / 2 - (before.x + before.width / 2))).toBeLessThan(4);
+  expect(Math.abs(after.y + after.height / 2 - (before.y + before.height / 2))).toBeLessThan(4);
+  // Le seul élément qui accompagne la souris est le curseur lui-même : petit, et sans retard.
+  const nose = (await page.locator('.nose svg').boundingBox())!;
+  expect(nose.width).toBeLessThan(32);
   expect(await page.content()).not.toContain('uPointer');
 });
 
@@ -378,4 +384,109 @@ test('travelling : les plans glissent au défilement', async ({ page }) => {
   await page.waitForTimeout(300);
   const b = await layer.evaluate((el) => (el as HTMLElement).style.transform);
   expect(a).not.toEqual(b);
+});
+
+test('curseur truffe : souris uniquement, position exacte, aucun clic intercepté, curseur natif sur les champs', async ({ page, isMobile }) => {
+  await page.goto('/contact/');
+  if (isMobile) {
+    await expect(page.locator('.nose')).toHaveCount(0);
+    return;
+  }
+  const html = page.locator('html');
+  // Curseur natif tant que la souris n'a pas bougé.
+  await expect(html).not.toHaveClass(/has-nose/);
+  await page.mouse.move(400, 300);
+  await expect(html).toHaveClass(/has-nose/);
+  const svg = (await page.locator('.nose svg').boundingBox())!;
+  expect(Math.abs(svg.x + svg.width / 2 - 400)).toBeLessThan(2);
+  expect(Math.abs(svg.y + svg.height / 2 - 300)).toBeLessThan(2);
+  expect(await page.locator('.nose').evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+  // Un clic atteint bien le lien situé sous la truffe.
+  const link = page.locator('main a[href]').first();
+  const lb = (await link.boundingBox())!;
+  await page.mouse.move(lb.x + lb.width / 2, lb.y + lb.height / 2);
+  expect(await page.evaluate(([x, y]) => document.elementFromPoint(x!, y!)?.closest('.nose') === null, [lb.x + lb.width / 2, lb.y + lb.height / 2])).toBe(true);
+  await expect(page.locator('.nose')).toHaveClass(/is-action/);
+  // Sur un champ de saisie : curseur texte natif, truffe masquée.
+  const field = page.locator('main textarea:visible, main input[type="email"]:visible').first();
+  if (await field.count()) {
+    await field.scrollIntoViewIfNeeded();
+    const fb = (await field.boundingBox())!;
+    await page.mouse.move(fb.x + fb.width / 2, fb.y + fb.height / 2);
+    await expect(html).not.toHaveClass(/has-nose/);
+    expect(await field.evaluate((el) => getComputedStyle(el).cursor)).not.toBe('none');
+  }
+});
+
+test('travelling : début et fin calés, titre jamais recouvert, photos jamais coupées', async ({ page }) => {
+  await page.goto('/');
+  const tv = page.locator('[data-travel]').first();
+  await expect(tv).toHaveClass(/is-live/);
+  for (const p of [0, 0.3, 0.6, 1, 0.5, 0]) {
+    // Position recalculée à chaque pas : l'ouverture au-dessus fixe sa hauteur après le chargement.
+    await tv.evaluate((el, q) => scrollTo({ top: el.getBoundingClientRect().top + scrollY + q * ((el as HTMLElement).offsetHeight - innerHeight), behavior: 'instant' }), p);
+    await page.waitForTimeout(250);
+    const r = await tv.evaluate((el) => {
+      const t = el.querySelector('h2')!.getBoundingClientRect();
+      const items = [...el.querySelectorAll('[data-tv-layer="0"] [data-tv-item]')].map((i) => i.getBoundingClientRect());
+      const shown = items.filter((b) => b.right > 0 && b.left < innerWidth);
+      return {
+        shown: shown.length,
+        cover: shown.some((b) => b.top < t.bottom - 1 && b.bottom > t.top && b.left < t.right && b.right > t.left),
+        cut: shown.some((b) => b.bottom > innerHeight + 1),
+      };
+    });
+    expect(r.shown, `photos visibles à p=${p}`).toBeGreaterThan(0);
+    expect(r.cover, `titre recouvert à p=${p}`).toBe(false);
+    expect(r.cut, `photo coupée à p=${p}`).toBe(false);
+  }
+});
+
+test('accompagnements : les scènes masquées ne reçoivent pas le focus', async ({ page }) => {
+  await page.goto('/accompagnements/');
+  const root = page.locator('[data-acc-scenes]');
+  await expect(root).toHaveClass(/is-live/);
+  const hidden = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('[data-as-scene]')].filter((s) => s.inert).flatMap((s) => [...s.querySelectorAll<HTMLElement>('a, button')]).filter((a) => {
+      a.focus();
+      return document.activeElement === a;
+    }).length,
+  );
+  expect(hidden).toBe(0);
+});
+
+test('accueil : chargement lent de la 3D, ni écran vide ni photo qui surgit, l’ouverture se joue quand même', async ({ page }) => {
+  await page.route(/\/_astro\/scene\.[^/]*\.js$/, async (route) => {
+    await new Promise((r) => setTimeout(r, 4000));
+    await route.continue();
+  });
+  await page.goto('/');
+  const op = page.locator('[data-opening]');
+  // Dès le départ, la photo est présente (voilée), jamais un écran vide.
+  await page.waitForTimeout(300);
+  expect(Number(await page.locator('[data-op-photo]').evaluate((el) => getComputedStyle(el).opacity))).toBeGreaterThan(0.3);
+  // Sans attendre la 3D, l'ouverture démarre en mise au point et se termine.
+  await expect(op).toHaveClass(/is-focusing/, { timeout: 3000 });
+  await expect(op).toHaveClass(/is-formed/, { timeout: 6000 });
+  await expect(page.locator('.op__first .op-ch').last()).toHaveCSS('opacity', '1', { timeout: 4000 });
+});
+
+test('accueil : contexte WebGL perdu pendant l’arrivée, l’ouverture se termine en mode allégé', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await page.goto('/?quality=low');
+  const op = page.locator('[data-opening]');
+  await expect(op).toHaveAttribute('data-ready', 'true', { timeout: 15000 });
+  await page.evaluate(() => {
+    const c = document.querySelector<HTMLCanvasElement>('[data-opening] canvas')!;
+    const gl = (c.getContext('webgl2') ?? c.getContext('webgl')) as WebGLRenderingContext | null;
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+  });
+  await expect(op).toHaveAttribute('data-lite', 'true', { timeout: 5000 });
+  await expect(op).toHaveClass(/is-formed/, { timeout: 5000 });
+  expect(Number(await page.locator('[data-op-photo]').evaluate((el) => getComputedStyle(el).opacity))).toBeGreaterThan(0.9);
+  // Au défilement, sans 3D, le logo se dessine et le second message devient lisible.
+  await op.evaluate((el) => scrollTo({ top: (el as HTMLElement).offsetHeight - innerHeight, behavior: 'instant' }));
+  await expect(page.locator('[data-op-second]')).not.toHaveAttribute('inert', '');
+  expect(errors).toEqual([]);
 });

@@ -5,6 +5,8 @@
  * 3. Ciels étoilés ([data-sky]) : une seule boucle d'animation pour toute la page, rendue
  *    uniquement pour les ciels visibles, figée en mouvement réduit.
  */
+import { initNose } from './nose';
+
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /**
@@ -239,6 +241,7 @@ function initSkies(): void {
 }
 
 export function initMotion(): void {
+  initNose();
   initPhotoReveal();
   initDepth();
   initReveals();

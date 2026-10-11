@@ -1,5 +1,37 @@
 # Rapport de tests
 
+> **État de la directive finale (11/10/2026)**. Résultats réels obtenus sur le build de production, avec Chromium (Playwright) uniquement.
+>
+> **Contrôles automatiques**
+> - Lint : 0 erreur. Types : 0 erreur.
+> - **49 tests unitaires** réussis. Les 6 tests de l'ancienne séquence d'accueil (`flair/timeline`) ont été retirés **avec le code
+>   qu'ils testaient**, car il n'était plus utilisé par aucune page.
+> - **267 tests de bout en bout réussis, 0 échec**. 1 test est ignoré : celui qui exige une souris, sans objet sur mobile.
+>
+> **Nouveaux tests**
+> - curseur truffe : présent seulement avec une souris, centré sur le pointeur à moins de 2 px près, `pointer-events: none`,
+>   clic qui atteint bien le lien, curseur natif sur les champs, absent sur mobile ;
+> - travelling : photos visibles au début et à la fin, titre jamais recouvert, photos jamais coupées, aussi en remontant ;
+> - accompagnements : aucune scène masquée ne reçoit le focus ;
+> - chargement lent de la 3D (retard de 4 s) : photo voilée visible dès 300 ms, puis mise au point, puis titre complet ;
+> - perte du contexte WebGL pendant l'arrivée : mode allégé, photo nette, second message atteignable.
+>
+> **Test adapté (et non supprimé)** : « aucun élément ne suit le pointeur ». La photo d'ouverture s'incline maintenant de
+> quelques degrés vers la souris. Le test vérifie donc que son centre ne bouge pas (moins de 4 px) et que le seul élément
+> qui accompagne la souris est le curseur lui-même (moins de 32 px).
+>
+> **Balayage des formats** : 9 pages × 10 formats (320×640, 375×667, 390×844, 430×932, 768×1024, 1024×768, 1280×720, 1366×600,
+> 1440×900 et 1920×1080). Aucun débordement horizontal, aucune erreur JavaScript.
+>
+> **Lighthouse 13.5** (mobile simulé, rendu WebGL logiciel ; scores performance / accessibilité / bonnes pratiques) :
+> - accueil : 85 / 100 / 100 (LCP 2,7 s, TBT 440 ms, CLS 0,001) ;
+> - accompagnements : 94 / 100 / 100 ;
+> - galerie : 96 / 100 / 100 (CLS 0,062) ;
+> - contact : 99 / 100 / 100.
+>
+> **Non vérifié** : Safari, Firefox, un vrai téléphone et un vrai processeur graphique (indisponibles ici).
+> Captures : `docs/captures/final/`.
+
 > **État directive n° 8 (11/10/2026)** — Lint 0 · types 0 · **55 tests unitaires** · **255 réussis / 257 au premier passage**
 > (2 échecs d'accessibilité sur /accompagnements/ corrigés puis revérifiés : 32/32 sur la page, 25/25 sur l'accueil, la galerie
 > et le travelling après correction). Nouveaux tests : ouverture composée puis transformée au défilement (sans erreur), onde

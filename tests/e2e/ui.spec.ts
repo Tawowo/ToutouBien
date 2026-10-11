@@ -106,8 +106,8 @@ test('le monde par le nez : chaque odeur se trouve, se re-sélectionne et se ré
 test('accueil : aucun élément ne suit le pointeur', async ({ page, isMobile }) => {
   test.skip(isMobile, 'souris uniquement');
   await page.goto('/');
-  const scene = page.locator('[data-hh-scene]');
-  const box = async () => scene.locator('.hh__main').boundingBox();
+  const box = async () => page.locator('[data-op-photo]').boundingBox();
+  await page.waitForTimeout(3200);
   const before = await box();
   await page.mouse.move(900, 400);
   await page.mouse.move(1000, 450, { steps: 5 });
@@ -320,4 +320,62 @@ test('galerie : le filtre par thème limite les photos et la visionneuse', async
   await page.keyboard.press('Escape');
   await page.locator('[data-gal-theme=""]').click();
   await expect(page.locator('.g-tile:visible')).toHaveCount(total);
+});
+
+
+test('accueil : l’ouverture se compose puis se transforme au défilement, sans casser la page', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await page.goto('/?quality=low');
+  const op = page.locator('[data-opening]');
+  await expect(op).toHaveAttribute('data-mode', 'cinema');
+  await expect(op).toHaveClass(/is-formed/, { timeout: 15000 });
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Comprendre son chien/);
+  await expect(page.getByRole('link', { name: /Parlons de votre chien/ }).first()).toBeVisible();
+  // Toucher la photo : une onde, puis la photo revient.
+  await page.locator('[data-op-photo]').click();
+  await expect(op).not.toHaveClass(/is-rippling/, { timeout: 5000 });
+  // Défilement jusqu'à la constellation : le second message devient lisible et cliquable.
+  const h = await op.evaluate((el) => (el as HTMLElement).offsetHeight - innerHeight);
+  await page.evaluate((y) => scrollTo(0, y), h);
+  await expect(page.locator('[data-op-second]')).not.toHaveAttribute('inert', '');
+  await expect.poll(async () => Number(await op.evaluate((el) => getComputedStyle(el).getPropertyValue('--op-m')))).toBeGreaterThan(0.9);
+  expect(errors).toEqual([]);
+});
+
+test('accueil : en mouvement réduit, ouverture statique et lisible', async ({ browser }) => {
+  const ctx = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await ctx.newPage();
+  await page.goto('/');
+  const op = page.locator('[data-opening]');
+  await expect(op).toHaveAttribute('data-mode', 'static');
+  await expect(page.locator('[data-op-photo] img')).toBeVisible();
+  await expect(page.locator('[data-op-chars] .op-ch').first()).toHaveCSS('opacity', '1');
+  expect(await op.evaluate((el) => (el as HTMLElement).offsetHeight)).toBeLessThan(await page.evaluate(() => innerHeight * 1.5));
+  await ctx.close();
+});
+
+test('accompagnements : la scène enchaîne les quatre accompagnements et les étoiles y mènent', async ({ page }) => {
+  await page.goto('/accompagnements/');
+  const stars = page.locator('[data-as-go]');
+  await expect(stars).toHaveCount(4);
+  await stars.nth(2).click();
+  await expect(stars.nth(2)).toHaveAttribute('aria-current', 'step', { timeout: 5000 });
+  await expect(page.locator('[data-as-scene="2"]')).toHaveClass(/is-on/);
+  await expect(page.locator('[data-as-scene="2"] .btn')).toHaveAttribute('href', '/accompagnements/quotidien/');
+});
+
+test('travelling : les plans glissent au défilement', async ({ page }) => {
+  await page.goto('/');
+  const tv = page.locator('[data-travel]').first();
+  await expect(tv).toHaveClass(/is-live/);
+  const layer = tv.locator('[data-tv-layer="0"]');
+  const top = await tv.evaluate((el) => el.getBoundingClientRect().top + scrollY);
+  await page.evaluate((y) => scrollTo(0, y), top + 50);
+  await page.waitForTimeout(300);
+  const a = await layer.evaluate((el) => (el as HTMLElement).style.transform);
+  await page.evaluate((y) => scrollTo(0, y), top + 1200);
+  await page.waitForTimeout(300);
+  const b = await layer.evaluate((el) => (el as HTMLElement).style.transform);
+  expect(a).not.toEqual(b);
 });

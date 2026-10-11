@@ -21,13 +21,15 @@ interface Props {
   /** Légende éditoriale affichée sous la photo. */
   caption?: string | boolean;
   alt?: string;
+  /** Profondeur au défilement (l'image glisse dans son cadre) ; voir initDepth dans motion.ts. */
+  depth?: number;
 }
 
-const { id, class: className, sizes = '(min-width: 64rem) 45vw, 92vw', shape = 'soft', ratio, priority = false, credit = 'overlay', caption, alt } = Astro.props;
+const { id, class: className, sizes = '(min-width: 64rem) 45vw, 92vw', shape = 'soft', ratio, priority = false, credit = 'overlay', caption, alt, depth } = Astro.props;
 const p = photo(id);
 const legend = caption === true ? p.caption : caption || '';
 ---
-<figure class:list={['ph', `ph--${shape}`, ratio && `ph--r${ratio}`, focusClass(p), className]} data-photo={p.id}>
+<figure class:list={['ph', `ph--${shape}`, ratio && `ph--r${ratio}`, focusClass(p), className]} data-photo={p.id} data-depth={depth}>
   <span class="ph__frame">
     <Picture
       src={p.img}

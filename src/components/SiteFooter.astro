@@ -1,9 +1,9 @@
 ---
 import Icon from './Icon.astro';
 import Draft from './Draft.astro';
-import Fil from './Fil.astro';
 import Emblem from '~/assets/brand/emblem.svg';
 import Signature from '~/assets/brand/wordmark-signature.svg';
+import emblemRaw from '~/assets/brand/emblem.svg?raw';
 import { CTA_NAV, LEGAL_NAV, NAV_GROUPS } from '~/config/navigation';
 import { site } from '~/config/site';
 import { publicValue, resolve } from '~/lib/fields';
@@ -22,6 +22,8 @@ const email = resolve(site.contact.email);
 const area = resolve(site.serviceArea.label);
 const social = resolve(site.social);
 const year = new Date().getFullYear();
+const emblemD = emblemRaw.match(/ d="([^"]+)"/)?.[1] ?? '';
+const emblemBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
 ---
 <footer class="site-footer on-dark grain-dark">
   {
@@ -37,7 +39,10 @@ const year = new Date().getFullYear();
           </span>
           <span class="sr-only">{CTA_NAV.label}</span>
         </a>
-        <Fil variant="traversee" class="footer-call__fil" />
+        <svg class="footer-star" viewBox={emblemBox} aria-hidden="true" focusable="false" data-footer-star>
+          <path d={emblemD} class="footer-star__path" pathLength="1" fill-rule="evenodd" />
+          <g data-footer-dots></g>
+        </svg>
       </div>
     )
   }
@@ -83,6 +88,37 @@ const year = new Date().getFullYear();
     </ul>
   </div>
 </footer>
+
+<script>
+  // Signature finale : points répartis le long du tracé du logo, partant de positions dispersées.
+  document.querySelectorAll<SVGSVGElement>('[data-footer-star]').forEach((svg) => {
+    const path = svg.querySelector<SVGPathElement>('path')!;
+    const g = svg.querySelector('[data-footer-dots]')!;
+    const NS = 'http://www.w3.org/2000/svg';
+    // Le tracé est normalisé (pathLength=1) : on mesure la longueur géométrique réelle.
+    const len = path.getTotalLength();
+    const n = 44;
+    for (let i = 0; i < n; i++) {
+      const pt = path.getPointAtLength((len * i) / n);
+      const c = document.createElementNS(NS, 'circle');
+      c.setAttribute('cx', pt.x.toFixed(1));
+      c.setAttribute('cy', pt.y.toFixed(1));
+      c.setAttribute('r', i % 7 === 0 ? '13' : '8');
+      const a = Math.random() * Math.PI * 2;
+      const d = 500 + Math.random() * 900;
+      c.style.setProperty('--dx', `${(Math.cos(a) * d).toFixed(0)}px`);
+      c.style.setProperty('--dy', `${(Math.sin(a) * d * 0.6).toFixed(0)}px`);
+      c.style.setProperty('--delay', `${(Math.random() * 0.7).toFixed(2)}s`);
+      g.append(c);
+    }
+    new IntersectionObserver((entries, io) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        svg.classList.add('is-in');
+        io.disconnect();
+      }
+    }, { threshold: 0.4 }).observe(svg);
+  });
+</script>
 
 <style>
   .site-footer {
@@ -141,15 +177,59 @@ const year = new Date().getFullYear();
     background: var(--lagon);
   }
 
-  .footer-call__fil {
+  /* Signature finale : des étoiles venues de partout se rassemblent sur le logo, qui se dessine. */
+  .footer-star {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 1rem;
-    width: 100%;
-    height: 4rem;
-    color: var(--lueur);
-    opacity: 0.4;
+    right: calc(var(--gutter) + 6rem);
+    top: 50%;
+    width: clamp(7rem, 16vw, 13rem);
+    translate: 0 -55%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .footer-star__path {
+    fill: rgb(154 211 205 / 0);
+    stroke: var(--lagon);
+    stroke-width: 5;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1.8s 0.9s var(--ease-out), fill 1s 2.4s ease;
+  }
+
+  .footer-star :global(circle) {
+    fill: var(--lueur);
+    opacity: 0;
+    transform: translate(var(--dx, 0), var(--dy, 0));
+    transition: transform 1.5s var(--delay, 0s) cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.6s var(--delay, 0s) ease;
+  }
+
+  .footer-star.is-in .footer-star__path {
+    stroke-dashoffset: 0;
+    fill: rgb(154 211 205 / 0.16);
+  }
+
+  .footer-star.is-in :global(circle) {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer-star__path,
+    .footer-star :global(circle) {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .footer-star {
+      right: var(--gutter);
+      top: auto;
+      bottom: 0.5rem;
+      width: 5.5rem;
+      translate: none;
+      opacity: 0.8;
+    }
   }
 
   .site-footer__grid {

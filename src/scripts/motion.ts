@@ -7,6 +7,68 @@
  */
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/**
+ * Photographies : chaque photo située sous le premier écran s'ouvre quand elle entre dans le champ,
+ * avec un léger décalage entre photos voisines. Les scènes qui animent déjà leurs photos sont exclues.
+ */
+function initPhotoReveal(): void {
+  if (reduced) return;
+  const skip = '.op, .tv, .as, .ch__node, .hb, .lb, [data-no-reveal]';
+  const photos = Array.from(document.querySelectorAll<HTMLElement>('.ph')).filter((el) => !el.closest(skip) && el.getBoundingClientRect().top > innerHeight * 0.9);
+  if (!photos.length) return;
+  document.documentElement.classList.add('ph-reveal');
+  photos.forEach((el) => el.classList.add('ph-wait'));
+  let batch = 0;
+  let timer = 0;
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const el = e.target as HTMLElement;
+        io.unobserve(el);
+        window.setTimeout(() => el.classList.remove('ph-wait'), batch++ * 110);
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => (batch = 0), 200);
+      }
+    },
+    { rootMargin: '0px 0px -12% 0px' },
+  );
+  photos.forEach((el) => io.observe(el));
+}
+
+/**
+ * Profondeur : tout élément [data-depth="0.2"] glisse verticalement à une vitesse propre selon sa
+ * position dans l'écran (valeur positive : plus lent que la page, il semble plus loin ; négative : plus près).
+ * Une seule boucle par image, uniquement pour les éléments visibles ; transform seul (pas de recalcul de mise en page).
+ */
+function initDepth(): void {
+  if (reduced) return;
+  const els = Array.from(document.querySelectorAll<HTMLElement>('[data-depth]'));
+  if (!els.length) return;
+  const visible = new Set<HTMLElement>();
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    const vh = innerHeight;
+    visible.forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const rel = (r.top + r.height / 2 - vh / 2) / vh; // ≈ -1 … 1
+      el.style.setProperty('--depth-y', `${(rel * Number(el.dataset.depth) * vh * 0.35).toFixed(1)}px`);
+    });
+  };
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => (e.isIntersecting ? visible.add(e.target as HTMLElement) : visible.delete(e.target as HTMLElement)));
+    update();
+  }, { rootMargin: '20% 0px' });
+  els.forEach((el) => io.observe(el));
+  addEventListener('scroll', () => {
+    if (!ticking && visible.size) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  }, { passive: true });
+}
+
 function initReveals(): void {
   if (reduced || CSS.supports('animation-timeline: view()')) return;
   const root = document.documentElement;
@@ -177,6 +239,8 @@ function initSkies(): void {
 }
 
 export function initMotion(): void {
+  initPhotoReveal();
+  initDepth();
   initReveals();
   initSkies();
 }

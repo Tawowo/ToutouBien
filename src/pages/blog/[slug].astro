@@ -88,7 +88,7 @@ const jsonLd = draft || !d.publishDate
     {
       !d.cover && (
         <div class="page article__cover">
-          <Photo id={coverPhoto(article.id, d.category)} shape="soft" ratio="2-1" credit="below" priority sizes="(min-width: 84rem) 84rem, 100vw" />
+          <Photo id={coverPhoto(article.id, d.category)} shape="soft" ratio="2-1" credit="below" priority depth={0.16} sizes="(min-width: 84rem) 84rem, 100vw" />
         </div>
       )
     }

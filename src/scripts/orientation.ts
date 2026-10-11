@@ -75,6 +75,7 @@ export function initOrientation(root: ParentNode = document): void {
     const box = step.querySelector<HTMLElement>('[data-insight]:not(input)');
     if (!box) return;
     const source = input?.checked ? input : Array.from(step.querySelectorAll<HTMLInputElement>('input:checked')).pop();
+    wrap.querySelectorAll<HTMLElement>('[data-or-pic]').forEach((pic) => pic.classList.toggle('is-on', Boolean(source) && pic.dataset.orPic === source!.value));
     const text = source?.dataset.insight ?? '';
     if (box.textContent === text) return;
     box.textContent = text;

@@ -1,0 +1,346 @@
+---
+/**
+ * Travelling photographique en profondeur.
+ * Le défilement vertical fait glisser horizontalement trois plans de photographies qui avancent
+ * à des vitesses différentes (parallaxe réelle) ; chaque photo pivote selon sa place à l'écran
+ * (perspective) et son image intérieure glisse dans son cadre. Un fil d'étoiles se dessine au fil
+ * du travelling et relie les photos du premier plan.
+ *
+ * Mobile : deux plans, photos plus grandes. Mouvement réduit ou sans JavaScript : simple bande
+ * défilable horizontalement (aimantée), sans épinglage.
+ */
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
+import { photo as libPhoto } from '~/lib/library';
+
+interface Item {
+  id: string;
+  /** 0 : premier plan (grand) · 1 : plan médian · 2 : arrière-plan (petit, plus lent). */
+  layer: 0 | 1 | 2;
+  /** Position verticale dans la scène (% de la hauteur utile). */
+  y: number;
+  caption?: boolean;
+}
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  title: string;
+  lede: string;
+  items: Item[];
+  link?: { href: string; label: string };
+}
+const { id, eyebrow, title, lede, items, link } = Astro.props;
+const html = title.replace(/\*(.+?)\*/g, '<em>$1</em>');
+// Position horizontale : les photos de chaque plan sont réparties régulièrement le long du travelling.
+const byLayer = [0, 1, 2].map((l) => items.filter((it) => it.layer === l));
+const placed = items.map((it) => {
+  const list = byLayer[it.layer]!;
+  const k = list.indexOf(it);
+  const x = ((k + 0.5) / list.length) * 100;
+  return { ...it, x, p: libPhoto(it.id) };
+});
+---
+<section class="tv" aria-labelledby={`${id}-title`} data-travel>
+  <div class="tv__sticky">
+    <header class="page tv__head">
+      <p class="eyebrow">{eyebrow}</p>
+      <h2 id={`${id}-title`} set:html={html} />
+      <p class="lede">{lede}</p>
+      {link && <a class="link-arrow" href={link.href}>{link.label} <Icon name="arrow" /></a>}
+    </header>
+    <div class="tv__stage">
+      {[2, 1, 0].map((l) => (
+        <ul class:list={['tv__layer', `tv__layer--${l}`]} role="list" data-tv-layer={l} aria-label={l === 0 ? 'Photographies' : undefined} inert={l === 0 ? undefined : true}>
+          {placed.filter((p) => p.layer === l).map((p) => (
+            <li class="tv__item" data-tv-item data-x={p.x} data-y={p.y}>
+              <Photo id={p.id} shape="soft" ratio={l === 0 ? '4-5' : l === 1 ? '4-3' : '1'} credit={l === 2 ? 'none' : 'overlay'} sizes={l === 0 ? '(min-width: 60rem) 24vw, 62vw' : '(min-width: 60rem) 15vw, 40vw'} />
+              {l === 0 && p.caption && <p class="tv__cap">{p.p.caption}</p>}
+            </li>
+          ))}
+        </ul>
+      ))}
+      <svg class="tv__thread" aria-hidden="true" focusable="false" preserveAspectRatio="none" data-tv-thread>
+        <polyline points="" pathLength="1" />
+      </svg>
+    </div>
+    <div class="tv__progress" aria-hidden="true"><span></span></div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-travel]').forEach((root) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    root.classList.add('is-live');
+    const layers = Array.from(root.querySelectorAll<HTMLElement>('[data-tv-layer]'));
+    const items = Array.from(root.querySelectorAll<HTMLElement>('[data-tv-item]'));
+    const stage = root.querySelector<HTMLElement>('.tv__stage')!;
+    const thread = root.querySelector<SVGPolylineElement>('[data-tv-thread] polyline')!;
+    const svg = root.querySelector<SVGSVGElement>('[data-tv-thread]')!;
+    const bar = root.querySelector<HTMLElement>('.tv__progress span')!;
+    // Longueur de chaque plan (multiple de la largeur d'écran) : le premier plan va le plus loin.
+    const SPAN = [3.1, 2.3, 1.6];
+    let W = 0;
+    let H = 0;
+    let ticking = false;
+    let visible = false;
+
+    const layout = () => {
+      W = stage.clientWidth;
+      H = stage.clientHeight;
+      const mobile = W < 720;
+      layers.forEach((layer) => {
+        const l = Number(layer.dataset.tvLayer);
+        layer.style.width = `${W * (mobile ? SPAN[l]! * 1.35 : SPAN[l]!)}px`;
+      });
+      items.forEach((it) => {
+        it.style.left = `${it.dataset.x}%`;
+        it.style.top = `${it.dataset.y}%`;
+      });
+      root.style.height = `${(mobile ? 3.6 : 3.2) * innerHeight}px`;
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      update();
+    };
+
+    const update = () => {
+      ticking = false;
+      const r = root.getBoundingClientRect();
+      const span = r.height - innerHeight;
+      const p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+      bar.style.transform = `scaleX(${p.toFixed(4)})`;
+      const pts: string[] = [];
+      layers.forEach((layer) => {
+        const l = Number(layer.dataset.tvLayer);
+        const travel = layer.offsetWidth - W * 0.55;
+        const x = W * 0.42 - p * travel;
+        layer.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0)`;
+        layer.querySelectorAll<HTMLElement>('[data-tv-item]').forEach((it) => {
+          // Position à l'écran de la photo : sert à la perspective et au fil d'étoiles.
+          const cx = x + (Number(it.dataset.x) / 100) * layer.offsetWidth;
+          const rel = (cx - W / 2) / W; // -0.5 … 0.5 au centre de l'écran
+          const rot = Math.max(-1, Math.min(1, rel * 1.6)) * (l === 0 ? -16 : -9);
+          const lift = (1 - Math.min(1, Math.abs(rel) * 1.4)) * (l === 0 ? 1 : 0.4);
+          it.style.transform = `perspective(1100px) rotateY(${rot.toFixed(2)}deg) translateZ(${(lift * 40).toFixed(1)}px)`;
+          it.style.setProperty('--shift', `${(rel * -14).toFixed(2)}%`);
+          if (l === 0) {
+            const y = (Number(it.dataset.y) / 100) * H + it.offsetHeight * 0.52;
+            pts.push(`${cx.toFixed(1)},${y.toFixed(1)}`);
+          }
+        });
+      });
+      thread.setAttribute('points', pts.join(' '));
+      thread.style.strokeDashoffset = String(1 - Math.min(1, p * 1.25));
+    };
+
+    const onScroll = () => {
+      if (!ticking && visible) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    // Les photos hors champ (à droite) ne seraient jamais « proches » pour le chargement différé natif :
+    // on les charge toutes quand la section approche.
+    new IntersectionObserver((e, io) => {
+      if (e.some((x) => x.isIntersecting)) {
+        root.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
+        io.disconnect();
+      }
+    }, { rootMargin: '100% 0px' }).observe(root);
+    new IntersectionObserver((e) => {
+      visible = e.some((x) => x.isIntersecting);
+      if (visible) onScroll();
+    }, { rootMargin: '200px 0px' }).observe(root);
+    addEventListener('scroll', onScroll, { passive: true });
+    new ResizeObserver(layout).observe(stage);
+    layout();
+  });
+</script>
+
+<style>
+  .tv {
+    position: relative;
+    background:
+      radial-gradient(60% 50% at 80% 30%, rgb(255 240 210 / 0.7), transparent 70%),
+      linear-gradient(180deg, var(--papier), var(--ciel) 50%, var(--papier));
+  }
+
+  .tv__head {
+    display: grid;
+    gap: var(--space-s);
+    max-width: 44rem;
+    padding-block: var(--space-xl) var(--space-m);
+  }
+
+  .tv__head h2 :global(em) {
+    color: var(--sarcelle);
+  }
+
+  /* Repli : bande horizontale défilable. */
+  .tv__stage {
+    position: relative;
+  }
+
+  .tv__layer {
+    display: flex;
+    gap: var(--space-m);
+    padding: 0 var(--gutter) var(--space-l);
+    margin: 0;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+
+  .tv__layer--1,
+  .tv__layer--2 {
+    display: none;
+  }
+
+  .tv__item {
+    flex: none;
+    width: min(70vw, 20rem);
+    scroll-snap-align: center;
+  }
+
+  .tv__cap {
+    margin-top: 0.5rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    color: var(--encre-douce);
+  }
+
+  .tv__thread,
+  .tv__progress {
+    display: none;
+  }
+
+  /* Travelling épinglé. */
+  .tv.is-live .tv__sticky {
+    position: sticky;
+    top: 0;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .tv.is-live .tv__head {
+    padding-block: 5.5rem 0;
+    z-index: 4;
+    gap: var(--space-2xs);
+  }
+
+  .tv.is-live .tv__stage {
+    overflow: visible;
+  }
+
+  .tv.is-live .tv__layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    display: block;
+    padding: 0;
+    overflow: visible;
+    will-change: transform;
+  }
+
+  .tv.is-live .tv__item {
+    position: absolute;
+    translate: -50% 0;
+    will-change: transform;
+  }
+
+  .tv.is-live .tv__layer--0 {
+    z-index: 3;
+  }
+
+  .tv.is-live .tv__layer--0 .tv__item {
+    width: min(22vw, 20rem, (100svh - 21rem) * 0.72);
+  }
+
+  .tv.is-live .tv__layer--1 {
+    z-index: 2;
+  }
+
+  .tv.is-live .tv__layer--1 .tv__item {
+    width: min(15vw, 13rem);
+    opacity: 0.92;
+  }
+
+  .tv.is-live .tv__layer--2 {
+    z-index: 1;
+  }
+
+  .tv.is-live .tv__layer--2 .tv__item {
+    width: min(9vw, 8rem);
+    opacity: 0.7;
+    filter: saturate(0.8);
+  }
+
+  .tv.is-live .tv__item :global(.ph__frame) {
+    box-shadow: 0 2rem 3.5rem -2rem rgb(20 60 55 / 0.55);
+  }
+
+  /* L'image glisse dans son cadre : profondeur supplémentaire. */
+  .tv.is-live .tv__item :global(img) {
+    transform: translateX(var(--shift, 0)) scale(1.18);
+  }
+
+  .tv.is-live .tv__thread {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .tv__thread polyline {
+    fill: none;
+    stroke: var(--turquoise);
+    stroke-width: 2;
+    stroke-dasharray: 1;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .tv.is-live .tv__progress {
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: 1.4rem;
+    z-index: 4;
+    display: block;
+    height: 2px;
+    background: rgb(17 150 147 / 0.15);
+  }
+
+  .tv__progress span {
+    display: block;
+    height: 100%;
+    background: var(--turquoise);
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  @media (max-width: 44.99rem) {
+    .tv.is-live .tv__layer--2 {
+      display: none;
+    }
+
+    .tv.is-live .tv__layer--0 .tv__item {
+      width: 58vw;
+    }
+
+    .tv.is-live .tv__layer--1 .tv__item {
+      width: 34vw;
+    }
+
+    .tv.is-live .tv__head .lede {
+      display: none;
+    }
+  }
+</style>

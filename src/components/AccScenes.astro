@@ -1,0 +1,500 @@
+---
+/**
+ * Les accompagnements, mis en scène au défilement.
+ * Une scène épinglée enchaîne les quatre accompagnements : chacun a sa composition de trois
+ * photographies sur trois plans de profondeur. Le passage d'un accompagnement au suivant
+ * s'ouvre comme un iris, depuis l'étoile qui le représente, pendant que le texte change de chapitre.
+ * Les étoiles du fil latéral sont cliquables (accès direct).
+ *
+ * Sans JavaScript ou en mouvement réduit : les quatre accompagnements se lisent à la suite.
+ */
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
+import { ACCOMPAGNEMENTS } from '~/content/accompagnements';
+import { ACC_PHOTOS } from '~/lib/situation-photos';
+
+interface Props {
+  headingLevel?: 'h2' | 'h3';
+}
+const { headingLevel: H = 'h2' } = Astro.props;
+const items = ACCOMPAGNEMENTS.map((a) => {
+  const ph = ACC_PHOTOS[a.slug]!;
+  return { a, main: ph.hero, side: [ph.situations[0]!, ph.situations[2]!] as [string, string] };
+});
+---
+<section class="as" aria-label="Les accompagnements" data-acc-scenes>
+  <div class="as__sticky">
+    <ol class="as__rail" role="list" aria-label="Accompagnements">
+      {items.map(({ a }, i) => (
+        <li>
+          <button type="button" class="as__star" data-as-go={i} aria-label={`${a.num} · ${a.label}`}>
+            <span class="as__star-dot" aria-hidden="true"></span>
+            <span class="as__star-label">{a.num}</span>
+          </button>
+        </li>
+      ))}
+    </ol>
+
+    {items.map(({ a, main, side }, i) => (
+      <article class="as__scene" data-as-scene={i} aria-labelledby={`as-${a.slug}`}>
+        <div class="as__visual">
+          <div class="as__plane as__plane--main"><Photo id={main} shape="soft" ratio="4-5" sizes="(min-width: 60rem) 30vw, 70vw" /></div>
+          <div class="as__plane as__plane--a"><Photo id={side[0]} shape="soft" ratio="1" credit="none" sizes="(min-width: 60rem) 14vw, 34vw" /></div>
+          <div class="as__plane as__plane--b"><Photo id={side[1]} shape="round" credit="none" sizes="(min-width: 60rem) 12vw, 30vw" /></div>
+          <span class="as__num" aria-hidden="true">{a.num}</span>
+        </div>
+        <div class="as__text page">
+          <p class="eyebrow">{a.num} · {a.label}</p>
+          <H id={`as-${a.slug}`} class="as__title" set:html={a.heading.replace(/\*(.+?)\*/g, '<em>$1</em>')} />
+          <p class="lede">{a.short}</p>
+          <ul class="as__marks" role="list">{a.repères.map((r) => <li><span class="as__mark-dot" aria-hidden="true"></span>{r.title}</li>)}</ul>
+          <div class="as__actions">
+            <a class="btn" href={`/accompagnements/${a.slug}/`}>Découvrir cet accompagnement <Icon name="arrow" class="btn__arrow" /></a>
+          </div>
+        </div>
+      </article>
+    ))}
+    <p class="as__credits">Photos d’illustration · <a href="/credits-photos/">crédits</a></p>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-acc-scenes]').forEach((root) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    root.classList.add('is-live');
+    const scenes = Array.from(root.querySelectorAll<HTMLElement>('[data-as-scene]'));
+    const stars = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-as-go]'));
+    const n = scenes.length;
+    let ticking = false;
+    let current = -1;
+
+    const progress = () => {
+      const r = root.getBoundingClientRect();
+      const span = r.height - innerHeight;
+      return span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
+    };
+
+    const update = () => {
+      ticking = false;
+      const p = progress() * n;
+      const idx = Math.min(n - 1, Math.max(0, Math.floor(p + 0.15)));
+      scenes.forEach((s, i) => {
+        // t : 0 quand la scène commence à s'ouvrir, 1 quand elle est pleinement ouverte.
+        const t = i === 0 ? 1 : Math.min(1, Math.max(0, (p - i + 0.35) / 0.5));
+        const local = Math.min(1, Math.max(0, p - i)); // progression dans la scène
+        s.style.setProperty('--open', t.toFixed(4));
+        s.style.setProperty('--local', local.toFixed(4));
+        s.classList.toggle('is-on', i === idx);
+      });
+      if (idx !== current) {
+        current = idx;
+        stars.forEach((b, i) => {
+          b.classList.toggle('is-current', i === idx);
+          b.classList.toggle('is-done', i < idx);
+          if (i === idx) b.setAttribute('aria-current', 'step');
+          else b.removeAttribute('aria-current');
+        });
+        // Seule la scène affichée est atteignable (lecteurs d'écran, clavier).
+        scenes.forEach((s, i) => (s.inert = i !== idx));
+      }
+    };
+
+    // Photos des scènes masquées : chargées dès que la section approche.
+    new IntersectionObserver((e, io) => {
+      if (e.some((x) => x.isIntersecting)) {
+        root.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
+        io.disconnect();
+      }
+    }, { rootMargin: '100% 0px' }).observe(root);
+    stars.forEach((b) =>
+      b.addEventListener('click', () => {
+        const i = Number(b.dataset.asGo);
+        const top = root.getBoundingClientRect().top + scrollY;
+        const span = root.offsetHeight - innerHeight;
+        scrollTo({ top: top + span * ((i + 0.3) / n), behavior: 'smooth' });
+      }),
+    );
+    addEventListener('scroll', () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    }, { passive: true });
+    addEventListener('resize', update);
+    update();
+  });
+</script>
+
+<style>
+  .as {
+    position: relative;
+    background:
+      radial-gradient(50% 60% at 75% 40%, rgb(255 240 210 / 0.65), transparent 70%),
+      linear-gradient(180deg, var(--papier), var(--aube));
+  }
+
+  /* Repli : les quatre accompagnements à la suite. */
+  .as__sticky {
+    display: grid;
+    gap: var(--space-xl);
+    padding-block: var(--space-l);
+  }
+
+  .as__rail {
+    display: none;
+  }
+
+  .as__scene {
+    display: grid;
+    gap: var(--space-l);
+    align-items: center;
+  }
+
+  .as__visual {
+    position: relative;
+    width: min(100% - 2 * var(--gutter), 30rem);
+    aspect-ratio: 1;
+    margin-inline: auto;
+  }
+
+  .as__plane {
+    position: absolute;
+  }
+
+  .as__plane--main {
+    left: 14%;
+    top: 0;
+    width: 62%;
+    z-index: 2;
+  }
+
+  .as__plane--a {
+    left: 0;
+    bottom: 4%;
+    width: 34%;
+    z-index: 3;
+  }
+
+  .as__plane--b {
+    right: 0;
+    top: 10%;
+    width: 30%;
+    z-index: 1;
+  }
+
+  .as__plane :global(.ph__frame) {
+    box-shadow: 0 2rem 4rem -2.4rem rgb(40 50 40 / 0.55);
+  }
+
+  .as__plane--a :global(.ph),
+  .as__plane--b :global(.ph) {
+    padding: 0.35rem;
+    background: var(--blanc);
+    border-radius: calc(var(--radius-l) + 0.35rem);
+  }
+
+  .as__plane--b :global(.ph) {
+    border-radius: 50%;
+  }
+
+  .as__num {
+    position: absolute;
+    right: 2%;
+    bottom: -4%;
+    z-index: 0;
+    font-family: var(--font-display);
+    font-size: clamp(6rem, 14vw, 12rem);
+    line-height: 1;
+    color: color-mix(in oklab, var(--turquoise) 18%, transparent);
+  }
+
+  .as__text {
+    display: grid;
+    gap: var(--space-s);
+    align-content: center;
+  }
+
+  .as__title {
+    font-size: var(--step-5);
+    line-height: 0.98;
+    max-width: 14ch;
+  }
+
+  .as__title :global(em) {
+    color: var(--sarcelle);
+  }
+
+  .as__marks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    padding: 0;
+    list-style: none;
+    font-size: var(--step--1);
+  }
+
+  .as__marks li {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .as__mark-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--turquoise);
+    box-shadow: 0 0 0 4px rgb(17 150 147 / 0.15);
+  }
+
+  .as__actions {
+    margin-top: var(--space-2xs);
+  }
+
+  .as__credits {
+    font-size: 0.72rem;
+    color: var(--encre-douce);
+    padding-inline: var(--gutter);
+  }
+
+  .as__credits a {
+    color: inherit;
+  }
+
+  /* Scène épinglée. */
+  .as.is-live {
+    height: 440vh;
+  }
+
+  .as.is-live .as__sticky {
+    position: sticky;
+    top: 0;
+    display: block;
+    height: 100svh;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .as.is-live .as__scene {
+    position: absolute;
+    inset: 0;
+    isolation: isolate;
+    grid-template-columns: 6fr 5fr;
+    gap: var(--space-l);
+    padding: 5rem var(--gutter) 2rem calc(var(--gutter) + 3.5rem);
+    /* Iris : la scène s'ouvre depuis l'étoile de son numéro. */
+    clip-path: circle(calc(var(--open, 0) * 150%) at 12% 50%);
+  }
+
+  .as.is-live .as__scene:nth-of-type(1) {
+    clip-path: none;
+  }
+
+  .as.is-live .as__scene {
+    background:
+      radial-gradient(50% 60% at 30% 40%, rgb(255 240 210 / 0.7), transparent 70%),
+      linear-gradient(180deg, var(--papier), var(--aube));
+  }
+
+  .as.is-live .as__scene[data-as-scene='1'] {
+    background: radial-gradient(60% 60% at 30% 40%, rgb(229 242 248 / 1), transparent 70%), linear-gradient(180deg, #f2f8fa, var(--papier));
+  }
+
+  .as.is-live .as__scene[data-as-scene='2'] {
+    background: radial-gradient(60% 60% at 30% 40%, rgb(228 241 228 / 1), transparent 70%), linear-gradient(180deg, #f3f8f2, var(--papier));
+  }
+
+  .as.is-live .as__scene[data-as-scene='3'] {
+    background: radial-gradient(60% 60% at 30% 40%, rgb(255 244 220 / 0.9), transparent 70%), linear-gradient(180deg, var(--aube), #eef6f3);
+  }
+
+  .as.is-live .as__visual {
+    order: 2;
+    width: min(100%, (100svh - 8rem) * 0.95);
+  }
+
+  .as.is-live .as__text {
+    order: 1;
+  }
+
+  /* Profondeur : les plans glissent à des vitesses différentes dans chaque scène. */
+  .as.is-live .as__plane--main {
+    transform: translate3d(0, calc((0.5 - var(--local, 0)) * 3rem), 0) scale(calc(1.08 - var(--open, 0) * 0.08));
+  }
+
+  .as.is-live .as__plane--a {
+    transform: translate3d(calc((0.5 - var(--local, 0)) * -2rem), calc((0.5 - var(--local, 0)) * 7rem), 0);
+  }
+
+  .as.is-live .as__plane--b {
+    transform: translate3d(calc((0.5 - var(--local, 0)) * 2rem), calc((0.5 - var(--local, 0)) * -5rem), 0);
+  }
+
+  .as.is-live .as__num {
+    transform: translate3d(0, calc((0.5 - var(--local, 0)) * -4rem), 0);
+  }
+
+  /* Le texte entre en scène quand l'iris s'ouvre. */
+  .as.is-live .as__text > * {
+    opacity: 0;
+    transform: translateY(1.6rem);
+    transition: opacity 600ms var(--ease-out), transform 800ms var(--ease-out);
+  }
+
+  .as.is-live .as__scene.is-on .as__text > * {
+    opacity: 1;
+    transform: none;
+  }
+
+  .as.is-live .as__scene.is-on .as__text > :nth-child(2) {
+    transition-delay: 80ms;
+  }
+
+  .as.is-live .as__scene.is-on .as__text > :nth-child(3) {
+    transition-delay: 160ms;
+  }
+
+  .as.is-live .as__scene.is-on .as__text > :nth-child(4) {
+    transition-delay: 240ms;
+  }
+
+  .as.is-live .as__scene.is-on .as__text > :nth-child(5) {
+    transition-delay: 320ms;
+  }
+
+  /* Fil d'étoiles (accès direct). */
+  .as.is-live .as__rail {
+    position: absolute;
+    left: var(--gutter);
+    top: 50%;
+    z-index: 5;
+    display: grid;
+    gap: 1.4rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    translate: 0 -50%;
+  }
+
+  .as.is-live .as__rail::before {
+    content: '';
+    position: absolute;
+    left: 1.05rem;
+    top: 1rem;
+    bottom: 1rem;
+    width: 1px;
+    background: linear-gradient(var(--turquoise), rgb(17 150 147 / 0.15));
+  }
+
+  .as__star {
+    position: relative;
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    min-height: 2.2rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    color: var(--encre-douce);
+  }
+
+  .as__star-dot {
+    display: grid;
+    place-items: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 50%;
+  }
+
+  .as__star-dot::after {
+    content: '';
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: var(--blanc);
+    box-shadow: 0 0 0 2px var(--turquoise);
+    transition: transform 400ms var(--ease-out), background-color 300ms ease, box-shadow 400ms ease;
+  }
+
+  .as__star.is-done .as__star-dot::after {
+    background: var(--turquoise);
+  }
+
+  .as__star.is-current .as__star-dot::after {
+    background: var(--turquoise);
+    transform: scale(1.5);
+    box-shadow: 0 0 0 2px var(--turquoise), 0 0 0 9px rgb(17 150 147 / 0.15), 0 0 18px rgb(17 150 147 / 0.5);
+  }
+
+  .as__star.is-current {
+    color: var(--sarcelle);
+  }
+
+  .as__star:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-s);
+  }
+
+  .as.is-live .as__credits {
+    position: absolute;
+    right: var(--gutter);
+    bottom: 0.8rem;
+    z-index: 5;
+    padding: 0;
+  }
+
+  @media (max-width: 59.99rem) {
+    .as.is-live {
+      height: 400vh;
+    }
+
+    .as.is-live .as__scene {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+      align-content: start;
+      gap: var(--space-s);
+      padding: 4.8rem var(--gutter) 2.6rem calc(var(--gutter) + 2.6rem);
+      clip-path: circle(calc(var(--open, 0) * 160%) at 6% 50%);
+    }
+
+    .as.is-live .as__visual {
+      order: 1;
+      width: min(100%, 38svh);
+    }
+
+    .as.is-live .as__text {
+      order: 2;
+      align-content: start;
+    }
+
+    .as.is-live .as__title {
+      font-size: var(--step-3);
+    }
+
+    .as.is-live .as__text .lede {
+      font-size: var(--step-0);
+    }
+
+    .as.is-live .as__marks {
+      display: none;
+    }
+
+    .as.is-live .as__rail {
+      gap: 0.8rem;
+    }
+
+    .as__star-label {
+      display: none;
+    }
+  }
+
+  @media (max-width: 59.99rem) and (max-height: 720px) {
+    .as.is-live .as__text .lede {
+      display: none;
+    }
+  }
+</style>

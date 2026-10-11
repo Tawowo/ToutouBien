@@ -85,7 +85,7 @@ const ids = STEPS.map((st) => `d-${st.id}`);
         <h2 id={`${ids[0]}-t`}>Une situation <em>fréquente</em>.</h2>
         <div class="dd-intro">
           <p class="lede">{s.voice.replace(/[«»]/g, '').trim()} Beaucoup de familles vivent cette situation. Elle a rarement une seule explication&nbsp;: la regarder calmement aide déjà à y voir plus clair.</p>
-          <Photo id={situationPhoto(s.id)} shape="soft" ratio="4-5" credit="below" class="dd-intro__plate" sizes="(min-width: 62rem) 20rem, 70vw" />
+          <Photo id={situationPhoto(s.id)} shape="soft" ratio="4-5" credit="below" depth={0.2} class="dd-intro__plate" sizes="(min-width: 62rem) 20rem, 70vw" />
         </div>
       </section>
 

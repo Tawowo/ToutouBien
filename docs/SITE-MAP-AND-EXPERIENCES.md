@@ -4,6 +4,27 @@
 et ce qui a été **réellement testé** (navigateur Chromium via Playwright, bureau 1366–1440 px, tablette 1024 px,
 mobile Pixel 7 / iPhone 13). « Testé auto » = couvert par un test automatisé qui passe ; « vu » = inspecté sur capture.
 
+## Directive n° 8 : les expériences visuelles
+
+Direction artistique : **« Du regard au lien »** — une vraie photo de chien, des pixels qui deviennent des étoiles,
+des étoiles qui forment le lien (le logo). Le même motif relie l'ouverture, les transitions et le pied de page.
+
+| Expérience | Où | Technique | Comportement |
+| --- | --- | --- | --- |
+| Ouverture « Du regard au lien » | Accueil | WebGL (three.js), un seul appel de dessin, positions calculées dans le shader | Les pixels d'une vraie photo arrivent de la profondeur et la composent pendant que le titre bascule lettre à lettre ; la photo nette prend le relais ; toucher la photo y fait passer une onde 3D ; au défilement, relief et rotation, dispersion en étoiles, constellation du logo, second message lettre à lettre |
+| Travelling photographique | Accueil, Galerie | 3 plans en parallaxe réelle, perspective par photo, image qui glisse dans son cadre, fil d'étoiles | Le défilement vertical fait passer une vingtaine de photos en profondeur |
+| Scènes des accompagnements | Accompagnements | Scène épinglée, ouverture en iris, 3 plans par scène | Chaque accompagnement s'ouvre depuis son étoile ; fil d'étoiles cliquable |
+| Orientation qui réagit | Orientation | Iris CSS | Chaque réponse fait apparaître une photo correspondante dans la constellation |
+| Fondatrice en plans | Qui suis-je | Plans en profondeur, entrée en perspective, fil d'étoiles dessiné | Emplacements réservés à ses vraies photos |
+| Magazine | Blog | Rubriques colorées, grille décalée, une en carte superposée, reflet au survol, couverture en profondeur | — |
+| Signature finale | Pied de page (toutes les pages) | SVG | Des étoiles dispersées se rassemblent sur le tracé du logo, qui se dessine |
+| Transitions entre pages | Tout le site | View Transitions (CSS) | La page sortante recule, la suivante monte ; l'en-tête reste en place |
+| Révélation des photos | Tout le site | IntersectionObserver + clip-path | Le cadre s'ouvre depuis son centre pendant que l'image recule |
+| Profondeur au défilement | Blog, articles, approche, dossiers, accompagnements, contact | `translate` piloté par une seule boucle | Les images glissent dans leur cadre |
+
+Repli : mouvement réduit, économie de données ou sans JavaScript → versions statiques lisibles ; sans WebGL ou appareil
+trop lent → l'ouverture passe en mode allégé (photo, puis logo dessiné en SVG au défilement).
+
 ## Directive n° 7 : les chiens au premier plan
 
 Toutes les pages ci-dessous ont été reprises : **80 vraies photographies de chiens** (voir `docs/PHOTO-ASSETS.md`),

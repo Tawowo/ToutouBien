@@ -1,7 +1,7 @@
 ---
 import Base from '~/layouts/Base.astro';
 import OpeningScene from '~/components/OpeningScene.astro';
-import HomeBand from '~/components/HomeBand.astro';
+import PhotoTravel from '~/components/PhotoTravel.astro';
 import HomeObserve from '~/components/HomeObserve.astro';
 import HomeChooser from '~/components/HomeChooser.astro';
 import HomeStories from '~/components/HomeStories.astro';
@@ -28,6 +28,37 @@ const articles = (await visibleArticles()).slice(0, 3);
 >
   <OpeningScene />
 
+  <!-- Des chiens, des histoires : travelling photographique en profondeur -->
+  <PhotoTravel
+    id="tv-home"
+    eyebrow="Des chiens, des histoires"
+    title="Chaque chien a *sa façon d’être au monde*."
+    lede="Grand ou petit, jeune ou âgé, joueur ou contemplatif : comprendre un chien commence par le regarder tel qu’il est."
+    link={{ href: '/galerie/', label: 'Toute la galerie' }}
+    items={[
+      { id: 'portrait-berger-australien', layer: 0, y: 10, caption: true },
+      { id: 'jeu-dalmatien', layer: 0, y: 14, caption: true },
+      { id: 'chiot-mordille', layer: 0, y: 6, caption: true },
+      { id: 'observe-rocher', layer: 0, y: 12, caption: true },
+      { id: 'senior-setter', layer: 0, y: 8, caption: true },
+      { id: 'rencontre-epagneuls', layer: 0, y: 13, caption: true },
+      { id: 'nature-fleurs', layer: 0, y: 10, caption: true },
+      { id: 'portrait-shiba', layer: 1, y: 62 },
+      { id: 'flair-bord-du-chemin', layer: 1, y: 2 },
+      { id: 'jeu-plage', layer: 1, y: 60 },
+      { id: 'maison-canape', layer: 1, y: 4 },
+      { id: 'observe-duo', layer: 1, y: 58 },
+      { id: 'chiot-husky', layer: 1, y: 6 },
+      { id: 'balade-prairie', layer: 1, y: 64 },
+      { id: 'portrait-colley', layer: 2, y: 4 },
+      { id: 'nature-colline', layer: 2, y: 70 },
+      { id: 'rencontre-terriers', layer: 2, y: 12 },
+      { id: 'jeu-corgi', layer: 2, y: 74 },
+      { id: 'chiot-corde', layer: 2, y: 2 },
+      { id: 'flair-truffe-au-sol', layer: 2, y: 68 },
+    ]}
+  />
+
   <!-- Manifeste -->
   <section class="section manifesto" aria-labelledby="manifesto-title">
     <Fil variant="descente" class="manifesto__fil" />
@@ -41,9 +72,6 @@ const articles = (await visibleArticles()).slice(0, 3);
       <Plate id="accueil-balade" class="manifesto__plate parallax" shape="arch" sizes="(min-width: 60rem) 30vw, 80vw" />
     </div>
   </section>
-
-  <!-- Des chiens, des histoires : rubans de photographies -->
-  <HomeBand />
 
   <!-- Où en êtes-vous : sélecteur en constellation -->
   <HomeChooser />

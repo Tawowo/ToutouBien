@@ -1,5 +1,13 @@
 # Rapport de tests
 
+> **État directive n° 8 (11/10/2026)** — Lint 0 · types 0 · **55 tests unitaires** · **255 réussis / 257 au premier passage**
+> (2 échecs d'accessibilité sur /accompagnements/ corrigés puis revérifiés : 32/32 sur la page, 25/25 sur l'accueil, la galerie
+> et le travelling après correction). Nouveaux tests : ouverture composée puis transformée au défilement (sans erreur), onde
+> au toucher, mode statique en mouvement réduit, scène des accompagnements pilotée par les étoiles, travelling.
+> Lighthouse (build de production, mobile simulé, **rendu WebGL logiciel**) : accueil 83 (TBT 590 ms dû au rendu WebGL sur
+> processeur ; à mesurer sur un vrai téléphone), accompagnements 94, galerie 95 (accessibilité 96 → corrigé ensuite, non remesuré),
+> qui suis-je 100 ; accessibilité 100 ailleurs ; CLS ≤ 0,002.
+
 > **État directive n° 7 (10/10/2026)** — 80 photos intégrées. Lint 0 erreur · types 0 erreur · **55 tests unitaires** ·
 > **249 tests de bout en bout réussis, 0 échec** (1 ignoré : souris sur mobile), dont : chargement des photos sans image
 > cassée (accueil, galerie, accompagnement, blog), six repères « Apprendre à regarder », filtre de la galerie et visionneuse

@@ -12,6 +12,7 @@ import Base from '~/layouts/Base.astro';
 import SplitTitle from '~/components/SplitTitle.astro';
 import Draft from '~/components/Draft.astro';
 import Icon from '~/components/Icon.astro';
+import PhotoTravel from '~/components/PhotoTravel.astro';
 import meta from '~/content/galerie.json';
 import { LIBRARY, focusClass } from '~/lib/library';
 import { draftsVisible } from '~/lib/fields';
@@ -54,6 +55,35 @@ const SLOTS = ['Mme Petitgand et son chien', 'Une séance en extérieur', 'Une b
       <p class="lede enter" data-i="3">Les photographies de l’activité sont publiées uniquement avec l’accord des familles. Les photographies d’illustration, sous licence libre et créditées, ne montrent pas de chiens accompagnés par ToutouBien.</p>
     </div>
   </section>
+
+  <PhotoTravel
+    id="tv-galerie"
+    eyebrow="Le travelling"
+    title="Faites défiler, *les chiens passent*."
+    lede="Trois plans de profondeur, une vingtaine de regards. La galerie complète, avec ses filtres, suit juste après."
+    items={[
+      { id: 'lien-automne', layer: 0, y: 10, caption: true },
+      { id: 'jeu-baton', layer: 0, y: 14, caption: true },
+      { id: 'portrait-bouvier', layer: 0, y: 6, caption: true },
+      { id: 'nature-sommet', layer: 0, y: 12, caption: true },
+      { id: 'chiot-portee', layer: 0, y: 8, caption: true },
+      { id: 'observe-levrier', layer: 0, y: 14, caption: true },
+      { id: 'rappel-balle', layer: 0, y: 10, caption: true },
+      { id: 'portrait-mastiff', layer: 1, y: 62 },
+      { id: 'flair-levriers', layer: 1, y: 2 },
+      { id: 'rencontre-huskies', layer: 1, y: 60 },
+      { id: 'senior-hiver', layer: 1, y: 4 },
+      { id: 'maison-bouvier-repos', layer: 1, y: 58 },
+      { id: 'nature-bord-de-mer', layer: 1, y: 6 },
+      { id: 'jeu-course-pelouse', layer: 1, y: 64 },
+      { id: 'portrait-plage', layer: 2, y: 4 },
+      { id: 'chiot-beagle-balle', layer: 2, y: 70 },
+      { id: 'balade-campagne', layer: 2, y: 12 },
+      { id: 'flair-buissons', layer: 2, y: 74 },
+      { id: 'attente-rebord', layer: 2, y: 2 },
+      { id: 'nature-lande', layer: 2, y: 68 },
+    ]}
+  />
 
   <section class="section section--tight g-lib" aria-labelledby="g-illus" data-gal>
     <div class="page">

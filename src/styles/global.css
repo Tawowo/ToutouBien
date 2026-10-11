@@ -1380,3 +1380,91 @@ html.lb-open {
 .fy-90{--fy:90%}
 .fy-95{--fy:95%}
 .fy-100{--fy:100%}
+
+/* ===== Transitions entre pages (navigation entre documents, navigateurs compatibles) ===== */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  ::view-transition-old(root) {
+    animation: vt-out 320ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  ::view-transition-new(root) {
+    animation: vt-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: translateY(-1.5rem) scale(0.985);
+    filter: blur(4px);
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(2.5rem);
+    clip-path: inset(6% 0 0 0 round 2rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0 round 0);
+  }
+}
+
+/* ===== Révélation des photographies au défilement (src/scripts/motion.ts → initPhotoReveal) =====
+   Le cadre s'ouvre depuis son centre pendant que l'image recule légèrement : un vrai « plan » qui
+   entre en scène, plutôt qu'un simple fondu. */
+@media (prefers-reduced-motion: no-preference) {
+  .ph-reveal .ph.ph-wait .ph__frame {
+    clip-path: inset(14% 10% 14% 10% round var(--radius-l));
+  }
+
+  .ph-reveal .ph.ph-wait .ph__frame img {
+    transform: scale(1.22);
+  }
+
+  .ph-reveal .ph.ph-wait .ph__credit {
+    opacity: 0;
+  }
+
+  .ph-reveal .ph .ph__frame {
+    transition: clip-path 1.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .ph-reveal .ph .ph__frame img {
+    transition: transform 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* L'en-tête reste en place pendant la transition entre pages. */
+.site-header {
+  view-transition-name: site-header;
+}
+
+::view-transition-group(site-header) {
+  animation-duration: 0s;
+}
+
+/* Profondeur pilotée par le défilement (src/scripts/motion.ts → initDepth). */
+@media (prefers-reduced-motion: no-preference) {
+  [data-depth] {
+    translate: 0 var(--depth-y, 0);
+  }
+
+  /* Photo dont seule l'image glisse dans un cadre fixe. */
+  [data-depth].ph,
+  .ph[data-depth] {
+    translate: none;
+  }
+
+  .ph[data-depth] .ph__frame img {
+    transform: translateY(var(--depth-y, 0)) scale(1.18);
+  }
+}

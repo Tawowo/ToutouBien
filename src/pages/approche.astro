@@ -65,7 +65,7 @@ const PRINCIPLE_PHOTO: Record<string, string> = {
             PRINCIPLES.map((p, i) => (
               <section class="pr__panel" role="tabpanel" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} tabindex="0">
                 <span class="pr__big" aria-hidden="true" data-num={String(i + 1).padStart(2, '0')}></span>
-                <Photo id={PRINCIPLE_PHOTO[p.id] ?? 'observe-duo'} class="pr__photo" shape="soft" ratio="16-9" credit="overlay" sizes="(min-width: 60rem) 45vw, 92vw" />
+                <Photo id={PRINCIPLE_PHOTO[p.id] ?? 'observe-duo'} class="pr__photo" shape="soft" ratio="16-9" credit="overlay" depth={0.14} sizes="(min-width: 60rem) 45vw, 92vw" />
                 <h3>
                   {p.word} <em>{p.tagline}</em>
                 </h3>

@@ -1,0 +1,526 @@
+---
+/**
+ * Ouverture « Du regard au lien » (accueil).
+ * Une vraie photographie se compose à partir de milliers de pixels venus de la profondeur
+ * (WebGL), devient nette, puis, au défilement, prend du relief, se disperse en étoiles et se
+ * recompose en constellation du logo ToutouBien. Le titre entre lettre à lettre, au rythme des pixels.
+ *
+ * Modes : cinéma (WebGL) ; allégé (pas de WebGL ou appareil trop lent : même chorégraphie,
+ * photo et logo dessinés en CSS/SVG) ; statique (mouvement réduit, économie de données, sans JS).
+ * Le texte est toujours du HTML réel. Voir src/scripts/portrait/.
+ */
+import Photo from './Photo.astro';
+import Icon from './Icon.astro';
+import emblemRaw from '~/assets/brand/emblem.svg?raw';
+import { photo } from '~/lib/library';
+
+const d = emblemRaw.match(/ d="([^"]+)"/)?.[1] ?? '';
+const viewBox = emblemRaw.match(/viewBox="([^"]+)"/)?.[1] ?? '0 0 1080 1010';
+const P = photo('lien-coucher-soleil');
+
+/** Découpe une phrase (syntaxe *italique*) en mots insécables et en lettres animables. */
+const split = (text: string) => {
+  let italic = false;
+  return text.split(' ').map((raw) => {
+    const opens = raw.startsWith('*');
+    const closes = raw.endsWith('*') || raw.endsWith('*,') || raw.endsWith('*.');
+    const word = raw.replace(/\*/g, '');
+    if (opens) italic = true;
+    const it = italic;
+    if (closes) italic = false;
+    return { chars: Array.from(word), italic: it };
+  });
+};
+const LINE1 = split('Comprendre son chien,');
+const LINE2 = split('*se sentir bien* ensemble.');
+const SECOND = split('Derrière chaque chien, *un lien* à comprendre.');
+---
+<section class="op" aria-labelledby="op-title" data-opening data-mode="static">
+  <div class="op__sticky" data-op-sticky>
+    <div class="op__sky" aria-hidden="true"><span class="op__sun"></span><span class="op__haze"></span></div>
+
+    <figure class="op__photo" data-op-photo>
+      <Photo id={P.id} shape="none" priority credit="none" sizes="(min-width: 60rem) 54vw, 92vw" alt="Un chien tricolore, tenu en laisse, sur un chemin au coucher du soleil ; seule la main de la personne est visible." />
+      <figcaption class="op__credit">Photo d’illustration : <a href={P.sourceUrl} rel="noopener">{P.author}</a> · <a href={P.licenceUrl} rel="license noopener">{P.licence}</a></figcaption>
+    </figure>
+
+    <canvas class="op__canvas" aria-hidden="true"></canvas>
+
+    <div class="op__emblem" data-op-emblem aria-hidden="true">
+      <svg viewBox={viewBox} focusable="false"><path d={d} data-op-emblem-path pathLength="1" fill-rule="evenodd" /></svg>
+    </div>
+
+    <div class="page op__text">
+      <div class="op__first" data-op-first>
+        <p class="eyebrow op-in" data-d="0">Éducation canine · accompagnement des familles</p>
+        <h1 id="op-title" class="op__title">
+          <span class="sr-only">Comprendre son chien, se sentir bien ensemble.</span>
+          <span class="op__line" data-op-chars aria-hidden="true">
+            {LINE1.map((w) => <span class:list={['op-w', w.italic && 'op-w--it']}>{w.chars.map((c) => <span class="op-ch">{c}</span>)}</span>)}
+          </span>
+          <span class="op__line op__line--2" data-op-chars aria-hidden="true">
+            {LINE2.map((w) => <span class:list={['op-w', w.italic && 'op-w--it']}>{w.chars.map((c) => <span class="op-ch">{c}</span>)}</span>)}
+          </span>
+        </h1>
+        <p class="lede op-in" data-d="2">ToutouBien accompagne les familles et leur chien pour que le quotidien redevienne plus simple, à la maison comme en balade.</p>
+        <div class="op__actions op-in" data-d="3">
+          <a class="btn" href="/parlons-de-votre-chien/">Parlons de votre chien <Icon name="arrow" class="btn__arrow" /></a>
+          <a class="link-arrow" href="/orientation/">Par où commencer&nbsp;? <Icon name="arrow" /></a>
+        </div>
+      </div>
+
+      <div class="op__second" data-op-second>
+        <p class="eyebrow">Le lien</p>
+        <p class="op__second-title" data-op-chars>
+          {SECOND.map((w) => <span class:list={['op-w', w.italic && 'op-w--it']}>{w.chars.map((c) => <span class="op-ch">{c}</span>)}</span>)}
+        </p>
+        <p class="op__second-lede">Une femme et un chien, face à face, à la même hauteur : c’est le logo de ToutouBien, et l’idée qui guide chaque accompagnement.</p>
+        <a class="link-arrow" href="/approche/">Découvrir l’approche <Icon name="arrow" /></a>
+      </div>
+    </div>
+
+    <div class="op__hint" aria-hidden="true">
+      <span class="op__hint-line"></span>
+      <span class="op__hint-text">Faites défiler : la photo se transforme</span>
+      <span class="op__hint-touch">Touchez la photo</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initOpening } from '~/scripts/portrait/opening';
+  initOpening();
+</script>
+
+<style>
+  .op {
+    position: relative;
+    background: var(--aube);
+  }
+
+  :global(.can-cine) .op {
+    height: 270vh;
+  }
+
+  .op__sticky {
+    position: relative;
+    display: grid;
+    min-height: min(100svh - 4.75rem, 56rem);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  :global(.can-cine) .op__sticky {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    min-height: 0;
+  }
+
+  /* Ciel : lumière chaude qui respire lentement, brume turquoise. */
+  .op__sky {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, var(--aube) 0%, #f3f8f5 65%, var(--papier) 100%);
+  }
+
+  .op__sun {
+    position: absolute;
+    right: 8%;
+    top: 4%;
+    width: 62vmax;
+    height: 62vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(255 236 200 / 0.95) 0%, rgb(255 244 220 / 0.6) 32%, transparent 66%);
+    transform: translate(20%, -20%);
+  }
+
+  .op__haze {
+    position: absolute;
+    left: -20%;
+    bottom: -30%;
+    width: 70vmax;
+    height: 50vmax;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(154 211 205 / 0.45), transparent 70%);
+  }
+
+  /* Photo : grande, à droite ; ses proportions sont celles du fichier (aucun recadrage), pour que les pixels s'y posent exactement. */
+  .op__photo {
+    position: absolute;
+    z-index: 1;
+    right: var(--gutter);
+    top: 50%;
+    width: min(54vw, (100svh - 9rem) * 1.5);
+    aspect-ratio: 1024 / 681;
+    margin: 0;
+    translate: 0 -46%;
+    cursor: pointer;
+    border-radius: var(--radius-l);
+    box-shadow: 0 3rem 6rem -3rem rgb(60 40 10 / 0.45);
+    transition: opacity 700ms var(--ease-out), box-shadow 700ms ease;
+  }
+
+  .op__photo :global(.ph),
+  .op__photo :global(.ph__frame) {
+    height: 100%;
+    border-radius: inherit;
+  }
+
+  .op__credit {
+    position: absolute;
+    right: 0.7rem;
+    bottom: 0.6rem;
+    z-index: 2;
+    padding: 0.12rem 0.55rem;
+    border-radius: var(--radius-pill);
+    background: rgb(10 30 28 / 0.55);
+    color: #fff;
+    font-size: 0.66rem;
+  }
+
+  .op__credit a {
+    color: inherit !important;
+    text-decoration: none;
+  }
+
+  .op__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    transition: opacity 400ms ease;
+  }
+
+  .op[data-mode='static'] .op__canvas,
+  .op[data-lite='true'] .op__canvas {
+    display: none;
+  }
+
+  /* Cinéma : la photo nette n'apparaît qu'une fois composée par les pixels. */
+  :global(.can-cine) .op:not(.is-formed) .op__photo,
+  .op.is-rippling .op__photo {
+    opacity: 0 !important;
+    box-shadow: none;
+  }
+
+  /* Le logo : mesuré pour la constellation ; dessiné en SVG seulement en mode allégé. */
+  .op__emblem {
+    position: absolute;
+    z-index: 1;
+    right: calc(var(--gutter) + min(54vw, (100svh - 9rem) * 1.5) / 2);
+    top: 50%;
+    width: min(46vh, 34vw);
+    aspect-ratio: 1080 / 1010;
+    translate: 50% -46%;
+    pointer-events: none;
+  }
+
+  .op__emblem svg {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+
+  .op[data-lite='true'] .op__emblem svg {
+    opacity: calc(var(--op-m, 0) * 1);
+  }
+
+  .op__emblem path {
+    fill: color-mix(in oklab, var(--turquoise) 22%, transparent);
+    stroke: var(--sarcelle);
+    stroke-width: 6;
+    stroke-dasharray: 1;
+    stroke-dashoffset: calc(1 - var(--op-m, 0));
+  }
+
+  .op__text {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .op__first,
+  .op__second {
+    grid-area: 1 / 1;
+    display: grid;
+    gap: var(--space-m);
+    max-width: min(40vw, 34rem);
+    pointer-events: auto;
+  }
+
+  .op__first {
+    opacity: calc(1 - var(--op-out, 0));
+    transform: translateY(calc(var(--op-out, 0) * -5rem));
+  }
+
+  .op__title {
+    display: grid;
+    font-size: clamp(2.8rem, 1.6rem + 4.4vw, 6.2rem);
+    line-height: 0.95;
+    perspective: 800px;
+  }
+
+  .op__line {
+    display: block;
+  }
+
+  .op-w {
+    display: inline-block;
+    white-space: nowrap;
+    margin-right: 0.22em;
+  }
+
+  .op-w--it {
+    font-style: italic;
+    color: var(--sarcelle);
+  }
+
+  .op-ch {
+    display: inline-block;
+    transform-origin: 50% 80%;
+  }
+
+  /* Chorégraphie des lettres : elles basculent depuis la profondeur, au rythme de l'arrivée des pixels. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.can-cine) .op:not(.is-playing) .op-ch,
+    :global(.can-cine) .op:not(.is-playing) .op-in {
+      opacity: 0;
+    }
+
+    .op.is-playing .op__first .op-ch {
+      animation: op-char 1000ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+      animation-delay: calc(240ms + var(--i, 0) * 34ms);
+    }
+
+    .op.is-playing .op__line--2 .op-ch {
+      animation-delay: calc(1050ms + var(--i, 0) * 38ms);
+    }
+
+    .op.is-playing .op-in {
+      animation: op-in 900ms var(--ease-out) both;
+    }
+
+    .op.is-playing .op-in[data-d='0'] {
+      animation-delay: 80ms;
+    }
+
+    .op.is-playing .op-in[data-d='2'] {
+      animation-delay: 1900ms;
+    }
+
+    .op.is-playing .op-in[data-d='3'] {
+      animation-delay: 2250ms;
+    }
+
+    .op__sun {
+      animation: op-sun 14s ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes op-char {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 0.6em, -40px) rotateX(-85deg);
+      filter: blur(8px);
+    }
+
+    60% {
+      filter: blur(0);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+  }
+
+  @keyframes op-in {
+    from {
+      opacity: 0;
+      transform: translateY(1.2rem);
+    }
+  }
+
+  @keyframes op-sun {
+    to {
+      transform: translate(14%, -12%) scale(1.08);
+    }
+  }
+
+  /* Second message : chaque lettre s'allume avec le défilement, en même temps que la constellation se forme. */
+  .op__second {
+    display: none;
+  }
+
+  :global(.can-cine) .op__second {
+    display: grid;
+  }
+
+  .op__second-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 1.4rem + 3.6vw, 5rem);
+    line-height: 1;
+  }
+
+  .op__second .op-ch {
+    --k: clamp(0, calc(var(--op-m, 0) * 52 - var(--i, 0)), 1);
+    opacity: var(--k);
+    transform: translateY(calc((1 - var(--k)) * 0.45em));
+  }
+
+  .op__second .eyebrow,
+  .op__second-lede,
+  .op__second .link-arrow {
+    opacity: clamp(0, calc(var(--op-m, 0) * 3 - 1.6), 1);
+  }
+
+  .op__second-lede {
+    max-width: 36ch;
+    color: var(--encre-douce);
+  }
+
+  .op__hint {
+    position: absolute;
+    left: 50%;
+    bottom: 1.2rem;
+    z-index: 3;
+    display: none;
+    gap: 0.5rem;
+    justify-items: center;
+    translate: -50% 0;
+    font-family: var(--font-mono);
+    font-size: var(--step--2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sarcelle);
+    opacity: calc(1 - var(--op-out, 0) * 1.6);
+  }
+
+  :global(.can-cine) .op__hint {
+    display: grid;
+  }
+
+  .op__hint-line {
+    width: 1px;
+    height: 2.6rem;
+    background: linear-gradient(var(--turquoise), transparent);
+    transform-origin: top;
+  }
+
+  .op__hint-touch {
+    display: none;
+  }
+
+  .op[data-ready='true'] .op__hint-touch {
+    display: block;
+    color: var(--encre-douce);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .op__hint-line {
+      animation: op-hint 2.2s ease-in-out infinite;
+    }
+  }
+
+  @keyframes op-hint {
+    0% {
+      transform: scaleY(0);
+    }
+
+    50% {
+      transform: scaleY(1);
+    }
+
+    100% {
+      transform: scaleY(1);
+      opacity: 0;
+    }
+  }
+
+  /* Statique : composition simple, photo et titre côte à côte. */
+  .op[data-mode='static'] .op__sticky {
+    padding-block: var(--space-l);
+  }
+
+  /* Mobile : la photo en haut, le texte dessous ; la constellation se forme au même endroit. */
+  @media (max-width: 59.99rem) {
+    :global(.can-cine) .op {
+      height: 220vh;
+    }
+
+    .op__photo {
+      left: var(--gutter);
+      right: var(--gutter);
+      top: 5.4rem;
+      width: auto;
+      translate: none;
+    }
+
+    .op__emblem {
+      right: 50%;
+      top: calc(5.4rem + (100vw - 2 * var(--gutter)) / 1.5 / 2);
+      width: min(52vw, 17rem);
+      translate: 50% -50%;
+    }
+
+    .op__text {
+      align-items: end;
+      padding-bottom: 5.5rem;
+    }
+
+    .op__first,
+    .op__second {
+      max-width: none;
+    }
+
+    .op__title {
+      font-size: clamp(2.5rem, 1.4rem + 6vw, 3.6rem);
+    }
+
+    .op__first .lede {
+      font-size: var(--step-0);
+    }
+
+    .op__second-title {
+      font-size: clamp(2.1rem, 1.3rem + 5vw, 3rem);
+    }
+
+    .op[data-mode='static'] .op__sticky {
+      display: block;
+      padding-top: 0;
+    }
+
+    .op[data-mode='static'] .op__photo {
+      position: relative;
+      inset: auto;
+      margin: var(--space-s) var(--gutter) var(--space-m);
+    }
+
+    .op__hint {
+      bottom: 0.6rem;
+    }
+
+    .op__hint-line {
+      height: 1.6rem;
+    }
+  }
+
+  @media (max-width: 59.99rem) and (max-height: 700px) {
+    .op__first .lede {
+      display: none;
+    }
+  }
+
+  @media (min-width: 60rem) {
+    .op[data-mode='static'] .op__sticky {
+      min-height: min(100svh - 4.75rem, 50rem);
+    }
+  }
+</style>

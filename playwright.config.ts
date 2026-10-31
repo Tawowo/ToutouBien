@@ -28,6 +28,8 @@ export default defineConfig({
       PUBLIC_FORM_PROVIDER: 'custom',
       PUBLIC_FORM_ENDPOINT: 'https://forms.example.test/submit',
       PUBLIC_SITE_URL: 'https://toutoubien.example',
+      // Les tests vérifient le vrai site : expiration de la démonstration désactivée.
+      DEMO_EXPIRES_AT: 'off',
     },
   },
 });

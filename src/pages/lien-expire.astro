@@ -1,0 +1,112 @@
+---
+/**
+ * Écran affiché par le middleware (`middleware.ts`) une fois la démonstration expirée.
+ * Page autonome : ni en-tête, ni menu, ni pied de page, ni script, pour qu'on ne puisse
+ * plus naviguer dans la démonstration. Tant que la démo est active, le middleware
+ * répond 404 à cette adresse.
+ */
+import '~/styles/global.css';
+import Emblem from '~/assets/brand/emblem.svg';
+import Wordmark from '~/assets/brand/wordmark-nom.svg';
+import serifUrl from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url';
+import instrumentUrl from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url';
+import { site } from '~/config/site';
+
+const brand = site.name.value;
+const title = `Ce lien n’est plus disponible · ${brand}`;
+const description = 'Le délai de consultation de cette démonstration a été atteint.';
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" href={serifUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={instrumentUrl} as="font" type="font/woff2" crossorigin />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <meta name="theme-color" content="#0b1514" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  </head>
+  <body class="expired">
+    <main class="expired__main">
+      <article class="expired__card" aria-labelledby="expired-title">
+        <p class="expired__brand">
+          <Emblem class="expired__emblem" aria-hidden="true" />
+          <Wordmark class="expired__word" aria-hidden="true" />
+          <span class="sr-only">{brand}</span>
+        </p>
+        <p class="eyebrow">Démonstration</p>
+        <h1 id="expired-title">Ce lien n’est plus <em>disponible</em></h1>
+        <p class="lede">Le délai de consultation de cette démonstration a été atteint.</p>
+        <p class="expired__note">Pour y accéder à nouveau, contactez la personne qui vous l’a transmis.</p>
+      </article>
+    </main>
+  </body>
+</html>
+
+<style>
+  .expired {
+    display: grid;
+    min-height: 100dvh;
+    background:
+      radial-gradient(55% 45% at 85% 8%, rgb(154 211 205 / 0.35), transparent 70%),
+      radial-gradient(50% 50% at 8% 95%, rgb(17 150 147 / 0.12), transparent 70%),
+      var(--papier);
+  }
+
+  .expired__main {
+    display: grid;
+    place-items: center;
+    padding: var(--space-xl) var(--gutter);
+  }
+
+  .expired__card {
+    display: grid;
+    gap: var(--space-m);
+    justify-items: start;
+    width: min(100%, 40rem);
+    padding: clamp(2rem, 1.2rem + 4vw, 3.75rem);
+    background: var(--blanc);
+    border: 1px solid var(--lin);
+    border-radius: var(--radius-l);
+    box-shadow: 0 1px 0 rgb(20 33 32 / 0.06), 0 2rem 4rem -2.5rem rgb(20 33 32 / 0.25);
+  }
+
+  .expired__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: var(--space-xs);
+    color: var(--sarcelle);
+  }
+
+  .expired__emblem {
+    width: 2.7rem;
+    height: auto;
+  }
+
+  .expired__word {
+    width: 8rem;
+    height: auto;
+  }
+
+  .expired__card h1 {
+    font-size: var(--step-4);
+    max-width: 16ch;
+  }
+
+  .expired__card h1 em {
+    color: var(--sarcelle);
+  }
+
+  .expired__note {
+    max-width: var(--measure);
+    padding-top: var(--space-m);
+    border-top: 1px solid var(--lin);
+    color: var(--encre);
+  }
+</style>

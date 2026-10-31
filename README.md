@@ -61,12 +61,42 @@ Rien de ce qui n'est pas `confirmed` (ou `brief`) n'apparaît en production. Dé
 | `PUBLIC_FORM_PROVIDER` | `formspree`, `web3forms` ou `custom` |
 | `PUBLIC_FORM_ENDPOINT` | URL de réception (Formspree / custom) |
 | `PUBLIC_WEB3FORMS_ACCESS_KEY` | Clé publique Web3Forms |
+| `DEMO_EXPIRES_AT` | Facultative : date limite de la démonstration (`off` = pas d'expiration). Voir ci-dessous |
 
 Aucun secret n'est nécessaire ni stocké dans le dépôt. Voir `.env.example` et `docs/DEPLOYMENT.md`.
 
 ### Formulaires
 
 Les deux formulaires (« Parlons de votre chien » et Contact) envoient les demandes au fournisseur configuré (`src/lib/submit.ts`). Une confirmation n'est affichée **qu'après réception confirmée** par le fournisseur. Sans configuration, le site indique honnêtement que l'envoi en ligne n'est pas activé. Mise en place : `docs/DEPLOYMENT.md` §3.
+
+## Expiration de la démonstration
+
+Ce site sert de démonstration. Passée une date limite, **toutes les pages** répondent avec le code HTTP **410** et affichent l'écran « Ce lien n'est plus disponible » (`src/pages/lien-expire.astro`). L'en-tête, le menu, le pied de page et les scripts n'y figurent pas : on ne peut plus naviguer dans la démo. Cet écran n'est pas indexé (`noindex`) et il est exclu du sitemap.
+
+**Fonctionnement.** Le fichier `middleware.ts`, à la racine du dépôt, est un middleware Vercel (*Routing Middleware*). Vercel le détecte tout seul et l'exécute avant d'envoyer chaque page : **aucun réglage n'est nécessaire dans Vercel**.
+- Démo expirée : toutes les pages (y compris les adresses inconnues) répondent 410 avec l'écran d'expiration. Les fichiers techniques (scripts, styles, polices, images, `favicon`, `robots.txt`) restent servis pour que l'écran s'affiche correctement.
+- Démo active : le site fonctionne normalement, et l'adresse `/lien-expire/` répond 404.
+
+**Date limite.** Elle est inscrite dans le code : constante `DEFAULT_DEMO_EXPIRES_AT` dans `middleware.ts` (actuellement le `2026-10-31T00:00:00+01:00`, soit le 31 octobre 2026 à 00:00, heure de Paris). La variable d'environnement facultative `DEMO_EXPIRES_AT` la remplace si elle est définie.
+
+| `DEMO_EXPIRES_AT` | Effet |
+| --- | --- |
+| absente ou vide | la date du code s'applique |
+| `off` | aucune expiration : la démo est ouverte |
+| `2026-12-15` | expiration le 15 décembre 2026 à 00:00, heure de Paris |
+| `2026-12-15T18:30` | expiration à 18 h 30, heure de Paris |
+| `2026-12-15T18:30:00+01:00` ou `…Z` | expiration à cet instant précis |
+| valeur invalide (ex. `15/12/2026`) | **aucune expiration** : une erreur de saisie ne coupe jamais le site |
+
+La date est comparée à l'heure **au moment de chaque visite** : une date future rouvre la démo tout de suite, puis la coupe automatiquement à l'échéance, sans nouveau déploiement.
+
+**Rouvrir la démo ou changer la date**, au choix :
+1. *Sans toucher à Vercel* : modifier `DEFAULT_DEMO_EXPIRES_AT` dans `middleware.ts` (date future, ou `''` pour ne jamais expirer), puis publier sur `main`. Vercel redéploie automatiquement.
+2. *Dans Vercel* : *Settings → Environment Variables*, ajouter `DEMO_EXPIRES_AT` (`off` ou une date) pour l'environnement *Production*, puis *Redeploy* le dernier déploiement (une variable n'est prise en compte qu'au déploiement suivant).
+
+**Limite : les adresses de déploiement figées.** Les liens Vercel contenant un code au milieu (par exemple `projet-a1b2c3d4e-compte.vercel.app`) désignent une ancienne version précise du site, figée. Une version publiée **avant** l'ajout de ce middleware n'est pas coupée. Pour la couper, il faut supprimer ce déploiement dans Vercel (*Deployments → ⋯ → Delete*). Le domaine principal du projet, lui, suit toujours la dernière version.
+
+**Tests.** `tests/unit/demo-expiry.test.ts` vérifie la logique de date et le middleware. Les tests de bout en bout (`playwright.config.ts`) tournent avec `DEMO_EXPIRES_AT=off` pour continuer à vérifier le vrai site. Note : `astro dev` et `astro preview` n'exécutent pas le middleware Vercel. En local, le site s'affiche donc toujours normalement.
 
 ## Modifier les contenus
 

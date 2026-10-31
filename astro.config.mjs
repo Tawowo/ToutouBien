@@ -21,8 +21,8 @@ const formOrigins = (() => {
   }
 })();
 
-// Pages exclues du sitemap : pages techniques ou sans contenu public validé.
-const EXCLUDED = ['/404'];
+// Pages exclues du sitemap : pages techniques (dont l'écran d'expiration de la démo) ou sans contenu public validé.
+const EXCLUDED = ['/404', '/lien-expire'];
 
 export default defineConfig({
   site,
